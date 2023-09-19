@@ -6,6 +6,7 @@
   },
   "type": "module",
   "devDependencies": {
+    "@types/node": "^20.6.2",
     "solid-start-node": "^0.3.5",
     "solid-start-vercel": "^0.3.5",
     "typescript": "^5.0.0",
@@ -14,6 +15,7 @@
   "dependencies": {
     "@solidjs/meta": "^0.28.6",
     "@solidjs/router": "^0.8.3",
+    "pdf2json": "^3.0.4",
     "solid-js": "^1.7.12",
     "solid-start": "^0.3.5"
   }
