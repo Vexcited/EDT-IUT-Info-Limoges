@@ -5,6 +5,6 @@ export type { Timetable } from "./parser/index.js";
 export type { TimetableLesson, TimetableLessonCM, TimetableLessonTD, TimetableLessonTP } from "./parser/lessons.js";
 
 // Downloader
-export { STUDY_YEARS } from "./downloader/constants.js";
+export { YEARS } from "./downloader/constants.js";
 export { TimetableEntry } from "./downloader/entry.js";
 export { getTimetableEntries, getLatestTimetableEntry } from "./downloader/index.js";

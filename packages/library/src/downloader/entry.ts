@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
 
-import { STUDY_YEARS, FTP_ENDPOINT_URL } from "./constants";
+import { YEARS, FTP_ENDPOINT_URL } from "./constants";
 import { DATE_TIME_OPTIONS } from "../utils/date";
 import { getTimetableFromBuffer } from "../parser";
 
@@ -11,7 +11,7 @@ export class TimetableEntry {
   public last_updated: DateTime;
   /** From the beginning of the school year. Usually starts from September. */
   public week_number: number;
-  public from_year: STUDY_YEARS;
+  public from_year: YEARS;
   /** The direct link to the timetable. */
   public link: string
 
@@ -23,7 +23,7 @@ export class TimetableEntry {
     this.file_name = file_name;
     this.last_updated = DateTime.fromFormat(raw_date, "yyyy-MM-dd HH:mm", DATE_TIME_OPTIONS);
     this.week_number = parseInt(file_name.replace(/(A(.*)_S)|(.pdf)/g, ""));
-    this.from_year = ("A" + file_name[1]) as STUDY_YEARS;
+    this.from_year = ("A" + file_name[1]) as YEARS;
     this.link = `${FTP_ENDPOINT_URL}/${this.from_year}/${this.file_name}`;
   }
 

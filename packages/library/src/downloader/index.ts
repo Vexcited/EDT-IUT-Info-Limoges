@@ -1,7 +1,7 @@
-import { FTP_ENDPOINT_URL, STUDY_YEARS } from "./constants.js";
+import { FTP_ENDPOINT_URL, YEARS } from "./constants.js";
 import { TimetableEntry } from "./entry.js";
 
-export const getTimetableEntries = async (from: STUDY_YEARS): Promise<TimetableEntry[]> => {
+export const getTimetableEntries = async (from: YEARS): Promise<TimetableEntry[]> => {
   const response = await fetch(`${FTP_ENDPOINT_URL}/${from}`);
   const html = await response.text();
 
@@ -19,7 +19,7 @@ export const getTimetableEntries = async (from: STUDY_YEARS): Promise<TimetableE
   return entries;
 };
 
-export const getLatestTimetableEntry = async (from: STUDY_YEARS): Promise<TimetableEntry> => {
+export const getLatestTimetableEntry = async (from: YEARS): Promise<TimetableEntry> => {
   const entries = await getTimetableEntries(from);
   // Since the entries are sorted by week number, the last one is the latest.
   return entries[entries.length - 1];
