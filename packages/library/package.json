@@ -32,32 +32,18 @@
       "release": true
     },
     "npm": {
-      "publish": true,
-      "skipChecks": true,
-      "versionArgs": [
-        "--allow-same-version",
-        "--workspaces-update=false"
-      ]
+      "publish": true
     }
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^25.0.4",
-    "@rollup/plugin-json": "^6.0.0",
-    "@rollup/plugin-node-resolve": "^15.2.1",
     "@types/luxon": "^3.3.2",
     "@types/node": "^20.6.3",
-    "esbuild": "^0.19.3",
     "release-it": "^16.1.5",
-    "rimraf": "^5.0.1",
-    "rollup": "^3.29.2",
-    "rollup-plugin-dts": "^6.0.2",
-    "rollup-plugin-esbuild": "^5.0.0",
-    "rollup-plugin-node": "^0.2.1"
+    "rimraf": "^5.0.1"
   },
   "author": "Mikkel RINGAUD <mikkel@milescode.dev> (https://github.com/Vexcited)",
   "repository": "github:Vexcited/EDT-IUT-Info-Limoges",
   "dependencies": {
-    "luxon": "^3.4.3",
-    "pdf2json": "workspace:*"
+    "luxon": "^3.4.3"
   }
 }
