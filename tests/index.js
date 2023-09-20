@@ -1,6 +1,4 @@
-import PDFParser from "pdf2json";
-
-import path from "node:path";
+import PDFParser from "../src/pdf/pdfparser.js";
 import fs from "node:fs";
 
 /** Colors are all in lowercase. */
