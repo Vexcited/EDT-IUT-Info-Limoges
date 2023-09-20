@@ -6,8 +6,5 @@
   "private": true,
   "license": "MIT",
   "author": "Mikkel RINGAUD <mikkel@milescode.dev> (https://github.com/Vexcited)",
-  "repository": "github:Vexcited/EDT-IUT-Info-Limoges",
-  "scripts": {
-    "release": "release-it"
-  }
+  "repository": "github:Vexcited/EDT-IUT-Info-Limoges"
 }
