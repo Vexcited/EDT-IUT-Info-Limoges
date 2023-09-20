@@ -1,0 +1,63 @@
+{
+  "name": "edt-iut-info-limoges",
+  "version": "0.1.0",
+  "description": "Emploi du temps de l'IUT d'Informatique de Limoges",
+  "license": "MIT",
+  "private": false,
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "release": "release-it",
+    "build": "rimraf dist && tsc"
+  },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore: release v${version}",
+      "tagAnnotation": "Release v${version}",
+      "tagName": "v${version}"
+    },
+    "github": {
+      "release": true
+    },
+    "npm": {
+      "publish": true,
+      "skipChecks": true,
+      "versionArgs": [
+        "--allow-same-version",
+        "--workspaces-update=false"
+      ]
+    }
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.4",
+    "@rollup/plugin-json": "^6.0.0",
+    "@rollup/plugin-node-resolve": "^15.2.1",
+    "@types/luxon": "^3.3.2",
+    "@types/node": "^20.6.3",
+    "esbuild": "^0.19.3",
+    "release-it": "^16.1.5",
+    "rimraf": "^5.0.1",
+    "rollup": "^3.29.2",
+    "rollup-plugin-dts": "^6.0.2",
+    "rollup-plugin-esbuild": "^5.0.0",
+    "rollup-plugin-node": "^0.2.1"
+  },
+  "author": "Mikkel RINGAUD <mikkel@milescode.dev> (https://github.com/Vexcited)",
+  "repository": "github:Vexcited/EDT-IUT-Info-Limoges",
+  "dependencies": {
+    "luxon": "^3.4.3",
+    "pdf2json": "workspace:*"
+  }
+}

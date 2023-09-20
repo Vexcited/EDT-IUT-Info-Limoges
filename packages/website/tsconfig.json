@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    
+    "moduleResolution": "Bundler",
+    "target": "ESNext",
+    "module": "ESNext",
+
+    "jsxImportSource": "solid-js",
+    "jsx": "preserve",
+    
+    "strict": true,
+    "allowJs": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./src/*"]
+    },
+
+    "types": [
+      "solid-start/env"
+    ]
+  },
+
+  "include": ["src", "vite.config.ts"],
+  "exclude": ["node_modules", "dist", ".solid"]
+}
