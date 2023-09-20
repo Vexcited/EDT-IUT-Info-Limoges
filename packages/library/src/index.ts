@@ -1,10 +1,10 @@
-import { getRawPDF } from "./utils/pdf.js";
-import { getTimetable, type Timetable } from "./parser/index.js";
+// Parser
+export { LESSON_TYPES, SUBGROUPS } from "./parser/constants.js";
+export { getTimetableFromBuffer } from "./parser/index.js";
+export type { Timetable } from "./parser/index.js";
+export type { TimetableLesson, TimetableLessonCM, TimetableLessonTD, TimetableLessonTP } from "./parser/lessons.js";
 
-export const getTimetableFromBuffer = async (pdf_buffer: Buffer): Promise<Timetable> => {
-  const pdf_raw_data = await getRawPDF(pdf_buffer);
-  const pdf = pdf_raw_data.Pages[0];
-
-  const timetable = getTimetable(pdf);
-  return timetable;
-};
+// Downloader
+export { STUDY_YEARS } from "./downloader/constants.js";
+export { TimetableEntry } from "./downloader/entry.js";
+export { getTimetableEntries, getLatestTimetableEntry } from "./downloader/index.js";

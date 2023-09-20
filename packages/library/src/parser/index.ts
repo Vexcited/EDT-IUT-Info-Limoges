@@ -5,6 +5,8 @@ import { getTimetableTimings } from "./timings.js";
 import { getTimetableGroups } from "./groups.js";
 import { getTimetableLessons, TimetableLesson } from "./lessons.js";
 
+import { getRawPDF } from "../utils/pdf.js";
+
 export interface Timetable {
   header: TimetableHeader["data"];
   lessons: TimetableLesson[];
@@ -20,4 +22,12 @@ export const getTimetable = (page: Page): Timetable => {
     header: header.data,
     lessons
   };
+};
+
+export const getTimetableFromBuffer = async (pdf_buffer: Buffer): Promise<Timetable> => {
+  const pdf_raw_data = await getRawPDF(pdf_buffer);
+  const pdf = pdf_raw_data.Pages[0];
+
+  const timetable = getTimetable(pdf);
+  return timetable;
 };

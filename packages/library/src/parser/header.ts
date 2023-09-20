@@ -3,7 +3,8 @@ import type { Page } from "../converter/pdfparser.js";
 import { type FillBounds, getFillBounds, getTextsInFillBounds } from "./bounds.js";
 import { COLORS } from "./constants.js";
 
-import { DateTime, type DateTimeOptions } from "luxon";
+import { DateTime } from "luxon";
+import { DATE_TIME_OPTIONS } from "../utils/date.js";
 
 export interface TimetableHeader {
   data: {
@@ -17,8 +18,8 @@ export interface TimetableHeader {
   bounds: FillBounds
 }
 
-const DATE_TIME_FORMAT = "dd/MM/yyyy";
-const DATE_TIME_OPTIONS: DateTimeOptions = { locale: "fr", zone: "Europe/Paris" };
+// Format for the date in the header.
+const DATE_TIME_HEADER_FORMAT = "dd/MM/yyyy";
 
 export const getTimetableHeader = (page: Page): TimetableHeader => {
   const header_fill = page.Fills.find(fill => fill.oc === COLORS.HEADER);
@@ -37,8 +38,8 @@ export const getTimetableHeader = (page: Page): TimetableHeader => {
   if (!header_text_matches) throw new Error("Can't parse header text.");
 
   // Parse the dates.
-  const week_start_date = DateTime.fromFormat(header_text_matches[3], DATE_TIME_FORMAT, DATE_TIME_OPTIONS);
-  const week_end_date = DateTime.fromFormat(header_text_matches[4], DATE_TIME_FORMAT, DATE_TIME_OPTIONS);
+  const week_start_date = DateTime.fromFormat(header_text_matches[3], DATE_TIME_HEADER_FORMAT, DATE_TIME_OPTIONS);
+  const week_end_date = DateTime.fromFormat(header_text_matches[4], DATE_TIME_HEADER_FORMAT, DATE_TIME_OPTIONS);
 
   return {
     bounds: header_fill_bounds,
