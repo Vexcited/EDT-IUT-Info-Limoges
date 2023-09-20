@@ -1,8 +1,8 @@
-import type { Page } from "pdf2json";
+import type { Page } from "../converter/pdfparser.js";
 
-import { type FillBounds, getFillBounds, getTextsInFillBounds } from "./bounds";
-import { COLORS, DAYS, SUBGROUPS } from "./constants";
-import { round } from "../utils/numbers";
+import { type FillBounds, getFillBounds, getTextsInFillBounds } from "./bounds.js";
+import { COLORS, DAYS, SUBGROUPS } from "./constants.js";
+import { round } from "../utils/numbers.js";
 
 export interface TimetableGroup {
   /**
@@ -25,7 +25,7 @@ export interface TimetableGroup {
 }
 
 export const getTimetableGroups = (page: Page, header_bounds: FillBounds): Record<string, TimetableGroup> => {
-  const days = page.Fills.filter(fill => fill.oc === COLORS.RULERS && fill.x === header_bounds.start_x);
+  const days = page.Fills.filter(fill => fill.oc === COLORS.RULERS && fill.x > header_bounds.start_x);
   const groupsFromY: Record<string, TimetableGroup> = {};
 
   for (const fill of days) {
@@ -44,6 +44,8 @@ export const getTimetableGroups = (page: Page, header_bounds: FillBounds): Recor
     
       return isGroupColor && startsAtDayEndXBound && isWithinDayBounds;
     });
+
+    
 
     for (const fill of groups) {
       const bounds = getFillBounds(fill);
