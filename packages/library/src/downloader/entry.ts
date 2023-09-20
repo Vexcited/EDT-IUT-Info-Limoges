@@ -1,8 +1,8 @@
 import { DateTime } from "luxon";
 
-import { YEARS, FTP_ENDPOINT_URL } from "./constants";
-import { DATE_TIME_OPTIONS } from "../utils/date";
-import { getTimetableFromBuffer } from "../parser";
+import { YEARS, FTP_ENDPOINT_URL } from "./constants.js";
+import { DATE_TIME_OPTIONS } from "../utils/date.js";
+import { getTimetableFromBuffer } from "../parser/index.js";
 
 export class TimetableEntry {
   /** Includes the `.pdf` extension. */
