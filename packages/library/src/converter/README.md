@@ -7,6 +7,9 @@
 The original project converts units, even though we want to keep the original units.
 This fork is a workaround to keep the original units.
 
+Also, you can see that some files are missing from the original project.
+This is because we don't need them. Some functions are also removed as they are not needed.
+
 ## License
 
 Licensed under the Apache License, Version 2.0 (the "License");
