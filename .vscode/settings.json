@@ -1,3 +1,7 @@
 {
-  "cSpell.language": "en,fr"
+  "cSpell.language": "en,fr",
+  "cSpell.words": [
+    "luxon",
+    "pdfparser"
+  ]
 }
