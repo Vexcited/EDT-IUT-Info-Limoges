@@ -1,7 +1,7 @@
 {
   "name": "edt-iut-info-limoges",
   "version": "1.0.0",
-  "description": "Emploi du temps de l'IUT d'Informatique de Limoges",
+  "description": "Emploi du temps de l'IUT Informatique de Limoges",
   "license": "MIT",
   "private": false,
   "type": "module",
@@ -30,7 +30,7 @@
       "tagName": "v${version}"
     },
     "github": {
-      "release": true
+      "release": false
     },
     "npm": {
       "publish": true
