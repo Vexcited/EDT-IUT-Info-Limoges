@@ -6,9 +6,10 @@
 
 In development...
 
-## Development w/[Bun](https://bun.sh)
+## Development
 
 | Command | Description |
 | ------- | ----------- |
-| `bun run --bun dev` | Starts the development server on [`localhost:3000`](http://localhost:3000/). |
-| `bun run build` | Build for production. |
+| `pnpm install` | Install dependencies. |
+| `pnpm dev` | Starts the development server on [`localhost:3000`](http://localhost:3000/). |
+| `pnpm build` | Build for production. |
