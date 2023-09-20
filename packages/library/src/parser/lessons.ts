@@ -1,5 +1,5 @@
 import type { DateTime } from "luxon";
-import type { Page } from "pdf2json";
+import type { Page } from "../converter/pdfparser.js";
 import type { TimetableGroup } from "./groups.js";
 import type { TimetableHeader } from "./header.js";
 

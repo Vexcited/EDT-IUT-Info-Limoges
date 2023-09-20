@@ -1,4 +1,4 @@
-import type { Fill, Page, Text } from "pdf2json";
+import type { Fill, Page, Text } from "../converter/pdfparser.js";
 
 export interface FillBounds {
   start_x: number;

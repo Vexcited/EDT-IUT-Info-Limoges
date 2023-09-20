@@ -1,4 +1,4 @@
-import type { Page } from "pdf2json";
+import type { Page } from "../converter/pdfparser.js";
 
 import { type FillBounds, getFillBounds, getTextsInFillBounds } from "./bounds.js";
 import { COLORS } from "./constants.js";

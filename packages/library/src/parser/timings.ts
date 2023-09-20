@@ -1,7 +1,7 @@
-import type { Page } from "pdf2json";
+import type { Page } from "../converter/pdfparser.js";
 
-import { type FillBounds, getFillBounds, getTextsInFillBounds } from "./bounds";
-import { COLORS } from "./constants";
+import { type FillBounds, getFillBounds, getTextsInFillBounds } from "./bounds.js";
+import { COLORS } from "./constants.js";
 
 export const getTimetableTimings = (page: Page, header_bounds: FillBounds): Record<string, string> => {
   // We get the fills for the timing that are just below the header.

@@ -1,4 +1,4 @@
-import PDFParser, { type Output } from "pdf2json";
+import PDFParser, { type Output } from "../converter/pdfparser.js";
 
 export const getRawPDF = async (pdf_buffer: Buffer): Promise<Output> => new Promise<Output>((resolve, reject) => {
   const parser = new PDFParser();
