@@ -10,3 +10,4 @@ node_modules
 # Miscs
 .DS_Store
 Thumbs.db
+tests/*.json
