@@ -23,6 +23,11 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "release-it": {
+    "hooks": {
+      "before:init": [
+        "pnpm build"
+      ]
+    },
     "git": {
       "commitMessage": "chore: release v${version}",
       "tagAnnotation": "Release v${version}",
@@ -32,7 +37,11 @@
       "release": false
     },
     "npm": {
-      "publish": true
+      "publish": true,
+      "skipChecks": true,
+      "versionArgs": [
+        "--workspaces-update=false"
+      ]
     }
   },
   "devDependencies": {
