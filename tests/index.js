@@ -57,10 +57,10 @@ parser.on("pdfParser_dataReady", (raw_data) => {
     end_date: header_text_matches[4],
   };
 
-  const hours_fill = pdf.Fills.filter(fill => fill.oc === COLORS.RULERS && fill.y === header_fill_bounds.end_y);
+  const timing_fills = pdf.Fills.filter(fill => fill.oc === COLORS.RULERS && fill.y === header_fill_bounds.end_y);
   
   const timingsFromX = {};
-  for (const fill of hours_fill) {
+  for (const fill of timing_fills) {
     const bounds = getBounds(fill);
     const texts = getTextsInBounds(pdf, bounds);
     
