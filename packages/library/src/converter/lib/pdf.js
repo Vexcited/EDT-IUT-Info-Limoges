@@ -1,59 +1,10 @@
 import nodeUtil from "util";
-import fs from "fs";
-import path from 'path';
-import {fileURLToPath} from 'url';
-
 import {EventEmitter} from "events";
-import {Blob} from "buffer";
-import {DOMParser} from "@xmldom/xmldom";
 
 import PDFCanvas from "./pdfcanvas.js";
 import PDFUnit from "./pdfunit.js";
 import PDFField from "./pdffield.js";
-import PDFAnno from "./pdfanno.js";
-import Image from "./pdfimage.js";    
 import PDFFont from "./pdffont.js";
-import PTIXmlParser from "./ptixmlinject.js";
-
-import { pkInfo, _PARSER_SIG } from "../pkinfo.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const _pdfjsFiles = [
-    'shared/util.js',
-    'shared/colorspace.js',
-    'shared/pattern.js',
-    'shared/function.js',
-    'shared/annotation.js',
-
-    'core/core.js',
-    'core/obj.js',
-    'core/charsets.js',
-    'core/crypto.js',
-    'core/evaluator.js',
-    'core/fonts.js',
-    'core/font_renderer.js',
-    'core/glyphlist.js',
-    'core/image.js',
-    'core/metrics.js',
-    'core/parser.js',
-    'core/stream.js',
-    'core/worker.js',
-    'core/jpx.js',
-    'core/jbig2.js',
-    'core/bidi.js',
-    'core/jpg.js',
-    'core/chunked_stream.js',
-    'core/pdf_manager.js',
-    'core/cmap.js',
-    'core/cidmaps.js',
-
-    'display/canvas.js',
-    'display/font_loader.js',
-    'display/metadata.js',
-    'display/api.js'
-];
 
 //////replacing HTML5 canvas with PDFCanvas (in-memory canvas)
 function createScratchCanvas(width, height) { return new PDFCanvas({}, width, height); }
@@ -61,9 +12,8 @@ function createScratchCanvas(width, height) { return new PDFCanvas({}, width, he
 const PDFJS = {};
 const globalScope = {console};
 
-const baseDir = `${__dirname}/../base/`;
-const _baseCode = _pdfjsFiles.reduce( (preContent, fileName, idx, arr) => preContent += fs.readFileSync(baseDir + fileName, 'utf8'), "");
-eval(_baseCode);
+const { code } = await import("./mozilla_pdf.js");
+eval(code);
 
 ////////////////////////////////start of helper classes
 class PDFPageParser {
@@ -254,7 +204,7 @@ export default class PDFJSClass extends EventEmitter {
 	}
 
     parseMetaData() {
-        const meta = {Transcoder: _PARSER_SIG, Meta: {...this.documentInfo, Metadata: this.metadata}};
+        const meta = {Transcoder: "pdf2json@3.0.4 [https://github.com/modesty/pdf2json]", Meta: {...this.documentInfo, Metadata: this.metadata}};
         this.raiseReadyEvent(meta);
         this.emit("readable", meta);
     }

@@ -1,4 +1,4 @@
-import {kColors} from "../../library/src/pdf/lib/pdfconst.js";
+import {kColors} from "./pdfconst.js";
 
 const dpi = 96.0;
 const gridXPerInch = 4.0;
