@@ -35,7 +35,6 @@ const getTextsInBounds = (pdf, bounds, end_y_offset = 0) => pdf.Texts.filter(tex
   return x_in_bounds && y_in_bounds;
 });
 
-// parser.on("pdfParser_dataError", errData => console.error(errData.parserError) );
 parser.on("pdfParser_dataReady", (raw_data) => {
   // const creation_date = raw_data.Meta.CreationDate;
   const pdf = raw_data.Pages[0];
@@ -57,6 +56,19 @@ parser.on("pdfParser_dataReady", (raw_data) => {
     start_date: header_text_matches[3],
     end_date: header_text_matches[4],
   };
+
+  const hours_fill = pdf.Fills.filter(fill => fill.oc === COLORS.RULERS && fill.y === header_fill_bounds.end_y);
+  
+  const timingsFromX = {};
+  for (const fill of hours_fill) {
+    const bounds = getBounds(fill);
+    const texts = getTextsInBounds(pdf, bounds);
+    
+    const text = texts[0]?.R?.[0]?.T;
+    if (!text) continue;
+
+    timingsFromX[fill.x] = decodeURIComponent(text).trim()
+  }
 
   for (const fill of pdf.Fills) {
     // We only care about the fills that have a color.
@@ -87,8 +99,8 @@ parser.on("pdfParser_dataReady", (raw_data) => {
         const lesson = parsed_texts.map(text => text.trim()).join(" ");
 
         output.cm.push({
-          // start_x: fill_bounds.start_x,
-          // end_x: fill_bounds.end_x,
+          start_time: timingsFromX[fill_bounds.start_x],
+          end_time: timingsFromX[fill_bounds.end_x],
 
           content: { type, lesson, teacher, room }
         });
