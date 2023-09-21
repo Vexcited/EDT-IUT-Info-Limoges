@@ -1,7 +1,7 @@
 import { describe, test, expect } from "@jest/globals";
 
-import { YEARS, getTimetableEntries, getLatestTimetableEntry } from "../src/index.js";
-import { FTP_ENDPOINT_URL } from "../src/downloader/constants.js";
+import { YEARS, getTimetableEntries, getLatestTimetableEntry } from "../src";
+import { FTP_ENDPOINT_URL } from "../src/downloader/constants";
 
 describe("downloader", () => {
   test("getTimetableEntries", async () => {

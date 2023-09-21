@@ -4,8 +4,7 @@
     "esModuleInterop": true,
     
     "moduleResolution": "Node",
-    "target": "ESNext",
-    "module": "ESNext",
+    "target": "ES2015",
 
     "strict": true,
     "allowJs": true,
