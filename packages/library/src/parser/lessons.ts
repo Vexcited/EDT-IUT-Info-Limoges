@@ -1,11 +1,11 @@
 import type { DateTime } from "luxon";
-import type { Page } from "../converter/pdfparser.js";
-import type { TimetableGroup } from "./groups.js";
-import type { TimetableHeader } from "./header.js";
+import type { Page } from "../converter/types";
+import type { TimetableGroup } from "./groups";
+import type { TimetableHeader } from "./header";
 
-import { round } from "../utils/numbers.js";
-import { getFillBounds, getTextsInFillBounds } from "./bounds.js";
-import { COLORS, LESSON_TYPES, SUBGROUPS } from "./constants.js";
+import { round } from "../utils/numbers";
+import { getFillBounds, getTextsInFillBounds } from "./bounds";
+import { COLORS, LESSON_TYPES, SUBGROUPS } from "./constants";
 
 export interface TimetableLessonCM {
   type: LESSON_TYPES.CM;

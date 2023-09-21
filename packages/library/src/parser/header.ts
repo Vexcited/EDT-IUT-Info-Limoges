@@ -1,10 +1,10 @@
-import type { Page } from "../converter/pdfparser.js";
+import type { Page } from "../converter/types";
 
-import { type FillBounds, getFillBounds, getTextsInFillBounds } from "./bounds.js";
-import { COLORS } from "./constants.js";
+import { type FillBounds, getFillBounds, getTextsInFillBounds } from "./bounds";
+import { COLORS } from "./constants";
 
 import { DateTime } from "luxon";
-import { DATE_TIME_OPTIONS } from "../utils/date.js";
+import { DATE_TIME_OPTIONS } from "../utils/date";
 
 export interface TimetableHeader {
   data: {

@@ -1,8 +1,8 @@
 import { DateTime } from "luxon";
 
-import { YEARS, FTP_ENDPOINT_URL } from "./constants.js";
-import { DATE_TIME_OPTIONS } from "../utils/date.js";
-import { getTimetableFromBuffer } from "../parser/index.js";
+import { YEARS, FTP_ENDPOINT_URL } from "./constants";
+import { DATE_TIME_OPTIONS } from "../utils/date";
+import { getTimetableFromBuffer } from "../parser";
 
 export class TimetableEntry {
   /** Includes the `.pdf` extension. */
@@ -30,10 +30,10 @@ export class TimetableEntry {
   /**
    * @returns The timetable's PDF as a buffer.
    */
-  async getBuffer () {
+  async getBuffer (): Promise<ArrayBuffer> {
     const response = await fetch(this.link);
     const array = await response.arrayBuffer();
-    return Buffer.from(array);
+    return array
   }
 
   /**

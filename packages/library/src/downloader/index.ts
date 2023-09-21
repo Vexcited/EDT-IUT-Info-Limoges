@@ -1,5 +1,5 @@
-import { FTP_ENDPOINT_URL, YEARS } from "./constants.js";
-import { TimetableEntry } from "./entry.js";
+import { FTP_ENDPOINT_URL, YEARS } from "./constants";
+import { TimetableEntry } from "./entry";
 
 export const getTimetableEntries = async (from: YEARS): Promise<TimetableEntry[]> => {
   if (!Object.values(YEARS).includes(from)) {

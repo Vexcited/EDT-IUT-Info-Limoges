@@ -1,11 +1,11 @@
-import type { Page } from "../converter/pdfparser.js";
+import type { Page } from "../converter/types";
 
-import { type TimetableHeader, getTimetableHeader } from "./header.js";
-import { getTimetableTimings } from "./timings.js";
-import { getTimetableGroups } from "./groups.js";
-import { getTimetableLessons, TimetableLesson } from "./lessons.js";
+import { type TimetableHeader, getTimetableHeader } from "./header";
+import { getTimetableTimings } from "./timings";
+import { getTimetableGroups } from "./groups";
+import { getTimetableLessons, TimetableLesson } from "./lessons";
 
-import { getRawPDF } from "../utils/pdf.js";
+import { getRawPDF } from "../utils/pdf";
 
 export interface Timetable {
   header: TimetableHeader["data"];
@@ -24,7 +24,7 @@ export const getTimetable = (page: Page): Timetable => {
   };
 };
 
-export const getTimetableFromBuffer = async (pdf_buffer: Buffer): Promise<Timetable> => {
+export const getTimetableFromBuffer = async (pdf_buffer: ArrayBuffer): Promise<Timetable> => {
   const pdf_raw_data = await getRawPDF(pdf_buffer);
   const pdf = pdf_raw_data.Pages[0];
 

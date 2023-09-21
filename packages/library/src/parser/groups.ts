@@ -1,8 +1,8 @@
-import type { Page } from "../converter/pdfparser.js";
+import type { Page } from "../converter/types";
 
-import { type FillBounds, getFillBounds, getTextsInFillBounds } from "./bounds.js";
-import { COLORS, DAYS, SUBGROUPS } from "./constants.js";
-import { round } from "../utils/numbers.js";
+import { type FillBounds, getFillBounds, getTextsInFillBounds } from "./bounds";
+import { COLORS, DAYS, SUBGROUPS } from "./constants";
+import { round } from "../utils/numbers";
 
 export interface TimetableGroup {
   /**
