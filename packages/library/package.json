@@ -8,6 +8,13 @@
   "files": [
     "dist"
   ],
+  "keywords": [
+    "timetable",
+    "university",
+    "pdf",
+    "iut",
+    "France"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
