@@ -6,8 +6,10 @@
   "scripts": {
     "library:release": "pnpm --filter edt-iut-info-limoges run release",
     "library:test": "pnpm --filter edt-iut-info-limoges run test",
+    "library:build": "pnpm --filter edt-iut-info-limoges run build",
     "website:dev": "pnpm --filter edt-iut-info-limoges-website run dev",
-    "website:build": "pnpm --filter edt-iut-info-limoges-website run build"
+    "website:build": "pnpm --filter edt-iut-info-limoges-website run build",
+    "full:build": "pnpm run library:build && pnpm run website:build"
   },
   "private": true,
   "license": "MIT",
