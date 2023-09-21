@@ -15,17 +15,10 @@
     "France"
   ],
   "main": "./dist/index.js",
-  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
   "scripts": {
     "release": "release-it",
-    "build": "rimraf dist && ncc build ./src/index.ts -o dist",
+    "build": "rimraf dist && ncc build ./src/index.ts -o dist -m",
     "test": "jest"
   },
   "release-it": {

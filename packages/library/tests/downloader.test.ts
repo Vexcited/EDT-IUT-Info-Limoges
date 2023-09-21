@@ -1,6 +1,7 @@
 import { describe, test, expect } from "@jest/globals";
 
-import { YEARS, getTimetableEntries, getLatestTimetableEntry } from "../src";
+import { YEARS } from "../src/downloader/constants";
+import { getTimetableEntries, getLatestTimetableEntry } from "../src/downloader";
 import { FTP_ENDPOINT_URL } from "../src/downloader/constants";
 
 describe("downloader", () => {
