@@ -71,11 +71,11 @@ export const getTimetableLessons = (page: Page, header: TimetableHeader, timings
 
     const color = fill.oc.toLowerCase();
     // We only care about the colors that are in our COLORS object.
-    if (!Object.values(COLORS).includes(color)) continue;
-
+    if (![COLORS.CM, COLORS.TD, COLORS.TP, COLORS.SAE].includes(color)) continue;
+    
     const bounds = getFillBounds(fill);
-    const contained_texts = getTextsInFillBounds(page, bounds, 5);
-
+    const contained_texts = getTextsInFillBounds(page, bounds, 4, color === COLORS.CM ? 6 : 0);
+    
     const texts = contained_texts.map(text => decodeURIComponent(text.R[0].T));
 
     const group = groups[round(bounds.start_y)];
@@ -93,7 +93,7 @@ export const getTimetableLessons = (page: Page, header: TimetableHeader, timings
 
     switch (color) {
       case COLORS.CM: {
-        const type = texts.shift()?.split(" -")[0];
+        const [type, ...text_from_after_separator] = texts.shift()!.split(" -");
         const room = texts.pop();
         
         let teacher = texts.pop();
@@ -104,7 +104,7 @@ export const getTimetableLessons = (page: Page, header: TimetableHeader, timings
 
         if (!type || !teacher || !room) continue;
 
-        const lesson_name = texts.map(text => text.trim()).join(" ");
+        const lesson_name = [...text_from_after_separator, ...texts].map(text => text.trim()).filter(Boolean).join(" ");
         const lesson: TimetableLessonCM = {
           type: LESSON_TYPES.CM,
           start_date, end_date,
