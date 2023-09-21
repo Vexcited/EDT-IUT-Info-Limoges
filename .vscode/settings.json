@@ -3,11 +3,17 @@
   "cSpell.words": [
     "Boxset",
     "Boxsets",
+    "charsets",
+    "cidmaps",
+    "cmap",
+    "glyphlist",
+    "jbig",
     "jerror",
     "jinfo",
     "luxon",
     "parserstream",
     "pdfconst",
+    "pdffont",
     "pdfparser"
   ]
 }
