@@ -4,7 +4,6 @@
   "description": "Emploi du temps de l'IUT Informatique de Limoges",
   "license": "MIT",
   "private": false,
-  "type": "module",
   "files": [
     "dist"
   ],
@@ -26,8 +25,8 @@
   },
   "scripts": {
     "release": "release-it",
-    "build": "rimraf dist && tsc",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "build": "rimraf dist && ncc build ./src/index.ts -o dist",
+    "test": "jest"
   },
   "release-it": {
     "hooks": {
@@ -56,7 +55,9 @@
     "@types/jest": "^29.5.5",
     "@types/luxon": "^3.3.2",
     "@types/node": "^20.6.3",
+    "@vercel/ncc": "^0.38.0",
     "jest": "^29.7.0",
+    "pdfjs-dist": "^3.10.111",
     "release-it": "^16.1.5",
     "rimraf": "^5.0.1",
     "ts-jest": "^29.1.1",
