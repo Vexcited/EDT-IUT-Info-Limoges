@@ -3,6 +3,12 @@
   "workspaces": [
     "packages/*"
   ],
+  "scripts": {
+    "library:release": "pnpm --filter edt-iut-info-limoges run release",
+    "library:test": "pnpm --filter edt-iut-info-limoges run test",
+    "website:dev": "pnpm --filter edt-iut-info-limoges-website run dev",
+    "website:build": "pnpm --filter edt-iut-info-limoges-website run build"
+  },
   "private": true,
   "license": "MIT",
   "author": "Mikkel RINGAUD <mikkel@milescode.dev> (https://github.com/Vexcited)",
