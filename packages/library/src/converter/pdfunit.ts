@@ -1,11 +1,7 @@
-import {kColors} from "./pdfconst.js";
-
-const dpi = 96.0;
-const gridXPerInch = 4.0;
-const gridYPerInch = 4.0;
+import { kColors } from "./pdfconst";
 
 export default class PDFUnit {
-    static toFixedFloat(fNum) {
+    static toFixedFloat(fNum: number) {
       return parseFloat(fNum.toFixed(3));
     }
 
@@ -13,42 +9,20 @@ export default class PDFUnit {
       return kColors.length;
     }
 
-    static toPixelX(formX) {
-      return formX;
-    }
-
-    static toPixelY(formY) {
-      return formY;
-    }
-
-    static pointToPixel(point) {// Point unit (1/72 an inch) to pixel units
-      return point;  
-    }
-
-    static getColorByIndex(clrId) {
+    static getColorByIndex(clrId: number): string {
         return kColors[clrId];
     }
 
-    static toFormPoint(viewportX, viewportY) {
+    static toFormPoint(viewportX: number, viewportY: number): [viewportX: number, viewportY: number] {
       return [viewportX, viewportY];
     }
 
-    static toFormX(viewportX) {
-      return viewportX;
+    static findColorIndex (color: string): number {
+      if (color.length === 4) color += "000";
+      return kColors.indexOf(color);
     }
 
-    static toFormY(viewportY) {
-      return viewportY;
-    }
-
-    static findColorIndex(color) {
-        if (color.length === 4)
-            color += "000";
-        //MQZ. 07/29/2013: if color is not in dictionary, just return -1. The caller (pdffont, pdffill) will set the actual color
-        return kColors.indexOf(color);
-    }
-
-    static dateToIso8601(date) {
+    static dateToIso8601(date: string) {
         // PDF spec p.160
         if (date.slice(0, 2) === 'D:') { // D: prefix is optional
             date = date.slice(2);
