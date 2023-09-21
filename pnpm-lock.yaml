@@ -51,7 +51,7 @@ importers:
         specifier: ^0.8.3
         version: 0.8.3(solid-js@1.7.12)
       edt-iut-info-limoges:
-        specifier: workspace:*
+        specifier: '*'
         version: link:../library
       solid-js:
         specifier: ^1.7.12

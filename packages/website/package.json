@@ -15,7 +15,7 @@
   "dependencies": {
     "@solidjs/meta": "^0.28.6",
     "@solidjs/router": "^0.8.3",
-    "edt-iut-info-limoges": "workspace:*",
+    "edt-iut-info-limoges": "*",
     "solid-js": "^1.7.12",
     "solid-start": "^0.3.5"
   }
