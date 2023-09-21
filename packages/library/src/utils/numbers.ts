@@ -4,6 +4,6 @@
  * @returns Rounded value.
  */
 export const round = (value: number, decimals = 2): number => {
-  const multiplier = Math.pow(10, 2);
+  const multiplier = Math.pow(10, decimals);
   return Math.round(value * multiplier) / multiplier;
 };
