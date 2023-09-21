@@ -1,4 +1,4 @@
-import { Transform, Readable } from "web-streams-polyfill/ponyfill";
+import { Transform, Readable } from "node:stream";
 
 export class ParserStream extends Transform {
     static createContentStream(jsonObj) {
