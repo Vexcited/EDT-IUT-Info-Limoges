@@ -93,7 +93,10 @@ export const getTimetableLessons = (page: Page, header: TimetableHeader, timings
 
     switch (color) {
       case COLORS.CM: {
-        const [type, ...text_from_after_separator] = texts.shift()!.split(" -");
+        let [type, ...text_from_after_separator] = texts.shift()!.split(" -");
+        // Remove duplicate types.
+        type = [...new Set(type.split(" "))].join(" ");
+        
         const room = texts.pop();
         
         let teacher = texts.pop();
