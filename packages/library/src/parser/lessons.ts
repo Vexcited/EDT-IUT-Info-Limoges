@@ -1,5 +1,5 @@
 import type { DateTime } from "luxon";
-import type { Page } from "../converter/types";
+import type { Page } from "../converter";
 import type { TimetableGroup } from "./groups";
 import type { TimetableHeader } from "./header";
 

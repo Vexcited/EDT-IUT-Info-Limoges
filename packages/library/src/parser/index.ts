@@ -1,4 +1,4 @@
-import type { Page } from "../converter/types";
+import type { Page } from "../converter";
 
 import { type TimetableHeader, getTimetableHeader } from "./header";
 import { getTimetableTimings } from "./timings";

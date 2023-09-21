@@ -1,4 +1,4 @@
-import type { Fill, Page, Text } from "../converter/types";
+import type { Fill, Page, Text } from "../converter";
 
 export interface FillBounds {
   start_x: number;
