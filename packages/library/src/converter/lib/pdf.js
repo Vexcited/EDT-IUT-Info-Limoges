@@ -11,6 +11,7 @@ function createScratchCanvas(width, height) { return new PDFCanvas({}, width, he
 
 const PDFJS = {};
 const globalScope = {console};
+global.nodeUtil = nodeUtil;
 
 const { code } = await import("./mozilla_pdf.js");
 eval(code);
