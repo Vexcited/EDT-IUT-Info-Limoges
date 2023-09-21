@@ -10,7 +10,7 @@ export default defineConfig({
     solid({
       ssr: false,
       // If we're building using Vercel, use the Vercel adapter.
-      adapter: vercel({ edge: true }) //process.env.VERCEL ? vercel() : node()
+      adapter: process.env.VERCEL ? vercel({ edge: false }) : node()
     })
   ]
 });
