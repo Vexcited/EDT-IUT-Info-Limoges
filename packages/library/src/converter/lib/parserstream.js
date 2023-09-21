@@ -1,5 +1,4 @@
-import { Transform, Readable } from "stream";
-import fs from "fs";
+import { Transform, Readable } from "web-streams-polyfill/ponyfill";
 
 export class ParserStream extends Transform {
     static createContentStream(jsonObj) {
@@ -7,13 +6,6 @@ export class ParserStream extends Transform {
 		rStream.push(jsonObj);
 		rStream.push(null);
 		return rStream;
-	}
-
-    static createOutputStream(outputPath, resolve, reject) {
-		const outputStream = fs.createWriteStream(outputPath);
-		outputStream.on('finish', () => resolve(outputPath));
-		outputStream.on('error', err => reject(err) );
-		return outputStream;
 	}
 
     #pdfParser = null;

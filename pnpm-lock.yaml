@@ -13,6 +13,9 @@ importers:
       luxon:
         specifier: ^3.4.3
         version: 3.4.3
+      web-streams-polyfill:
+        specifier: ^3.2.1
+        version: 3.2.1
     devDependencies:
       '@jest/globals':
         specifier: ^29.7.0
@@ -6805,7 +6808,6 @@ packages:
   /web-streams-polyfill@3.2.1:
     resolution: {integrity: sha512-e0MO3wdXWKrLbL0DgGnUV7WHVuw9OUvL4hjgnPkIeEvESk74gAITi5G606JtZPp39cd8HA9VQzCIvA49LpPN5Q==}
     engines: {node: '>= 8'}
-    dev: true
 
   /webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}

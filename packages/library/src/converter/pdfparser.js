@@ -1,6 +1,4 @@
-import fs from "fs";
 import nodeUtil from "util";
-import { readFile } from "fs/promises";
 import { EventEmitter } from "events";
 
 import PDFJS from "./lib/pdf.js";
@@ -104,29 +102,6 @@ export default class PDFParser extends EventEmitter { // inherit from event emit
     createParserStream() {
         return new ParserStream(this, {objectMode: true, bufferSize: 64 * 1024});
     }
-
-	async loadPDF(pdfFilePath, verbosity) {
-		nodeUtil.verbosity(verbosity || 0);
-		nodeUtil.p2jinfo("about to load PDF file " + pdfFilePath);
-
-		this.#pdfFilePath = pdfFilePath;
-
-		try {
-            this.#pdfFileMTime = fs.statSync(pdfFilePath).mtimeMs;
-
-            if (this.#processBinaryCache())
-                return;
-        
-            PDFParser.#binBuffer[this.binBufferKey] = await readFile(pdfFilePath);
-            nodeUtil.p2jinfo(`Load OK: ${pdfFilePath}`);
-            this.#startParsingPDF();
-        }
-        catch(err) {
-            nodeUtil.p2jerror(`Load Failed: ${pdfFilePath} - ${err}`);
-            this.emit("pdfParser_dataError", err);
-        }
-	}
-
 	// Introduce a way to directly process buffers without the need to write it to a temporary file
 	parseBuffer(pdfBuffer) {
 		this.#startParsingPDF(pdfBuffer);

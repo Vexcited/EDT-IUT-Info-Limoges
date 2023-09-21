@@ -65,6 +65,7 @@
   "author": "Mikkel RINGAUD <mikkel@milescode.dev> (https://github.com/Vexcited)",
   "repository": "github:Vexcited/EDT-IUT-Info-Limoges",
   "dependencies": {
-    "luxon": "^3.4.3"
+    "luxon": "^3.4.3",
+    "web-streams-polyfill": "^3.2.1"
   }
 }
