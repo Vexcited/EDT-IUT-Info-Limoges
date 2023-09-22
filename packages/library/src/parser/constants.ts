@@ -17,7 +17,7 @@ export const COLORS = {
  * Since we can't really find the day index from the PDF,
  * we just hardcode it in this enumeration.
  * 
- * Should be used with a **+2** offset in `luxon.DateTime`.
+ * Should be used with a **+1** offset in `luxon.DateTime` since 0 means Sunday for them.
  */
 export const DAYS = {
   LUNDI: 0,
