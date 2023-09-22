@@ -45,8 +45,6 @@ export const getTimetableGroups = (page: Page, header_bounds: FillBounds): Recor
       return isGroupColor && startsAtDayEndXBound && isWithinDayBounds;
     });
 
-    
-
     for (const fill of groups) {
       const bounds = getFillBounds(fill);
       const texts = getTextsInFillBounds(page, bounds);
@@ -57,8 +55,8 @@ export const getTimetableGroups = (page: Page, header_bounds: FillBounds): Recor
       const main_group_name = parseInt(decodeURIComponent(group_text).trim()[1]);
 
       // We round since we're doing the difference between two floats (may be incorrect)
-      const startYForGroupA = round(bounds.start_y).toString();
-      const startYForGroupB = round(fill.y + (fill.h / 2)).toString();
+      const startYForGroupA = round(bounds.start_y, 4).toString();
+      const startYForGroupB = round(fill.y + (fill.h / 2), 4).toString();
 
       const group: Omit<TimetableGroup, "sub"> = {
         main: main_group_name,

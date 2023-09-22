@@ -78,7 +78,7 @@ export const getTimetableLessons = (page: Page, header: TimetableHeader, timings
     
     const texts = contained_texts.map(text => decodeURIComponent(text.R[0].T));
 
-    const group = groups[round(bounds.start_y)];
+    const group = groups[round(bounds.start_y, 4)];
     if (!group) continue;
 
     const start_time = timings[bounds.start_x];
