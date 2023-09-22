@@ -300,10 +300,6 @@ var FontFace = (function FontFaceClosure() {
 
       FontLoader.insertRule(rule);
 
-      if (PDFJS.pdfBug && 'FontInspector' in globalScope &&
-          globalScope['FontInspector'].enabled)
-        globalScope['FontInspector'].fontAdded(this, url);
-
       return rule;
     },
     getPathGenerator: function (objs, character) {

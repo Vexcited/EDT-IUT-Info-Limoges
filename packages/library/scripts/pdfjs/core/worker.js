@@ -21,7 +21,7 @@
 'use strict';
 
 //MQZ. Oct.11.2012. Add Worker's postMessage API
-globalScope.postMessage = function WorkerTransport_postMessage(obj) {
+var __postMessage = function WorkerTransport_postMessage(obj) {
 //  log("Inside globalScope.postMessage:" + JSON.stringify(obj));
 };
 
@@ -400,7 +400,7 @@ var consoleTimer = {};
 var workerConsole = {
   log: function log() {
     var args = Array.prototype.slice.call(arguments);
-    globalScope.postMessage({
+    __postMessage({
       action: 'console_log',
       data: args
     });
@@ -408,7 +408,7 @@ var workerConsole = {
 
   error: function error() {
     var args = Array.prototype.slice.call(arguments);
-    globalScope.postMessage({
+    __postMessage({
       action: 'console_error',
       data: args
     });
@@ -430,13 +430,13 @@ var workerConsole = {
 
 // Worker thread?
 if (typeof window === 'undefined') {
-  globalScope.console = workerConsole;
+  // globalScope.console = workerConsole;
 
   // Add a logger so we can pass warnings on to the main thread, errors will
   // throw an exception which will be forwarded on automatically.
   PDFJS.LogManager.addLogger({
     warn: function(msg) {
-      globalScope.postMessage({
+      __postMessage({
         action: '_warn',
         data: msg
       });

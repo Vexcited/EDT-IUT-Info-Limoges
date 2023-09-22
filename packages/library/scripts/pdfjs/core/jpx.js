@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/* globals error, globalScope, warn */
+/* globals error, warn */
 
 'use strict';
 
@@ -269,7 +269,7 @@ var JpxImage = (function JpxImageClosure() {
                   cod.terminationOnEachCodingPass ||
                   cod.verticalyStripe || cod.predictableTermination)
                 throw 'Unsupported COD options: ' +
-                  globalScope.JSON.stringify(cod);
+                  JSON.stringify(cod);
 
               if (context.mainHeader)
                 context.COD = cod;

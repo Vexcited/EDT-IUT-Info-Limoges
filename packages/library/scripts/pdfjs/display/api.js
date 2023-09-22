@@ -294,7 +294,7 @@ var PDFPageProxy = (function PDFPageProxyClosure() {
     this.pageInfo = pageInfo;
     this.transport = transport;
     this.stats = new StatTimer();
-    this.stats.enabled = !!globalScope.PDFJS.enableStats;
+    this.stats.enabled = false;
     this.commonObjs = transport.commonObjs;
     this.objs = new PDFObjects();
     this.receivingOperatorList  = false;
@@ -548,7 +548,7 @@ var WorkerTransport = (function WorkerTransportClosure() {
     // all requirements to run parts of pdf.js in a web worker.
     // Right now, the requirement is, that an Uint8Array is still an Uint8Array
     // as it arrives on the worker. Chrome added this with version 15.
-    if (!globalScope.PDFJS.disableWorker && typeof Worker !== 'undefined') {
+    if (typeof Worker !== 'undefined') {
       var workerSrc = PDFJS.workerSrc;
       if (!workerSrc) {
         error('No PDFJS.workerSrc specified');
@@ -570,8 +570,8 @@ var WorkerTransport = (function WorkerTransportClosure() {
             }
             this.setupMessageHandler(messageHandler);
             workerInitializedPromise.resolve();
-          } else {
-            globalScope.PDFJS.disableWorker = true;
+          }
+          else {
             this.loadFakeWorkerFiles().then(function() {
               this.setupFakeWorker();
               workerInitializedPromise.resolve();
@@ -596,7 +596,6 @@ var WorkerTransport = (function WorkerTransportClosure() {
     }
     // Either workers are disabled, not supported or have thrown an exception.
     // Thus, we fallback to a faked worker.
-    globalScope.PDFJS.disableWorker = true;
     this.loadFakeWorkerFiles().then(function() {
       this.setupFakeWorker();
       workerInitializedPromise.resolve();
@@ -617,23 +616,9 @@ var WorkerTransport = (function WorkerTransportClosure() {
     loadFakeWorkerFiles: function WorkerTransport_loadFakeWorkerFiles() {
       if (!PDFJS.fakeWorkerFilesLoadedPromise) {
         PDFJS.fakeWorkerFilesLoadedPromise = new Promise();
-        // In the developer build load worker_loader which in turn loads all the
-        // other files and resolves the promise. In production only the
-        // pdf.worker.js file is needed.
-//#if !PRODUCTION
-//MQZ Dec.03.2013 Disable loadScript
-      if (globalScope.PDFJS.disableWorker) {
-          PDFJS.fakeWorkerFilesLoadedPromise.resolve();
+        PDFJS.fakeWorkerFilesLoadedPromise.resolve();
       }
-      else {
-        Util.loadScript(PDFJS.workerSrc);
-      }
-//#else
-//      Util.loadScript(PDFJS.workerSrc, function() {
-//        PDFJS.fakeWorkerFilesLoadedPromise.resolve();
-//      });
-//#endif
-      }
+
       return PDFJS.fakeWorkerFilesLoadedPromise;
     },
 
@@ -1098,12 +1083,6 @@ var InternalRenderTask = (function InternalRenderTaskClosure() {
 
       if (this.cancelled) {
         return;
-      }
-      if (PDFJS.pdfBug && 'StepperManager' in globalScope &&
-          globalScope.StepperManager.enabled) {
-        this.stepper = globalScope.StepperManager.create(this.pageNumber - 1);
-        this.stepper.init(this.operatorList);
-        this.stepper.nextBreakPoint = this.stepper.getNextBreakPoint();
       }
 
       var params = this.params;

@@ -39,15 +39,6 @@ var TextRenderingMode = {
   ADD_TO_PATH_FLAG: 4
 };
 
-// The global PDFJS object exposes the API
-// In production, it will be declared outside a global wrapper
-// In development, it will be declared here
-if (!globalScope.PDFJS) {
-  globalScope.PDFJS = {};
-}
-
-globalScope.PDFJS.pdfBug = false;
-
 // All the possible operations for an operator list.
 var OPS = PDFJS.OPS = {
   // Intentionally start from 1 so it is easy to spot bad operators that will be
@@ -148,14 +139,7 @@ var NO_OPS_RANGE = PDFJS.NO_OPS_RANGE = [78, 79, 80, 81]; //range pairs, all ops
 
 // Use only for debugging purposes. This should not be used in any code that is
 // in mozilla master.
-var log = (function() {
-  if ('console' in globalScope && 'log' in globalScope['console']) {
-    return globalScope['console']['log'].bind(globalScope['console']);
-  } else {
-    return function nop() {
-    };
-  }
-})();
+var log = () => {}
 
 // A notice for devs that will not trigger the fallback UI.  These are good
 // for things that are helpful to devs, such as warning that Workers were
@@ -1128,17 +1112,9 @@ function MessageHandler(name, comObj) {
   ah['console_log'] = [function ahConsoleLog(data) {
     log.apply(null, data);
   }];
-  // If there's no console available, console_error in the
-  // action handler will do nothing.
-  if ('console' in globalScope) {
-    ah['console_error'] = [function ahConsoleError(data) {
-      globalScope['console'].error.apply(null, data);
-    }];
-  } else {
-    ah['console_error'] = [function ahConsoleError(data) {
-      log.apply(null, data);
-    }];
-  }
+  ah['console_error'] = [function ahConsoleError(data) {
+    log.apply(null, data);
+  }];
   ah['_warn'] = [function ah_Warn(data) {
     warn(data);
   }];
@@ -1171,7 +1147,7 @@ function MessageHandler(name, comObj) {
 				action[0].call(action[1], data.data);
 			}
 			} else {
-				error('Unkown action from worker: ' + data.action);
+				error('Unknown action from worker: ' + data.action);
 			}
 		};
 	}
