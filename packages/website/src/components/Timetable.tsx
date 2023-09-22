@@ -47,10 +47,9 @@ const Timetable: Component<ITimetable> = (props) => {
     <div>
       <For each={lessons_of_today()}>
         {lesson => (
-          <div>
-            {lesson.start_date}
-            <p>{new Date(lesson.start_date).getHours()}:{new Date(lesson.start_date).getMinutes().toString().padStart(2, "0")}</p>
-            <p>{lesson.type}: {lesson.content.room}</p>
+          <div class="p-2">
+            {new Date(lesson.start_date).toLocaleString("fr", { weekday: "short", minute: "2-digit", hour: "2-digit", day: "numeric", month: "long" })}
+            <p>{lesson.type}: {lesson.content.room} avec {lesson.content.teacher}</p>
           </div>
         )}
       </For>
