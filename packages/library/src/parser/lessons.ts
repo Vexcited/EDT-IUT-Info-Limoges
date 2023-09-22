@@ -10,9 +10,6 @@ import { COLORS, LESSON_TYPES, SUBGROUPS } from "./constants";
 export interface TimetableLessonCM {
   type: LESSON_TYPES.CM;
 
-  start_date: DateTime;
-  end_date: DateTime;
-
   content: {
     type: string;
     lesson: string;
@@ -23,9 +20,6 @@ export interface TimetableLessonCM {
 
 export interface TimetableLessonTP {
   type: LESSON_TYPES.TP;
-
-  start_date: DateTime;
-  end_date: DateTime;
 
   group: {
     main: number;
@@ -42,9 +36,6 @@ export interface TimetableLessonTP {
 export interface TimetableLessonTD {
   type: LESSON_TYPES.TD;
 
-  start_date: DateTime;
-  end_date: DateTime;
-
   group: {
     main: number;
   }
@@ -56,7 +47,10 @@ export interface TimetableLessonTD {
   }
 }
 
-export type TimetableLesson = (
+export type TimetableLesson = {
+  start_date: DateTime;
+  end_date: DateTime;
+} & (
   | TimetableLessonCM
   | TimetableLessonTP
   | TimetableLessonTD
@@ -108,7 +102,7 @@ export const getTimetableLessons = (page: Page, header: TimetableHeader, timings
         if (!type || !teacher || !room) continue;
 
         const lesson_name = [...text_from_after_separator, ...texts].map(text => text.trim()).filter(Boolean).join(" ");
-        const lesson: TimetableLessonCM = {
+        const lesson: TimetableLesson = {
           type: LESSON_TYPES.CM,
           start_date, end_date,
           content: { type, lesson: lesson_name, teacher, room }
@@ -121,7 +115,7 @@ export const getTimetableLessons = (page: Page, header: TimetableHeader, timings
       case COLORS.TP: {
         const [type, teacher, room] = texts[0].split(" - ");
 
-        const lesson: TimetableLessonTP = {
+        const lesson: TimetableLesson = {
           type: LESSON_TYPES.TP,
           start_date, end_date,
 
@@ -140,7 +134,7 @@ export const getTimetableLessons = (page: Page, header: TimetableHeader, timings
       case COLORS.TD: {
         const [type, teacher, room] = texts[0].split(" - ");
 
-        const lesson: TimetableLessonTD = {
+        const lesson: TimetableLesson = {
           type: LESSON_TYPES.TD,
           start_date, end_date,
 
