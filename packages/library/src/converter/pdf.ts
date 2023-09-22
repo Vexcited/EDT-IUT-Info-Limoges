@@ -4,11 +4,6 @@ import PDFCanvas from "./pdfcanvas";
 
 function createScratchCanvas(width: number, height: number) { return new PDFCanvas({}, width, height); }
 
-// Run the PDF.js library code.
-import { code as PDF_JS_CODE } from "./pdfjs_bundle";
-const PDFJS = {};
-eval(PDF_JS_CODE);
-
 class PDFPageParser {
     //static
     static RenderingStates = {
@@ -123,6 +118,12 @@ class PDFPageParser {
     }
 }
 
+// empty object on import,
+// will be populated by the PDFJS library code
+// after the first 
+const PDFJS = {};
+let PDFJSLoaded = false;
+
 export default class PDFJSClass extends EventEmitter {
   pdfDocument = null;
   pages = null;
@@ -153,16 +154,23 @@ export default class PDFJSClass extends EventEmitter {
 
   // @ts-expect-error
   public parsePDFData(arrayBuffer, password) {
-      this.pdfDocument = null;
+    this.pdfDocument = null;
 
-      const parameters = {password: password, data: arrayBuffer};
+    // instantiate the PDFJS object only when needed.
+    if (!PDFJSLoaded) {
+      const { code } = require("./pdfjs_bundle");
+      eval(code);
+      PDFJSLoaded = true;
+    }
+
+    const parameters = {password: password, data: arrayBuffer};
+    // @ts-expect-error
+    PDFJS.getDocument(parameters).then(
       // @ts-expect-error
-      PDFJS.getDocument(parameters).then(
+        pdfDocument => this.load(pdfDocument),
         // @ts-expect-error
-          pdfDocument => this.load(pdfDocument),
-          // @ts-expect-error
-          error => this.raiseErrorEvent(error)
-      );
+        error => this.raiseErrorEvent(error)
+    );
   };
 
   // @ts-expect-error
@@ -207,14 +215,10 @@ export default class PDFJSClass extends EventEmitter {
     // @ts-expect-error
 			pagePromises.push(this.pdfDocument.getPage(i));
 
-      // @ts-expect-error
-		const pagesPromise = PDFJS.Promise.all(pagePromises);
-
+		const pagesPromise = Promise.all(pagePromises);
     
 		return pagesPromise.then(
-      // @ts-expect-error
 			promisedPages => this.parsePage(promisedPages, 0, 1.5),
-      // @ts-expect-error
 			error => this.raiseErrorEvent("pagesPromise error: " + error)
 		);
 	}
