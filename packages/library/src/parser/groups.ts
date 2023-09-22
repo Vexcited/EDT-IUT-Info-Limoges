@@ -36,11 +36,12 @@ export const getTimetableGroups = (page: Page, header_bounds: FillBounds): Recor
     if (!raw_day) continue;
 
     const day_index = DAYS[decodeURIComponent(raw_day).trim() as keyof typeof DAYS];
-
+    if (typeof day_index === "undefined") continue;
+    
     const groups = page.Fills.filter(fill => {
       const isGroupColor = fill.oc === COLORS.RULERS;
       const startsAtDayEndXBound = fill.x === bounds.end_x;
-      const isWithinDayBounds = fill.y >= bounds.start_y && fill.y <= bounds.end_y;
+      const isWithinDayBounds = fill.y >= bounds.start_y && fill.y < bounds.end_y;
     
       return isGroupColor && startsAtDayEndXBound && isWithinDayBounds;
     });
@@ -53,6 +54,7 @@ export const getTimetableGroups = (page: Page, header_bounds: FillBounds): Recor
       if (!group_text) continue;
 
       const main_group_name = parseInt(decodeURIComponent(group_text).trim()[1]);
+      if (isNaN(main_group_name)) continue;
 
       // We round since we're doing the difference between two floats (may be incorrect)
       const startYForGroupA = round(bounds.start_y, 4).toString();
