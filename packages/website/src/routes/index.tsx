@@ -14,7 +14,7 @@ const Page: Component = () => {
   const [latest, setLatest] = createSignal<ITimetable | null>(null);
 
   onMount(async () => {
-    const response = await fetch("/api/latest/" + state.year);
+    const response = await fetch("/api/A1/3");
     const json = await response.json();
     setLatest(json.data as ITimetable);
   });
