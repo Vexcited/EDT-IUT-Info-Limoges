@@ -7,7 +7,8 @@ function createScratchCanvas(width: number, height: number) { return new PDFCanv
 // We create the object so that PDF.js' eval code can access and modify it.
 const PDFJS = {};
 // We should keep this in the global scope to make it available for PDF.js
-const globalScope = { console };
+// @ts-expect-error
+const globalScope = global.globalScope = { console };
 
 // Run the PDF.js library code.
 import { code as PDF_JS_CODE } from "./pdfjs_bundle";
