@@ -14,11 +14,17 @@
     "iut",
     "France"
   ],
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "exports": {
+    ".": {
+      "require": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.js"
+    }
+  },
   "scripts": {
     "release": "release-it",
-    "build": "rimraf dist && ncc build ./src/index.ts -o dist -m",
+    "build": "node ./scripts/make_pdfjs_bundle.js && rimraf dist && tsc -p tsconfig.json && tsc -p tsconfig.esm.json",
     "test": "jest"
   },
   "release-it": {

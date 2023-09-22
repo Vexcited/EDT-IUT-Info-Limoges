@@ -4,13 +4,14 @@
     "esModuleInterop": true,
     
     "moduleResolution": "Node",
+    "module": "CommonJS",
     "target": "ES2015",
 
     "strict": true,
     "allowJs": true,
 
     "rootDir": "src",
-    "outDir": "dist",
+    "outDir": "./dist/cjs",
     "declaration": true
   },
 
