@@ -1,42 +1,6 @@
 import { EventEmitter } from "node:events";
-import fs from "node:fs";
 
 import PDFCanvas from "./pdfcanvas";
-
-const files = [
-  'shared/util.js',
-  'shared/colorspace.js',
-  'shared/pattern.js',
-  'shared/function.js',
-  'shared/annotation.js',
-
-  'core/core.js',
-  'core/obj.js',
-  'core/charsets.js',
-  'core/crypto.js',
-  'core/evaluator.js',
-  'core/fonts.js',
-  'core/font_renderer.js',
-  'core/glyphlist.js',
-  'core/image.js',
-  'core/metrics.js',
-  'core/parser.js',
-  'core/stream.js',
-  'core/worker.js',
-  'core/jpx.js',
-  'core/jbig2.js',
-  'core/bidi.js',
-  'core/jpg.js',
-  'core/chunked_stream.js',
-  'core/pdf_manager.js',
-  'core/cmap.js',
-  'core/cidmaps.js',
-
-  'display/canvas.js',
-  'display/font_loader.js',
-  'display/metadata.js',
-  'display/api.js'
-];
 
 function createScratchCanvas(width: number, height: number) { return new PDFCanvas({}, width, height); }
 
@@ -45,13 +9,8 @@ const PDFJS = {};
 // We should keep this in the global scope to make it available for PDF.js
 const globalScope = { console };
 
-let PDF_JS_CODE = "";
-for (let i = 0; i < files.length; i++) {
-  const path = __dirname + "/pdfjs/" + files[i];
-  PDF_JS_CODE += fs.readFileSync(path, "utf8");
-}
-
 // Run the PDF.js library code.
+import { code as PDF_JS_CODE } from "./pdfjs_bundle";
 eval(PDF_JS_CODE);
 
 class PDFPageParser {
