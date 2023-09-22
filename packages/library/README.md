@@ -26,10 +26,6 @@ TypeScript types are included in this package.
 
 ## Examples
 
-> Please note that this package uses ESM. You will need to use a version of Node.js that supports it.
->
-> Don't forget to have `"type": "module"` to your `package.json` file to enable ESM.
-
 ### Get available timetables for a specified year
 
 > Here, we'll use year `A1`.
