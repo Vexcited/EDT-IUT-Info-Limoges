@@ -10,11 +10,14 @@
     "solid-start-node": "^0.3.5",
     "solid-start-vercel": "^0.3.5",
     "typescript": "^5.0.0",
+    "unocss": "^0.56.1",
     "vite": "^4.4.9"
   },
   "dependencies": {
+    "@fontsource/poppins": "^5.0.8",
     "@solidjs/meta": "^0.28.6",
     "@solidjs/router": "^0.8.3",
+    "@unocss/reset": "^0.56.1",
     "edt-iut-info-limoges": "*",
     "solid-js": "^1.7.12",
     "solid-start": "^0.3.5"
