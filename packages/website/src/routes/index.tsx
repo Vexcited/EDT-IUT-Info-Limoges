@@ -1,26 +1,36 @@
-import { type Component, onMount, createSignal } from "solid-js";
+import { type Component, onMount, createSignal, Show } from "solid-js";
 import { createStore } from "solid-js/store";
 
-import type { Timetable } from "edt-iut-info-limoges"
+import type { ITimetable } from "~/types/api";
+import Timetable from "~/components/Timetable";
 
 const Page: Component = () => {
-  const [state, setState] = createStore({
+  const [state] = createStore({
     year: "A1",
     mainGroup: 1,
     subGroup: 0,
   });
 
-  const [latest, setLatest] = createSignal<Timetable | null>(null);
+  const [latest, setLatest] = createSignal<ITimetable | null>(null);
 
   onMount(async () => {
     const response = await fetch("/api/latest/" + state.year);
     const json = await response.json();
-    setLatest(json.data as Timetable);
+    setLatest(json.data as ITimetable);
   });
 
   return (
-    <div>
+    <div class="bg-white">
       <h1>Hello! You're in {state.year}, in G{state.mainGroup}{state.subGroup === 0 ? "A" : "B"}</h1>
+      <Show when={latest()}>
+        {timetable => (
+          <main>
+            <h2>Displaying timetable for week {timetable().header.week_number}.</h2>
+
+            <Timetable {...timetable()} />
+          </main>
+        )}
+      </Show>
     </div>
   );
 };
