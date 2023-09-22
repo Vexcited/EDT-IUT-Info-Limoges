@@ -47,6 +47,32 @@ export interface TimetableLessonTD {
   }
 }
 
+export interface TimetableLessonSAE {
+  type: LESSON_TYPES.SAE;
+
+  /** When `undefined`, it's like a CM, everyone is in there. */
+  group: {
+    main: number;
+  }
+
+  content: {
+    type: string;
+    teacher: string;
+    room: string;
+    lesson?: string;
+  }
+}
+
+export interface TimetableLessonOTHER {
+  type: LESSON_TYPES.OTHER;
+
+  content: {
+    description: string;
+    teacher: string;
+    room: string;
+  }
+}
+
 export type TimetableLesson = {
   start_date: DateTime;
   end_date: DateTime;
@@ -54,6 +80,8 @@ export type TimetableLesson = {
   | TimetableLessonCM
   | TimetableLessonTP
   | TimetableLessonTD
+  | TimetableLessonSAE
+  | TimetableLessonOTHER
 );
 
 export const getTimetableLessons = (page: Page, header: TimetableHeader, timings: Record<string, string>, groups: Record<string, TimetableGroup>): TimetableLesson[] => {
@@ -144,6 +172,48 @@ export const getTimetableLessons = (page: Page, header: TimetableHeader, timings
 
           content: { type, teacher, room }
         };
+
+        lessons.push(lesson);
+        break;
+      }
+
+      case COLORS.SAE: {
+        let lesson: TimetableLesson;
+
+        // It's an SAE
+        if (texts.length === 1) {
+          const [type, teacher, room] = texts[0].split(" - ");
+  
+          lesson = {
+            type: LESSON_TYPES.SAE,
+            start_date, end_date,
+  
+            group: {
+              main: group.main
+            },
+  
+            content: { type, teacher, room }
+          };
+        }
+        else {
+          const room = texts.pop()?.trim();;
+        
+          let teacher = texts.pop()?.trim();
+          // It can happen that for some reason, the room is duplicated.
+          if (teacher === room) {
+            teacher = texts.pop()?.trim();
+          }
+
+          const description = texts.map(text => text.trim()).join(" ");
+          if (!teacher || !room || !description) continue;
+
+          lesson = {
+            type: LESSON_TYPES.OTHER,
+            start_date, end_date,
+
+            content: { room, teacher, description }
+          }
+        }
 
         lessons.push(lesson);
         break;

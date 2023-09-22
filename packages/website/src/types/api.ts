@@ -1,4 +1,4 @@
-import type { Timetable as ITimetableRaw, TimetableLessonCM, TimetableLessonTD, TimetableLessonTP } from "edt-iut-info-limoges";
+import type { Timetable as ITimetableRaw, TimetableLessonCM, TimetableLessonTD, TimetableLessonTP, TimetableLessonSAE, TimetableLessonOTHER } from "edt-iut-info-limoges";
 
 export type ITimetableHeader = Omit<ITimetableRaw["header"], "start_date" | "end_date"> & {
   start_date: string
@@ -12,6 +12,8 @@ export type ITimetableLesson = {
   | TimetableLessonCM
   | TimetableLessonTD
   | TimetableLessonTP
+  | TimetableLessonSAE
+  | TimetableLessonOTHER
 )
 
 export interface ITimetable {

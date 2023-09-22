@@ -1,27 +1,31 @@
-import { type Component, onMount, createSignal, Show } from "solid-js";
-import { createStore } from "solid-js/store";
+import { type Component, on, createSignal, Show, createEffect } from "solid-js";
 
 import type { ITimetable } from "~/types/api";
 import Timetable from "~/components/Timetable";
 
-import { preferences, setSubGroup, setMainGroup } from "~/stores/preferences";
+import { preferences, setSubGroup, setMainGroup, setYear } from "~/stores/preferences";
 
 const Page: Component = () => {
-  const [state] = createStore({
-    year: "A1",
-  });
+  const [timetableRAW, setTimetableRAW] = createSignal<ITimetable | null>(null);
 
-  const [latest, setLatest] = createSignal<ITimetable | null>(null);
-
-  onMount(async () => {
-    const response = await fetch("/api/A1/3");
+  createEffect(on(() => preferences.year, async (year) => {
+    const response = await fetch(`/api/A${year}/3`);
     const json = await response.json();
-    setLatest(json.data as ITimetable);
-  });
+    setTimetableRAW(json.data as ITimetable);
+  }));
 
   return (
     <div class="bg-white">
-      <h1>Hello! You're in {state.year}, in G{preferences.main_group}{preferences.sub_group === 0 ? "A" : "B"}</h1>
+      <h1>Bienvenue, étudiant en A{preferences.year}, dans la G{preferences.main_group}{preferences.sub_group === 0 ? "A" : "B"}</h1>
+
+      <select value={preferences.year} onChange={(evt) => {
+        const value = parseInt(evt.currentTarget.value);
+        setYear(value);
+      }}>
+        <option value="1">A1</option>
+        <option value="2">A2</option>
+        <option value="3">A3</option>
+      </select>
 
       <input type="number" value={preferences.main_group} onInput={(evt) => {
         const value = parseInt(evt.currentTarget.value);
@@ -42,7 +46,7 @@ const Page: Component = () => {
         <option value={1}>B</option>
       </select>
 
-      <Show when={latest()}>
+      <Show when={timetableRAW()}>
         {timetable => (
           <main>
             <h2>Displaying timetable for week {timetable().header.week_number}.</h2>

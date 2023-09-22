@@ -25,6 +25,7 @@ const Timetable: Component<ITimetable> = (props) => {
       // Since TD lessons are the whole group, we don't
       // need to check the subgroup.
       case "TD":
+      case "SAE":
         if (lesson.group.main === preferences.main_group) {
           isForUser = true;
         }
@@ -33,6 +34,7 @@ const Timetable: Component<ITimetable> = (props) => {
       // Since CM lessons are for the whole year, we don't
       // need to check the group and subgroup.
       case "CM":
+      case "OTHER":
         isForUser = true;
         break;
     }

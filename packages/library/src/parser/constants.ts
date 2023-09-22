@@ -40,5 +40,6 @@ export enum LESSON_TYPES {
   CM = "CM",
   TD = "TD",
   TP = "TP",
-  SAE = "SAE"
+  SAE = "SAE",
+  OTHER = "OTHER"
 }
