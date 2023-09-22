@@ -84,12 +84,12 @@ export const getTimetableLessons = (page: Page, header: TimetableHeader, timings
     const start_time = timings[bounds.start_x];
     if (!start_time) continue;
     const [start_hour, start_minutes] = start_time.split(":").map(n => parseInt(n));
-    const start_date = header.data.start_date.set({ hour: start_hour, minute: start_minutes, weekday: group.day_index + 1 });
+    const start_date = header.data.start_date.set({ hour: start_hour, minute: start_minutes, weekday: group.day_index + 2 });
 
     const end_time = timings[bounds.end_x];
     if (!end_time) continue;
     const [end_hour, end_minutes] = end_time.split(":").map(n => parseInt(n));
-    const end_date = header.data.start_date.set({ hour: end_hour, minute: end_minutes, weekday: group.day_index + 1 });
+    const end_date = header.data.start_date.set({ hour: end_hour, minute: end_minutes, weekday: group.day_index + 2 });
 
     switch (color) {
       case COLORS.CM: {
