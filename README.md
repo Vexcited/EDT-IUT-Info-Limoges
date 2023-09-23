@@ -2,7 +2,7 @@
 
 Contains a very simple [NPM package for Node.js](https://www.npmjs.com/package/edt-iut-info-limoges) that allows you to get and parse the timetable of the IUT Informatique of Limoges in a very simple and intuitive way.
 
-A demonstration website has been made to showcase the package: *TODO*, you can find the source code for it in the section below.
+A demonstration website has been made to showcase the package: <https://edt-iut-info-limoges.vercel.app/>, you can find the source code for it in the section below.
 
 ## Sources
 
