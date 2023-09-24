@@ -1,5 +1,7 @@
-import solid from "solid-start/vite";
 import unocss from 'unocss/vite'
+import solid from "solid-start/vite";
+import icons from 'unplugin-icons/vite';
+
 
 import { defineConfig } from "vite";
 
@@ -15,6 +17,7 @@ export default defineConfig({
       adapter: process.env.VERCEL ? vercel({ edge: false }) : node()
     }),
 
-    unocss()
+    unocss(),
+    icons({ compiler: "solid" })
   ]
 });

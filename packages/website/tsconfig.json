@@ -19,7 +19,8 @@
     },
 
     "types": [
-      "solid-start/env"
+      "solid-start/env",
+      "unplugin-icons/types/solid"
     ]
   },
 
