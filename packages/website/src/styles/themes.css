@@ -1,0 +1,10 @@
+/**
+ * <https://github.com/catppuccin/catppuccin> > Latte
+ */
+html.theme-catppuccin-latte {
+  --white: rgb(239, 241, 245);
+  --gray: rgb(76, 79, 105);
+  --subgray-1: rgb(92, 95, 119);
+  --subgray-2: rgb(108, 111, 133);
+  --iut: rgb(114, 135, 253)
+}
