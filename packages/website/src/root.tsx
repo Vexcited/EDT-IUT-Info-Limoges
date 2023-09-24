@@ -2,6 +2,8 @@
 import "@unocss/reset/tailwind.css";
 import '@fontsource/poppins/400.css';
 import '@fontsource/poppins/500.css';
+
+import "./styles/themes.css";
 import "virtual:uno.css";
 
 import { type Component, Suspense } from "solid-js";
@@ -25,7 +27,7 @@ const Root: Component = () => {
   const FONT_FAMILY = "'Poppins', sans-serif";
 
   return (
-    <Html lang="fr">
+    <Html lang="fr" class="theme-catppuccin-latte">
       <Head>
         <Meta charset="utf-8" />
         <Meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -34,7 +36,7 @@ const Root: Component = () => {
         <Title>EDT - IUT Informatique de Limoges</Title>
       </Head>
       <Body
-        class="min-h-screen h-full bg-white text-black"
+        class="min-h-screen h-full bg-white text-gray"
         style={{ "font-family": FONT_FAMILY }}
       >
         <Suspense>
