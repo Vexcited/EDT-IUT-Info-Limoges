@@ -20,3 +20,8 @@ export interface ITimetable {
   header: ITimetableHeader
   lessons: ITimetableLesson[]
 }
+
+export interface ApiTimetable {
+  success: true
+  data: ITimetable
+}

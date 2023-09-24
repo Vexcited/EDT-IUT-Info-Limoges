@@ -3,59 +3,63 @@ import { type Component, on, createSignal, Show, createEffect } from "solid-js";
 import type { ITimetable } from "~/types/api";
 import Timetable from "~/components/Timetable";
 
-import { preferences, setSubGroup, setMainGroup, setYear } from "~/stores/preferences";
+import { SettingsModal } from "~/components/modals/Settings";
+
+import { preferences } from "~/stores/preferences";
+import { accentColor } from "~/utils/colors";
+import { getTimetableFor } from "~/utils/timetables";
+
+import MdiCog from '~icons/mdi/cog'
 
 const Page: Component = () => {
   const [timetableRAW, setTimetableRAW] = createSignal<ITimetable | null>(null);
+  const [settingsOpen, setSettingsOpen] = createSignal(false);
 
   createEffect(on(() => preferences.year, async (year) => {
-    const response = await fetch(`/api/A${year}/3`);
-    const json = await response.json();
-    setTimetableRAW(json.data as ITimetable);
+    const today = new Date();
+    const timetable = await getTimetableFor(today, year);
+    setTimetableRAW(timetable);
   }));
 
   return (
-    <div class="bg-white">
-      <h1>Bienvenue, étudiant en A{preferences.year}, dans la G{preferences.main_group}{preferences.sub_group === 0 ? "A" : "B"}</h1>
+    <>
+      <SettingsModal open={settingsOpen()} setOpen={setSettingsOpen} />
 
-      <select value={preferences.year} onChange={(evt) => {
-        const value = parseInt(evt.currentTarget.value);
-        setYear(value);
-      }}>
-        <option value="1">A1</option>
-        <option value="2">A2</option>
-        <option value="3">A3</option>
-      </select>
+      <div class="p-6">
+        <header class="flex flex-col items-center justify-center pt-4">
+          <h1 class="text-center sm:text-2xl text-gray">
+            Bienvenue, étudiant en <span class="font-medium" style={{ color: accentColor() }}>
+              A{preferences.year}
+            </span>,
+            dans le groupe <span class="font-medium" style={{ color: accentColor() }}>
+              G{preferences.main_group}{preferences.sub_group === 0 ? "A" : "B"}
+            </span>.
+          </h1>
+          <Show when={timetableRAW()}
+            fallback={<p>Récupération de l'emploi du temps...</p>}
+          >
+            <p class="text-subgray-1 text-center text-sm sm:text-lg">
+              Vous visualisez actuellement l'emploi du temps de la semaine <span class="font-medium" style={{ color: accentColor() }}>
+                {timetableRAW()!.header.week_number}
+              </span>.
+            </p>
+          </Show>
 
-      <input type="number" value={preferences.main_group} onInput={(evt) => {
-        const value = parseInt(evt.currentTarget.value);
-        if (Number.isNaN(value)) {
-          evt.currentTarget.value = "1";
-          setMainGroup(1);
-          return;
-        }
+          <button type="button"
+            class="flex items-center justify-center gap-2 border border-gray px-4 py-1 mt-4 text-gray bg-white hover:bg-gray hover:text-white"
+            onClick={() => setSettingsOpen(true)}
+          >
+            <MdiCog /> Paramètres
+          </button>
+        </header>
 
-        setMainGroup(value);
-      }} />
-
-      <select value={preferences.sub_group} onChange={(evt) => {
-        const value = parseInt(evt.currentTarget.value);
-        setSubGroup(value);
-      }}>
-        <option value={0}>A</option>
-        <option value={1}>B</option>
-      </select>
-
-      <Show when={timetableRAW()}>
-        {timetable => (
-          <main>
-            <h2>Displaying timetable for week {timetable().header.week_number}.</h2>
-
-            <Timetable {...timetable()} />
-          </main>
-        )}
-      </Show>
-    </div>
+        <main>
+          <Show when={timetableRAW()}>
+            {timetable => <Timetable {...timetable()} />}
+          </Show>
+        </main>
+      </div>
+    </>
   );
 };
 
