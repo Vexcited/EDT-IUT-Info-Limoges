@@ -1,4 +1,8 @@
 {
+  "editor.detectIndentation": false,
+  "editor.insertSpaces": true,
+  "editor.tabSize": 2,
+
   "cSpell.language": "en,fr",
   "cSpell.words": [
     "Boxset",
@@ -15,5 +19,7 @@
     "pdfconst",
     "pdffont",
     "pdfparser"
-  ]
+  ],
+
+  "unocss.root": ["./packages/website"]
 }
