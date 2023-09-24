@@ -2,17 +2,14 @@ import { type Component, For } from "solid-js";
 import type { ITimetable } from "~/types/api";
 
 import { preferences } from "~/stores/preferences";
+import { day } from "~/stores/temporary";
 
 const Timetable: Component<ITimetable> = (props) => {
-  const today = new Date();
-  const today_index = today.getDate();
-
-  console.log(props.lessons)
-
   // is the lesson is for today (look at the day)
-  const lessons_of_today = () => props.lessons.filter(
-    lesson => new Date(lesson.start_date).getDate() === today_index
-  ).filter(lesson => {
+  const lessons_of_today = () => props.lessons.filter(lesson => {
+    const isForDay = new Date(lesson.start_date).getDate() === day().getDate();
+    if (!isForDay) return false;
+
     let isForUser = false;
   
     switch (lesson.type) {
@@ -40,10 +37,7 @@ const Timetable: Component<ITimetable> = (props) => {
     }
 
     return isForUser;
-  })
-
-  const start_date = () => new Date(props.header.start_date);
-  const end_date = () => new Date(props.header.end_date)
+  });
 
   return (
     <div>

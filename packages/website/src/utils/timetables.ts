@@ -77,7 +77,7 @@ export const getTimetableFor = async (day: Date, year: number): Promise<ITimetab
   const week_number_in_year = getWeekNumber(day);
   const stored_timetable = await timetable_store(year).getItem(week_number_in_year.toString()) as TimetableStore | null;
   if (stored_timetable) {
-    console.log("Timetable found in local database!")
+    // console.log("Timetable found in local database!")
     return stored_timetable.data;
   }
 
@@ -88,9 +88,12 @@ export const getTimetableFor = async (day: Date, year: number): Promise<ITimetab
     const week_number_to_request = diff_header.week_number + diff;
 
     const timetable_response = await fetch("/api/" + year_str + "/" + week_number_to_request);
-    console.log("Timetable fetched **from latest** since we're online!", {
-      day: week_number_to_request, diff_header, diff
-    });
+    // console.log("Timetable fetched **from latest** since we're online!", {
+    //   day: week_number_to_request, diff_header, diff
+    // });
+    if (timetable_response.status === 404) {
+      throw new Error("Timetable doesn't exist, yet!");
+    }
 
     const { data: timetable } = await timetable_response.json() as ApiTimetable;
     await timetable_store(year).setItem<TimetableStore>(timetable.header.week_number_in_year.toString(), {
@@ -110,6 +113,10 @@ export const getTimetableFor = async (day: Date, year: number): Promise<ITimetab
       return timetable; 
     }
     catch (error) {
+      if (error instanceof Error && error.message === "Timetable doesn't exist, yet!") {
+        throw error;
+      }
+      
       throw new Error("Unable to fetch the timetable: offline and no cache");
     }
   }
@@ -127,6 +134,10 @@ export const getTimetableFor = async (day: Date, year: number): Promise<ITimetab
     return timetable;
   }
   catch (error) {
+    if (error instanceof Error && error.message === "Timetable doesn't exist, yet!") {
+      throw error;
+    }
+
     throw new Error("Unable to fetch the timetable: offline and no cache");
   }
 };

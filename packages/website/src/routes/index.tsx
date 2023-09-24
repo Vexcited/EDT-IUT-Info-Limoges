@@ -6,6 +6,8 @@ import Timetable from "~/components/Timetable";
 import { SettingsModal } from "~/components/modals/Settings";
 
 import { preferences } from "~/stores/preferences";
+import { day, moveDay, setDay } from "~/stores/temporary";
+
 import { accentColor } from "~/utils/colors";
 import { getTimetableFor } from "~/utils/timetables";
 
@@ -15,9 +17,8 @@ const Page: Component = () => {
   const [timetableRAW, setTimetableRAW] = createSignal<ITimetable | null>(null);
   const [settingsOpen, setSettingsOpen] = createSignal(false);
 
-  createEffect(on(() => preferences.year, async (year) => {
-    const today = new Date();
-    const timetable = await getTimetableFor(today, year);
+  createEffect(on([() => preferences.year, day], async ([year, day]) => {
+    const timetable = await getTimetableFor(day, year);
     setTimetableRAW(timetable);
   }));
 
@@ -54,6 +55,11 @@ const Page: Component = () => {
         </header>
 
         <main>
+          <button type="button"
+            onClick={() => moveDay(+1)}
+          >
+            Next day
+          </button>
           <Show when={timetableRAW()}>
             {timetable => <Timetable {...timetable()} />}
           </Show>
