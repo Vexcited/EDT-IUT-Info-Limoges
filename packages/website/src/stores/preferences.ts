@@ -16,7 +16,7 @@ const setMainGroup = (main_group: number) => {
   setPreferences({ main_group });
 }
 
-const setSubGroup = (sub_group: number) => {
+const setSubGroup = (sub_group: 0 | 1) => {
   localStorage.setItem("sub_group", sub_group.toString());
   setPreferences({ sub_group });
 }
