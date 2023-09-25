@@ -73,7 +73,7 @@ const Page: Component = () => {
           </h1>
 
           <p class="text-subgray-1 text-center text-sm sm:text-lg">
-            <Show when={timetableRAW()} fallback={"Une erreur s'est produite."}>
+            <Show when={timetableRAW()} fallback={haveError() ? "Une erreur s'est produite." : "Récupération de l'EDT en cours..."}>
               Vous visualisez actuellement l'emploi du temps de la semaine <span class="font-medium" style={{ color: accentColor() }}>
                 {timetableRAW()!.header.week_number}
               </span>.
