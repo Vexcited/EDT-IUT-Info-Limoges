@@ -72,10 +72,14 @@ export const listTimetablesOnline = async (year: number) => {
   };
 }
 
-export const getTimetableFor = async (week_number_in_year: number, year: number): Promise<ITimetable> => {
-  const year_str = "A" + year;
+const NUMBER_OF_WEEKS_IN_YEAR = 52;
+const key = (week_number_in_year: number, day: Date) => week_number_in_year.toString() + "-" + day.getFullYear()
 
-  const stored_timetable = await timetable_store(year).getItem(week_number_in_year.toString()) as TimetableStore | null;
+export const getTimetableFor = async (day: Date, year: number): Promise<ITimetable> => {
+  const year_str = "A" + year;
+  const week_number_in_year = getWeekNumber(day);
+
+  const stored_timetable = await timetable_store(year).getItem(key(week_number_in_year, day)) as TimetableStore | null;
   if (stored_timetable) {
     // check if the stored timetable is still valid
     const now = Date.now();
@@ -88,7 +92,12 @@ export const getTimetableFor = async (week_number_in_year: number, year: number)
         // renew the timetable
         const renewed_timetable_response = await fetch("/api/" + year_str + "/" + stored_timetable.data.header.week_number);
         const { data: renewed_timetable } = await renewed_timetable_response.json() as ApiTimetable;
-        await timetable_store(year).setItem<TimetableStore>(renewed_timetable.header.week_number_in_year.toString(), {
+        
+        if (new Date(renewed_timetable.header.start_date).getFullYear() !== day.getFullYear()) {
+          throw new APIError(APIErrorType.NOT_FOUND);
+        }
+        
+        await timetable_store(year).setItem<TimetableStore>(key(renewed_timetable.header.week_number_in_year, day), {
           last_fetch: Date.now(),
           data: renewed_timetable
         });
@@ -106,8 +115,14 @@ export const getTimetableFor = async (week_number_in_year: number, year: number)
   }
 
   const fetchFromDiff = async (diff_header: ITimetable["header"]) => {
-    const diff = week_number_in_year - diff_header.week_number_in_year;
-    const week_number_to_request = diff_header.week_number + diff;
+    let diff = week_number_in_year - diff_header.week_number_in_year;
+    let week_number_to_request = diff_header.week_number + diff;
+
+    // happens when we're in the next year
+    if (week_number_to_request <= 0) {
+      diff = NUMBER_OF_WEEKS_IN_YEAR + week_number_in_year - diff_header.week_number_in_year;
+      week_number_to_request = diff_header.week_number + diff;
+    }
 
     const timetable_response = await fetch("/api/" + year_str + "/" + week_number_to_request);
     if (timetable_response.status === 404) {
@@ -115,7 +130,11 @@ export const getTimetableFor = async (week_number_in_year: number, year: number)
     }
 
     const { data: timetable } = await timetable_response.json() as ApiTimetable;
-    await timetable_store(year).setItem<TimetableStore>(timetable.header.week_number_in_year.toString(), {
+    if (new Date(timetable.header.start_date).getFullYear() !== day.getFullYear()) {
+      throw new APIError(APIErrorType.NOT_FOUND);
+    }
+
+    await timetable_store(year).setItem<TimetableStore>(key(timetable.header.week_number_in_year, day), {
       last_fetch: Date.now(),
       data: timetable
     });
@@ -144,11 +163,7 @@ export const getTimetableFor = async (week_number_in_year: number, year: number)
   try {
     const latest_timetable_response = await fetch("/api/latest/" + year_str);
     const { data: latest_timetable } = await latest_timetable_response.json() as ApiTimetable;
-    await timetable_store(year).setItem<TimetableStore>(latest_timetable.header.week_number_in_year.toString(), {
-      last_fetch: Date.now(),
-      data: latest_timetable
-    });
-  
+
     const timetable = await fetchFromDiff(latest_timetable.header);
     return timetable;
   }

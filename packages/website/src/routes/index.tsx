@@ -31,22 +31,20 @@ const getDayString = () => day().toLocaleDateString("fr-FR", {
   year: "numeric",
 });
 
-const weekNumberInYear = () => getWeekNumber(day());
-
 const Page: Component = () => {
   const [timetableRAW, setTimetableRAW] = createSignal<ITimetable | null>(null);
   const [settingsOpen, setSettingsOpen] = createSignal(false);
   const [haveError, setHaveError] = createSignal<string | null>(null);
 
-  createEffect(on([() => preferences.year, weekNumberInYear], async ([year, week_number_in_year]) => {
+  createEffect(on([() => preferences.year, day], async ([year, day]) => {
     const old_timetable = timetableRAW();
-    if (old_timetable?.header.week_number_in_year === week_number_in_year) return;
+    if (old_timetable?.header.week_number_in_year === getWeekNumber(day)) return;
 
     setTimetableRAW(null);
     setHaveError(null);
     
     try {
-      const timetable = await getTimetableFor(week_number_in_year, year);
+      const timetable = await getTimetableFor(day, year);
       setTimetableRAW(timetable);
     }
     catch (error) {
