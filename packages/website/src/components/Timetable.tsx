@@ -80,7 +80,6 @@ const Timetable: Component<ITimetable> = (props) => {
           </p>
         </Show>
 
-
         <div class="flex gap-2">
           <div class="flex flex-col justify-between w-[50px] flex-shrink-0 text-right">
             <Show when={!lesson_before() || start_date().getHours() !== new Date(lesson_before()!.end_date).getHours()}

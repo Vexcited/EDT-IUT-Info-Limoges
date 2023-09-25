@@ -18,7 +18,11 @@ import MdiChevronDoubleLeft from '~icons/mdi/chevron-double-left'
 import MdiChevronDoubleRight from '~icons/mdi/chevron-double-right'
 import MdiFileDocumentAlertOutline from '~icons/mdi/file-document-alert-outline'
 import MdiLoading from '~icons/mdi/loading'
+import MdiDownload from '~icons/mdi/download'
+import MdiFilePdfBox from '~icons/mdi/file-pdf-box'
+
 import { APIError } from "~/utils/errors";
+import { generateICS } from "~/utils/ics";
 
 const getDayString = () => day().toLocaleDateString("fr-FR", {
   weekday: "long",
@@ -91,7 +95,7 @@ const Page: Component = () => {
             {getDayString()}
           </p>
 
-          <nav class="flex gap-2 justify-center items-center mb-12">
+          <nav class="flex gap-2 justify-center items-center">
             <button type="button"
               class="text-gray border border-gray p-1 text-xl"
               onClick={() => moveDay(-7)}
@@ -148,17 +152,27 @@ const Page: Component = () => {
           >
             {timetable => (
               <>
+                <div class="w-full text-center mb-12 mt-6 sm:mt-4 flex justify-center items-center gap-4">
+                  <button
+                    class="flex gap-2 items-center font-medium border px-3 py-1 text-sm sm:text-base"
+                    style={{ color: accentColor(), "border-color": accentColor() }}
+                    type="button"
+                    onClick={() => generateICS(timetable())}
+                  >
+                    <MdiDownload /> .ics
+                  </button>
+
+                  <a class="flex gap-2 items-center font-medium border px-3 py-1 text-sm sm:text-base"
+                    style={{ color: accentColor(), "border-color": accentColor() }}
+                    href={"http://edt-iut-info.unilim.fr/edt/A" + preferences.year + "/A" + preferences.year + "_S" + timetableRAW()?.header.week_number + ".pdf"}
+                  >
+                    <MdiFilePdfBox /> PDF
+                  </a>
+                </div>
+
                 <Timetable {...timetable()} />
 
                 <div class="w-full text-center mt-14">
-                  <a class="text-lg font-medium border px-3 py-1"
-                    style={{ color: accentColor(), "border-color": accentColor() }}
-                    href={"http://edt-iut-info.unilim.fr/edt/A" + preferences.year + "/A" + preferences.year + "_S" + timetableRAW()?.header.week_number + ".pdf"}
-                    target="_blank"
-                  >
-                    PDF
-                  </a>
-
                   <p class="mt-4">
                     Made with {"<3"} by <a class="font-medium" style={{ color: accentColor() }} href="https://github.com/Vexcited" target="_blank">Vexcited</a>. 
                   </p>
