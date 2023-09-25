@@ -48,6 +48,20 @@ const Timetable: Component<ITimetable> = (props) => {
     })
   );
 
+  function diff_hours (timeEnd: Date, timeStart: Date): string {
+    const hourDiff = timeEnd.getTime() - timeStart.getTime();
+    const minDiff = hourDiff / 60 / 1000; //in minutes
+    const hDiff = hourDiff / 3600 / 1000; //in hours
+    
+    const output = {
+      hours: Math.floor(hDiff),
+      minutes: 0
+    };
+
+    output.minutes = minDiff - 60 * output.hours;
+    return output.hours + "h" + (output.minutes ? output.minutes : "");
+  }
+
   const Lesson: Component<{ lesson: ITimetable["lessons"][number], index: Accessor<number> }> = (props) => {
     const start_date = () => new Date(props.lesson.start_date);
     const end_date = () => new Date(props.lesson.end_date);
@@ -58,7 +72,7 @@ const Timetable: Component<ITimetable> = (props) => {
       <>
         <Show when={lesson_before() && start_date().getHours() !== new Date(lesson_before()!.end_date).getHours()}>
           <p class="py-4 text-subgray-1 text-center text-white border border-gray bg-gray my-2 ml-[58px]">
-            Trou de {start_date().getHours() - new Date(lesson_before()!.end_date).getHours()}h !
+            Trou de {diff_hours(start_date(), new Date(lesson_before()!.end_date))} !
           </p>
         </Show>
 
