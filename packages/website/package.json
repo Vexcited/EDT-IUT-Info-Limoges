@@ -23,9 +23,9 @@
     "@solidjs/router": "^0.8.3",
     "@unocss/reset": "^0.56.1",
     "edt-iut-info-limoges": "*",
+    "ics": "^3.5.0",
     "localforage": "^1.10.0",
     "solid-js": "^1.7.12",
-    "solid-start": "^0.3.5",
-    "solid-toast": "^0.5.0"
+    "solid-start": "^0.3.5"
   }
 }

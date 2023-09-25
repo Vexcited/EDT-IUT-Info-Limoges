@@ -1,5 +1,6 @@
 import localforage from "localforage";
 import type { ITimetable, ApiTimetable } from "~/types/api";
+import { APIError, APIErrorType } from "./errors";
 
 const timetable_store = (year: number) => localforage.createInstance({
   name: "timetables",
@@ -37,7 +38,7 @@ export const getLatestStoredTimetable = async (year: number): Promise<TimetableS
  * @param d - The date we want to take the week number from. 
  * @returns - The week number of the given date.
  */
-const getWeekNumber = (d: Date) => {
+export const getWeekNumber = (d: Date) => {
   // Copy date so don't modify original
   d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
   // Set to nearest Thursday: current date + 4 - current day number
@@ -71,10 +72,9 @@ export const listTimetablesOnline = async (year: number) => {
   };
 }
 
-export const getTimetableFor = async (day: Date, year: number): Promise<ITimetable> => {
+export const getTimetableFor = async (week_number_in_year: number, year: number): Promise<ITimetable> => {
   const year_str = "A" + year;
 
-  const week_number_in_year = getWeekNumber(day);
   const stored_timetable = await timetable_store(year).getItem(week_number_in_year.toString()) as TimetableStore | null;
   if (stored_timetable) {
     // console.log("Timetable found in local database!")
@@ -82,17 +82,12 @@ export const getTimetableFor = async (day: Date, year: number): Promise<ITimetab
   }
 
   const fetchFromDiff = async (diff_header: ITimetable["header"]) => {
-    // get the difference between the last stored week and the current week
     const diff = week_number_in_year - diff_header.week_number_in_year;
-    // get the week_number to request
     const week_number_to_request = diff_header.week_number + diff;
 
     const timetable_response = await fetch("/api/" + year_str + "/" + week_number_to_request);
-    // console.log("Timetable fetched **from latest** since we're online!", {
-    //   day: week_number_to_request, diff_header, diff
-    // });
     if (timetable_response.status === 404) {
-      throw new Error("Timetable doesn't exist, yet!");
+      throw new APIError(APIErrorType.NOT_FOUND);
     }
 
     const { data: timetable } = await timetable_response.json() as ApiTimetable;
@@ -113,11 +108,11 @@ export const getTimetableFor = async (day: Date, year: number): Promise<ITimetab
       return timetable; 
     }
     catch (error) {
-      if (error instanceof Error && error.message === "Timetable doesn't exist, yet!") {
+      if (error instanceof APIError && error.type === APIErrorType.NOT_FOUND) {
         throw error;
       }
       
-      throw new Error("Unable to fetch the timetable: offline and no cache");
+      throw new APIError(APIErrorType.NO_CACHE);
     }
   }
  
@@ -134,10 +129,10 @@ export const getTimetableFor = async (day: Date, year: number): Promise<ITimetab
     return timetable;
   }
   catch (error) {
-    if (error instanceof Error && error.message === "Timetable doesn't exist, yet!") {
+    if (error instanceof APIError && error.type === APIErrorType.NOT_FOUND) {
       throw error;
     }
 
-    throw new Error("Unable to fetch the timetable: offline and no cache");
+    throw new APIError(APIErrorType.NO_CACHE);
   }
 };

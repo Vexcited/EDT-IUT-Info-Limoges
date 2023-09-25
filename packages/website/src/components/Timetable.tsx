@@ -6,6 +6,7 @@ import { hoursAndMinutesBetween } from "~/utils/dates";
 
 import { preferences } from "~/stores/preferences";
 import { day } from "~/stores/temporary";
+import { accentColor } from "~/utils/colors";
 
 const Timetable: Component<ITimetable> = (props) => {
   // is the lesson is for today (look at the day)
@@ -113,7 +114,22 @@ const Timetable: Component<ITimetable> = (props) => {
 
   return (
     <div class="max-w-[320px] w-full mx-auto">
-      <For each={lessons_of_today()}>
+      <For each={lessons_of_today()}
+        fallback={
+          <>
+            <p class="text-subgray-1 text-center text-white text-sm sm:text-lg border p-2"
+              style={{ "border-color": accentColor(), "background-color": accentColor() }}
+            >
+              Aucun cours aujourd'hui !
+            </p>
+            <p class="text-center text-sm mt-2">
+              En attendant, vous pouvez aller <a style={{ color: accentColor() }} class="hover:underline" href="/api/video" target="_blank">
+              voir cette incroyable performance
+              </a>.
+            </p>
+          </>
+        }
+      >
         {(lesson, index) => <Lesson lesson={lesson} index={index} />}
       </For>
     </div>

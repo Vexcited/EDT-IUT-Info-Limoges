@@ -1,4 +1,4 @@
-import { type Component, on, createSignal, Show, createEffect, createMemo } from "solid-js";
+import { type Component, on, createSignal, Show, createEffect } from "solid-js";
 
 import type { ITimetable } from "~/types/api";
 import Timetable from "~/components/Timetable";
@@ -9,28 +9,50 @@ import { preferences } from "~/stores/preferences";
 import { day, moveDay } from "~/stores/temporary";
 
 import { accentColor } from "~/utils/colors";
-import { getTimetableFor } from "~/utils/timetables";
+import { getTimetableFor, getWeekNumber } from "~/utils/timetables";
 
 import MdiCog from '~icons/mdi/cog'
 import MdiChevronLeft from '~icons/mdi/chevron-left'
 import MdiChevronRight from '~icons/mdi/chevron-right'
 import MdiChevronDoubleLeft from '~icons/mdi/chevron-double-left'
 import MdiChevronDoubleRight from '~icons/mdi/chevron-double-right'
+import MdiFileDocumentAlertOutline from '~icons/mdi/file-document-alert-outline'
+import MdiLoading from '~icons/mdi/loading'
+import { APIError } from "~/utils/errors";
 
-const getDayString = createMemo(() => day().toLocaleDateString("fr-FR", {
+const getDayString = () => day().toLocaleDateString("fr-FR", {
   weekday: "long",
   day: "numeric",
   month: "long",
   year: "numeric",
-}));
+});
+
+const weekNumberInYear = () => getWeekNumber(day());
 
 const Page: Component = () => {
   const [timetableRAW, setTimetableRAW] = createSignal<ITimetable | null>(null);
   const [settingsOpen, setSettingsOpen] = createSignal(false);
+  const [haveError, setHaveError] = createSignal<string | null>(null);
 
-  createEffect(on([() => preferences.year, day], async ([year, day]) => {
-    const timetable = await getTimetableFor(day, year);
-    setTimetableRAW(timetable);
+  createEffect(on([() => preferences.year, weekNumberInYear], async ([year, week_number_in_year]) => {
+    const old_timetable = timetableRAW();
+    if (old_timetable?.header.week_number_in_year === week_number_in_year) return;
+
+    setTimetableRAW(null);
+    setHaveError(null);
+    
+    try {
+      const timetable = await getTimetableFor(week_number_in_year, year);
+      setTimetableRAW(timetable);
+    }
+    catch (error) {
+      if (error instanceof APIError) {
+        setHaveError(error.message);
+        return;
+      }
+
+      setHaveError((error as Error).message);
+    }
   }));
 
   return (
@@ -47,15 +69,14 @@ const Page: Component = () => {
               G{preferences.main_group}{preferences.sub_group === 0 ? "A" : "B"}
             </span>.
           </h1>
-          <Show when={timetableRAW()}
-            fallback={<p>Récupération de l'emploi du temps...</p>}
-          >
-            <p class="text-subgray-1 text-center text-sm sm:text-lg">
+
+          <p class="text-subgray-1 text-center text-sm sm:text-lg">
+            <Show when={timetableRAW()} fallback={"Une erreur s'est produite."}>
               Vous visualisez actuellement l'emploi du temps de la semaine <span class="font-medium" style={{ color: accentColor() }}>
                 {timetableRAW()!.header.week_number}
               </span>.
-            </p>
-          </Show>
+            </Show>
+          </p>
 
           <button type="button"
             class="flex items-center justify-center gap-2 border border-gray px-4 py-1 mt-4 text-gray bg-white hover:bg-gray hover:text-white"
@@ -70,7 +91,7 @@ const Page: Component = () => {
             {getDayString()}
           </p>
 
-          <nav class="flex gap-2 justify-center items-center mb-8">
+          <nav class="flex gap-2 justify-center items-center mb-12">
             <button type="button"
               class="text-gray border border-gray p-1 text-xl"
               onClick={() => moveDay(-7)}
@@ -104,7 +125,27 @@ const Page: Component = () => {
             </button>
           </nav>
 
-          <Show when={timetableRAW()}>
+          <Show when={timetableRAW()}
+            fallback={
+              <Show when={haveError()}
+                fallback={
+                  <div class="flex flex-col gap-4 items-center justify-center border-2 p-8 mx-auto w-fit"
+                    style={{ "background-color": accentColor(), "border-color": accentColor() }}
+                  >
+                    <MdiLoading class="animate-spin text-4xl text-white" />
+                    <p class="text-white text-center">Récupération de l'emploi du temps...</p>
+                  </div>
+                }
+              >
+                {error => (
+                  <div class="flex flex-col gap-4 items-center justify-center border-2 border-red bg-red p-8 mx-auto w-fit">
+                    <MdiFileDocumentAlertOutline class="text-white text-4xl" />
+                    <p class="text-white font-medium text-center">{error()}</p>
+                  </div>
+                )}
+              </Show>
+            }
+          >
             {timetable => (
               <>
                 <Timetable {...timetable()} />
