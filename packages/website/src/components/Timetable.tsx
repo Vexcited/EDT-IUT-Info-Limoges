@@ -2,6 +2,8 @@ import type { TimetableLessonCM, TimetableLessonSAE, TimetableLessonTD, Timetabl
 import { type Component, For, createMemo, Show, Accessor } from "solid-js";
 import type { ITimetable } from "~/types/api";
 
+import { hoursAndMinutesBetween } from "~/utils/dates";
+
 import { preferences } from "~/stores/preferences";
 import { day } from "~/stores/temporary";
 
@@ -46,21 +48,22 @@ const Timetable: Component<ITimetable> = (props) => {
 
       return aDate.getTime() - bDate.getTime();
     })
+    // Remove the lessons that are the same as the previous one
+    // (like same type, same room, same teacher, but with just a +1 index difference in the array)
+    // Also update the `end_date` of the previous lesson to the `end_date` of the current lesson.
+    .reduce((acc, lesson, index, array) => {
+      const previousLesson = array[index - 1];
+
+      if (previousLesson && previousLesson.type === lesson.type && previousLesson.content.room === lesson.content.room && previousLesson.content.teacher === lesson.content.teacher) {
+        previousLesson.end_date = lesson.end_date;
+      }
+      else {
+        acc.push(lesson);
+      }
+
+      return acc;
+    }, [] as ITimetable["lessons"])
   );
-
-  function diff_hours (timeEnd: Date, timeStart: Date): string {
-    const hourDiff = timeEnd.getTime() - timeStart.getTime();
-    const minDiff = hourDiff / 60 / 1000; //in minutes
-    const hDiff = hourDiff / 3600 / 1000; //in hours
-    
-    const output = {
-      hours: Math.floor(hDiff),
-      minutes: 0
-    };
-
-    output.minutes = minDiff - 60 * output.hours;
-    return output.hours + "h" + (output.minutes ? output.minutes : "");
-  }
 
   const Lesson: Component<{ lesson: ITimetable["lessons"][number], index: Accessor<number> }> = (props) => {
     const start_date = () => new Date(props.lesson.start_date);
@@ -72,7 +75,7 @@ const Timetable: Component<ITimetable> = (props) => {
       <>
         <Show when={lesson_before() && start_date().getHours() !== new Date(lesson_before()!.end_date).getHours()}>
           <p class="py-4 text-subgray-1 text-center text-white border border-gray bg-gray my-2 ml-[58px]">
-            Trou de {diff_hours(start_date(), new Date(lesson_before()!.end_date))} !
+            Trou de {hoursAndMinutesBetween(start_date(), new Date(lesson_before()!.end_date))}
           </p>
         </Show>
 
