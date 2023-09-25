@@ -30,7 +30,7 @@ export default defineConfig({
           "**/*.{js,css,html,svg,png,woff,woff2}"
         ],
         navigateFallbackDenylist: [
-          /^\/api\/.*/
+          /^\/api.*/
         ]
       },
 
