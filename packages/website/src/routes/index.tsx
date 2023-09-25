@@ -133,7 +133,7 @@ const Page: Component = () => {
             fallback={
               <Show when={haveError()}
                 fallback={
-                  <div class="flex flex-col gap-4 items-center justify-center border-2 p-8 mx-auto w-fit"
+                  <div class="flex flex-col gap-4 items-center justify-center border-2 p-8 mx-auto w-fit mt-8"
                     style={{ "background-color": accentColor(), "border-color": accentColor() }}
                   >
                     <MdiLoading class="animate-spin text-4xl text-white" />
@@ -142,7 +142,7 @@ const Page: Component = () => {
                 }
               >
                 {error => (
-                  <div class="flex flex-col gap-4 items-center justify-center border-2 border-red bg-red p-8 mx-auto w-fit">
+                  <div class="flex flex-col gap-4 items-center justify-center border-2 border-red bg-red p-8 mx-auto w-fit mt-8">
                     <MdiFileDocumentAlertOutline class="text-white text-4xl" />
                     <p class="text-white font-medium text-center">{error()}</p>
                   </div>
