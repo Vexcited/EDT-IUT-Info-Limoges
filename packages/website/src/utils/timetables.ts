@@ -79,6 +79,7 @@ export const getTimetableFor = async (week_number_in_year: number, year: number)
   if (stored_timetable) {
     // check if the stored timetable is still valid
     const now = Date.now();
+    // diff in milliseconds
     const diff = now - stored_timetable.last_fetch;
 
     // if the last fetch is more than 1 hour ago
@@ -87,7 +88,7 @@ export const getTimetableFor = async (week_number_in_year: number, year: number)
         // renew the timetable
         const renewed_timetable_response = await fetch("/api/" + year_str + "/" + stored_timetable.data.header.week_number);
         const { data: renewed_timetable } = await renewed_timetable_response.json() as ApiTimetable;
-        await timetable_store(year).setItem<TimetableStore>(renewed_timetable.header.week_number.toString(), {
+        await timetable_store(year).setItem<TimetableStore>(renewed_timetable.header.week_number_in_year.toString(), {
           last_fetch: Date.now(),
           data: renewed_timetable
         });
