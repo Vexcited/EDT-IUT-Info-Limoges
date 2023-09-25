@@ -61,8 +61,8 @@ const Page: Component = () => {
     <>
       <SettingsModal open={settingsOpen()} setOpen={setSettingsOpen} />
 
-      <div class="p-6">
-        <header class="flex flex-col items-center justify-center pt-4">
+      <div class="flex flex-col gap-8 min-h-screen h-full px-6 py-12">
+        <header class="flex flex-col items-center justify-center">
           <h1 class="text-center sm:text-2xl text-gray">
             Bienvenue, étudiant en <span class="font-medium" style={{ color: accentColor() }}>
               A{preferences.year}
@@ -88,7 +88,7 @@ const Page: Component = () => {
           </button>
         </header>
 
-        <main class="pt-8 sm:pt-10">
+        <main class="">
           <p class="text-gray mb-1 text-center sm:hidden">
             {getDayString()}
           </p>
@@ -169,17 +169,17 @@ const Page: Component = () => {
                 </div>
 
                 <Timetable {...timetable()} />
-
-                <div class="w-full text-center mt-14">
-                  <p class="mt-4">
-                    Made with {"<3"} by <a class="font-medium" style={{ color: accentColor() }} href="https://github.com/Vexcited" target="_blank">Vexcited</a>. 
-                  </p>
-                </div>
               </>
             )}
           </Show>
 
         </main>
+
+        <footer class="w-full text-center mt-auto">
+          <p class="mt-4">
+            Made with {"<3"} by <a class="font-medium" style={{ color: accentColor() }} href="https://github.com/Vexcited" target="_blank">Vexcited</a>. 
+          </p>
+        </footer>
       </div>
     </>
   );
