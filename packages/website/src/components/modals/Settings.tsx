@@ -152,7 +152,11 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
               <Select.Root
                 value={theme()}
                 onChange={(theme) => changeTheme(theme)}
-                options={["catppuccin-latte", "catppuccin-macchiato"]}
+                options={[
+                  "catppuccin-latte",
+                  "catppuccin-macchiato",
+                  "nord-dark", "nord-light"
+                ]}
                 placeholder="Sélectionner un thème…"
                 itemComponent={props => (
                   <Select.Item item={props.item}
