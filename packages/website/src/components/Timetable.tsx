@@ -1,3 +1,4 @@
+import type { TimetableLessonCM, TimetableLessonSAE, TimetableLessonTD, TimetableLessonTP } from "edt-iut-info-limoges";
 import { type Component, For, createMemo, Show, Accessor } from "solid-js";
 import type { ITimetable } from "~/types/api";
 
@@ -82,9 +83,9 @@ const Timetable: Component<ITimetable> = (props) => {
               "border-t-none": Boolean(lesson_before()) && start_date().getHours() === new Date(lesson_before()!.end_date).getHours()
             }}
           >
-            <p class="text-lg font-medium">{props.lesson.type} - {props.lesson.content.type ?? "??"}</p>
-            <Show when={props.lesson.content.lesson}>
-              <p class="text-subgray-1">{props.lesson.content.lesson}</p>
+            <p class="text-lg font-medium">{props.lesson.type} - {(props.lesson as TimetableLessonCM | TimetableLessonSAE | TimetableLessonTD | TimetableLessonTP).content.type ?? "??"}</p>
+            <Show when={(props.lesson as TimetableLessonCM).content.lesson}>
+              {lesson => <p class="text-subgray-1">{lesson()}</p>}
             </Show>
             <p>En <span class="font-medium">{props.lesson.content.room}</span> avec {props.lesson.content.teacher}</p>
           </div>
