@@ -4,7 +4,15 @@
 html.theme-catppuccin-latte {
   --white: rgb(239, 241, 245);
   --gray: rgb(76, 79, 105);
-  --subgray-1: rgb(92, 95, 119);
-  --subgray-2: rgb(108, 111, 133);
-  --iut: rgb(114, 135, 253)
+  --subgray: rgb(92, 95, 119);
+  --overlay: rgb(76, 79, 105);
+  --iut: rgb(114, 135, 253);
+}
+
+html.theme-catppuccin-macchiato {
+  --white: rgb(36, 39, 58);
+  --gray: rgb(202, 211, 245);
+  --subgray: rgb(184, 192, 224);
+  --overlay: rgb(36, 39, 58);
+  --iut: rgb(183, 189, 248);
 }

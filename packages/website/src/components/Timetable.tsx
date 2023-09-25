@@ -75,7 +75,7 @@ const Timetable: Component<ITimetable> = (props) => {
     return (
       <>
         <Show when={lesson_before() && start_date().getHours() !== new Date(lesson_before()!.end_date).getHours()}>
-          <p class="py-4 text-subgray-1 text-center text-white border border-gray bg-gray my-2 ml-[58px]">
+          <p class="py-4 text-subgray text-center text-white border border-gray bg-gray my-2 ml-[58px]">
             Trou d'{hoursAndMinutesBetween(start_date(), new Date(lesson_before()!.end_date))}
           </p>
         </Show>
@@ -102,7 +102,7 @@ const Timetable: Component<ITimetable> = (props) => {
           >
             <p class="text-lg font-medium">{props.lesson.type} - {(props.lesson as TimetableLessonCM | TimetableLessonSAE | TimetableLessonTD | TimetableLessonTP).content.type ?? "??"}</p>
             <Show when={(props.lesson as TimetableLessonCM).content.lesson}>
-              {lesson => <p class="text-subgray-1">{lesson()}</p>}
+              {lesson => <p class="text-subgray">{lesson()}</p>}
             </Show>
             <p>En <span class="font-medium">{props.lesson.content.room}</span> avec {props.lesson.content.teacher}</p>
           </div>
@@ -116,7 +116,7 @@ const Timetable: Component<ITimetable> = (props) => {
       <For each={lessons_of_today()}
         fallback={
           <>
-            <p class="text-subgray-1 text-center text-white text-sm sm:text-lg border p-2"
+            <p class="text-subgray text-center text-white text-sm sm:text-lg border p-2"
               style={{ "border-color": accentColor(), "background-color": accentColor() }}
             >
               Aucun cours aujourd'hui !

@@ -23,12 +23,14 @@ import {
   Title
 } from "solid-start";
 
+import { theme } from "./stores/theme";
+
 const Root: Component = () => {
   // TODO: Should be configurable in the future.
   const FONT_FAMILY = "'Poppins', sans-serif";
 
   return (
-    <Html lang="fr" class="theme-catppuccin-latte">
+    <Html lang="fr" class={`theme-${theme()}`}>
       <Head>
         <Meta charset="utf-8" />
         <Meta name="viewport" content="width=device-width, initial-scale=1.0" />

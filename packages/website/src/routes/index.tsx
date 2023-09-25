@@ -72,7 +72,7 @@ const Page: Component = () => {
             </span>.
           </h1>
 
-          <p class="text-subgray-1 text-center text-sm sm:text-lg">
+          <p class="text-subgray text-center text-sm sm:text-lg">
             <Show when={timetableRAW()} fallback={haveError() ? "Une erreur s'est produite." : "Récupération de l'EDT en cours..."}>
               Vous visualisez actuellement l'emploi du temps de la semaine <span class="font-medium" style={{ color: accentColor() }}>
                 {timetableRAW()!.header.week_number}
@@ -177,7 +177,7 @@ const Page: Component = () => {
 
         <footer class="w-full text-center mt-auto">
           <p class="mt-4">
-            Made with {"<3"} by <a class="font-medium" style={{ color: accentColor() }} href="https://github.com/Vexcited" target="_blank">Vexcited</a>. 
+            Made with {"<3"} by <a class="font-medium hover:underline" style={{ color: accentColor() }} href="https://github.com/Vexcited">Vexcited</a>. 
           </p>
         </footer>
       </div>
