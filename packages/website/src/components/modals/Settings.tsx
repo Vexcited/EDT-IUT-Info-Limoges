@@ -96,8 +96,13 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
                   G{preferences.main_group}
                 </div>
                 <button type="button"
-                  class="text-center border border-gray text-gray bg-white px-4 py-1"
-                  onClick={() => setMainGroup(preferences.main_group + 1)}
+                  disabled={preferences.main_group >= 8}
+                  class="text-center border border-gray text-gray bg-white px-4 py-1 disabled:opacity-50"
+                  onClick={() => {
+                    const value = preferences.main_group + 1;
+                    if (value > 8) return;
+                    setMainGroup(value);
+                  }}
                 >
                   +1
                 </button>
