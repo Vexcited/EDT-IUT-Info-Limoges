@@ -76,19 +76,19 @@ const Timetable: Component<ITimetable> = (props) => {
       <>
         <Show when={lesson_before() && start_date().getHours() !== new Date(lesson_before()!.end_date).getHours()}>
           <p class="py-4 text-subgray-1 text-center text-white border border-gray bg-gray my-2 ml-[58px]">
-            Trou de {hoursAndMinutesBetween(start_date(), new Date(lesson_before()!.end_date))}
+            Trou d'{hoursAndMinutesBetween(start_date(), new Date(lesson_before()!.end_date))}
           </p>
         </Show>
 
         <div class="flex gap-2">
           <div class="flex flex-col justify-between w-[50px] flex-shrink-0 text-right">
-            <Show when={!lesson_before() || start_date().getHours() !== new Date(lesson_before()!.end_date).getHours()}
-              fallback={<p>=</p>}
+            <p
+              classList={{
+                "opacity-25": Boolean(lesson_before()) && start_date().getHours() === new Date(lesson_before()!.end_date).getHours()
+              }}
             >
-              <p>
-                {start_date().toLocaleString("fr", { minute: "2-digit", hour: "2-digit" })}
-              </p>
-            </Show>
+              {start_date().toLocaleString("fr", { minute: "2-digit", hour: "2-digit" })}
+            </p>
 
             <p>
               {end_date().toLocaleString("fr", { minute: "2-digit", hour: "2-digit" })}
