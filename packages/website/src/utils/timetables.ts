@@ -77,7 +77,30 @@ export const getTimetableFor = async (week_number_in_year: number, year: number)
 
   const stored_timetable = await timetable_store(year).getItem(week_number_in_year.toString()) as TimetableStore | null;
   if (stored_timetable) {
-    // console.log("Timetable found in local database!")
+    // check if the stored timetable is still valid
+    const now = Date.now();
+    const diff = now - stored_timetable.last_fetch;
+
+    // if the last fetch is more than 1 hour ago
+    if (diff > 3_600_000) {
+      try {
+        // renew the timetable
+        const renewed_timetable_response = await fetch("/api/" + year_str + "/" + stored_timetable.data.header.week_number);
+        const { data: renewed_timetable } = await renewed_timetable_response.json() as ApiTimetable;
+        await timetable_store(year).setItem<TimetableStore>(renewed_timetable.header.week_number.toString(), {
+          last_fetch: Date.now(),
+          data: renewed_timetable
+        });
+  
+        return renewed_timetable;
+      }
+      catch {
+        // if we can't renew the timetable, return the stored one.
+        // mostly happens when we're offline.
+        return stored_timetable.data 
+      }
+    }
+
     return stored_timetable.data;
   }
 
