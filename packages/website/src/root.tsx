@@ -19,6 +19,7 @@ import {
   Scripts,
 
   Meta,
+  Link,
   Title
 } from "solid-start";
 
@@ -34,6 +35,7 @@ const Root: Component = () => {
       
         <Meta name="color-scheme" content="dark light" data-sm />
         <Title>EDT - IUT Informatique de Limoges</Title>
+        <Link rel="icon" href="/favicon.ico" />
       </Head>
       <Body
         class="min-h-screen h-full bg-white text-gray"
