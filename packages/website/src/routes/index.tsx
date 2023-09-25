@@ -61,7 +61,7 @@ const Page: Component = () => {
     <>
       <SettingsModal open={settingsOpen()} setOpen={setSettingsOpen} />
 
-      <div class="flex flex-col gap-8 min-h-screen h-full px-6 py-12">
+      <div class="flex flex-col gap-0 min-h-screen h-full px-6 py-12">
         <header class="flex flex-col items-center justify-center">
           <h1 class="text-center sm:text-2xl text-gray">
             Bienvenue, étudiant en <span class="font-medium" style={{ color: accentColor() }}>
@@ -88,20 +88,40 @@ const Page: Component = () => {
           </button>
         </header>
 
-        <main class="">
-          <p class="text-gray mb-1 text-center sm:hidden">
+        <Show when={timetableRAW()}>
+          <div class="w-full text-center mt-4 flex justify-center items-center gap-4">
+            <button
+              class="flex gap-2 items-center font-medium border px-3 py-1 text-sm sm:text-base"
+              style={{ color: accentColor(), "border-color": accentColor() }}
+              type="button"
+              onClick={() => generateICS(timetableRAW()!)}
+            >
+              <MdiDownload /> .ics
+            </button>
+
+            <a class="flex gap-2 items-center font-medium border px-3 py-1 text-sm sm:text-base"
+              style={{ color: accentColor(), "border-color": accentColor() }}
+              href={"http://edt-iut-info.unilim.fr/edt/A" + preferences.year + "/A" + preferences.year + "_S" + timetableRAW()?.header.week_number + ".pdf"}
+            >
+              <MdiFilePdfBox /> PDF
+            </a>
+          </div>
+        </Show>
+
+        <main class="mt-6">
+          <p class="text-gray mt-6 mb-4 text-center sm:hidden">
             {getDayString()}
           </p>
 
-          <nav class="flex gap-2 justify-center items-center">
+          <nav class="flex gap-2 justify-center items-center mb-12">
             <button type="button"
-              class="text-gray border border-gray p-1 text-xl"
+              class="text-gray border border-gray p-1 text-lg hover:bg-gray hover:text-white"
               onClick={() => moveDay(-7)}
             >
               <MdiChevronDoubleLeft />
             </button>
             <button type="button"
-              class="text-gray border border-gray p-1 text-xl"
+              class="text-gray border border-gray p-1 text-xl hover:bg-gray hover:text-white"
               onClick={() => moveDay(-1)}
             >
               <MdiChevronLeft />
@@ -114,13 +134,13 @@ const Page: Component = () => {
             <span class="px-1 sm:hidden" />
 
             <button type="button"
-              class="text-gray border border-gray p-1 text-xl"
+              class="text-gray border border-gray p-1 text-xl hover:bg-gray hover:text-white"
               onClick={() => moveDay(+1)}
             >
               <MdiChevronRight />
             </button>
             <button type="button"
-              class="text-gray border border-gray p-1 text-xl"
+              class="text-gray border border-gray p-1 text-lg hover:bg-gray hover:text-white"
               onClick={() => moveDay(+7)}
             >
               <MdiChevronDoubleRight />
@@ -150,24 +170,6 @@ const Page: Component = () => {
           >
             {timetable => (
               <>
-                <div class="w-full text-center mb-12 mt-6 sm:mt-4 flex justify-center items-center gap-4">
-                  <button
-                    class="flex gap-2 items-center font-medium border px-3 py-1 text-sm sm:text-base"
-                    style={{ color: accentColor(), "border-color": accentColor() }}
-                    type="button"
-                    onClick={() => generateICS(timetable())}
-                  >
-                    <MdiDownload /> .ics
-                  </button>
-
-                  <a class="flex gap-2 items-center font-medium border px-3 py-1 text-sm sm:text-base"
-                    style={{ color: accentColor(), "border-color": accentColor() }}
-                    href={"http://edt-iut-info.unilim.fr/edt/A" + preferences.year + "/A" + preferences.year + "_S" + timetableRAW()?.header.week_number + ".pdf"}
-                  >
-                    <MdiFilePdfBox /> PDF
-                  </a>
-                </div>
-
                 <Timetable {...timetable()} />
               </>
             )}
