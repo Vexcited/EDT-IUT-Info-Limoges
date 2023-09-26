@@ -120,6 +120,8 @@ const lessonsForG1A = timetable.lessons.filter(lesson => {
 });
 ```
 
+Note that we're not checking for `SAE` and potential `OTHER` lessons.
+
 ## API
 
 ### `YEARS`
@@ -160,6 +162,7 @@ console.log(LESSON_TYPES.CM); // "CM"
 console.log(LESSON_TYPES.TD); // "TD"
 console.log(LESSON_TYPES.TP); // "TP"
 console.log(LESSON_TYPES.SAE); // "SAE"
+console.log(LESSON_TYPES.OTHER); // "OTHER", used for unknown lessons
 ```
 
 ### `TimetableEntry`
@@ -224,10 +227,12 @@ interface TimetableLessonCM {
   type: LESSON_TYPES.CM;
 
   content: {
-    // eg.: "R1.01 R1.01"
+    // eg.: "R1.01"
     type: string;
-    // Name of the lesson (eg.: "Initiation au développement").
-    lesson: string;
+    // Name of the lesson (eg.: "Initiation au développement") from the parsed timetable.
+    raw_lesson: string;
+    // Lesson name in the official reference.
+    lesson_from_reference?: string;
     // Name of the teacher
     teacher: string;
     // eg.: "AC"
@@ -252,6 +257,8 @@ interface TimetableLessonTP {
     teacher: string;
     // eg.: "105"
     room: string;
+    // Lesson name in the official reference.
+    lesson_from_reference?: string;
   }
 }
 
@@ -270,6 +277,40 @@ interface TimetableLessonTD {
     teacher: string;
     // eg.: "204"
     room: string;
+    // Lesson name in the official reference.
+    lesson_from_reference?: string;
+  }
+}
+
+interface TimetableLessonSAE {
+  type: LESSON_TYPES.SAE;
+
+  // eg.: If you're in G1, `main` will be `1`.
+  group: {
+    main: number;
+  }
+
+  content: {
+    // eg.: "S1.01"
+    type: string;
+    // Most of the time, it's the group name.
+    teacher: string;
+    // Lesson name in the official reference.
+    lesson_from_reference?: string;
+    // Lesson name parsed in the timetable, if exists.
+    raw_lesson?: string;
+    // eg.: "204"
+    room: string;
+  }
+}
+
+interface TimetableLessonOTHER {
+  type: LESSON_TYPES.OTHER;
+
+  content: {
+    description: string;
+    teacher: string;
+    room: string;
   }
 }
 
@@ -281,6 +322,8 @@ type TimetableLesson = {
   | TimetableLessonCM
   | TimetableLessonTP
   | TimetableLessonTD
+  | TimetableLessonSAE
+  | TimetableLessonOTHER
 );
 ```
 

@@ -6,13 +6,15 @@ import type { TimetableHeader } from "./header";
 import { round } from "../utils/numbers";
 import { getFillBounds, getTextsInFillBounds } from "./bounds";
 import { COLORS, LESSON_TYPES, SUBGROUPS } from "./constants";
+import { BUT_INFO_REF } from "../utils/references";
 
 export interface TimetableLessonCM {
   type: LESSON_TYPES.CM;
 
   content: {
     type: string;
-    lesson: string;
+    raw_lesson: string;
+    lesson_from_reference?: string;
     teacher: string;
     room: string;
   }
@@ -29,6 +31,7 @@ export interface TimetableLessonTP {
   content: {
     type: string;
     teacher: string;
+    lesson_from_reference?: string
     room: string;
   }
 }
@@ -43,6 +46,7 @@ export interface TimetableLessonTD {
   content: {
     type: string;
     teacher: string;
+    lesson_from_reference?: string
     room: string;
   }
 }
@@ -50,7 +54,6 @@ export interface TimetableLessonTD {
 export interface TimetableLessonSAE {
   type: LESSON_TYPES.SAE;
 
-  /** When `undefined`, it's like a CM, everyone is in there. */
   group: {
     main: number;
   }
@@ -58,8 +61,9 @@ export interface TimetableLessonSAE {
   content: {
     type: string;
     teacher: string;
+    lesson_from_reference?: string;
+    raw_lesson?: string;
     room: string;
-    lesson?: string;
   }
 }
 
@@ -133,7 +137,7 @@ export const getTimetableLessons = (page: Page, header: TimetableHeader, timings
         const lesson: TimetableLesson = {
           type: LESSON_TYPES.CM,
           start_date, end_date,
-          content: { type, lesson: lesson_name, teacher, room }
+          content: { type, raw_lesson: lesson_name, teacher, room, lesson_from_reference: BUT_INFO_REF[type as keyof typeof BUT_INFO_REF] }
         };
 
         lessons.push(lesson);
@@ -152,7 +156,7 @@ export const getTimetableLessons = (page: Page, header: TimetableHeader, timings
             sub: group.sub
           },
 
-          content: { type, teacher, room }
+          content: { type, teacher, room, lesson_from_reference: BUT_INFO_REF[type as keyof typeof BUT_INFO_REF] }
         };
 
         lessons.push(lesson);
@@ -170,7 +174,7 @@ export const getTimetableLessons = (page: Page, header: TimetableHeader, timings
             main: group.main
           },
 
-          content: { type, teacher, room }
+          content: { type, teacher, room, lesson_from_reference: BUT_INFO_REF[type as keyof typeof BUT_INFO_REF] }
         };
 
         lessons.push(lesson);
@@ -192,7 +196,7 @@ export const getTimetableLessons = (page: Page, header: TimetableHeader, timings
               main: group.main
             },
   
-            content: { type, teacher, room }
+            content: { type, teacher, room, lesson_from_reference: BUT_INFO_REF[type as keyof typeof BUT_INFO_REF] }
           };
         }
         else {
@@ -207,11 +211,30 @@ export const getTimetableLessons = (page: Page, header: TimetableHeader, timings
           const description = texts.map(text => text.trim()).join(" ");
           if (!teacher || !room || !description) continue;
 
-          lesson = {
-            type: LESSON_TYPES.OTHER,
-            start_date, end_date,
+          // if the first word is in the reference.
+          const first_word = description.split(" ")[0];
+          if (BUT_INFO_REF[first_word as keyof typeof BUT_INFO_REF]) {
+            const [type, ...description_from_after_separator] = description.split(" - ");
+            const lesson_from_reference = BUT_INFO_REF[type as keyof typeof BUT_INFO_REF];
 
-            content: { room, teacher, description }
+            lesson = {
+              type: LESSON_TYPES.SAE,
+              start_date, end_date,
+
+              group: {
+                main: group.main
+              },
+
+              content: { type: first_word, teacher, room, lesson_from_reference, raw_lesson: description_from_after_separator.join(" ") }
+            };
+          }
+          else {
+            lesson = {
+              type: LESSON_TYPES.OTHER,
+              start_date, end_date,
+  
+              content: { room, teacher, description }
+            }
           }
         }
 
