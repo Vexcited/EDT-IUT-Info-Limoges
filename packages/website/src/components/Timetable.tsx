@@ -76,7 +76,7 @@ const Timetable: Component<ITimetable> = (props) => {
       <>
         <Show when={lesson_before() && start_date().getHours() !== new Date(lesson_before()!.end_date).getHours()}>
           <p class="py-4 text-subgray text-center text-white border border-gray bg-gray my-2 ml-[58px]">
-            Trou d'{hoursAndMinutesBetween(start_date(), new Date(lesson_before()!.end_date))}
+            {hoursAndMinutesBetween(start_date(), new Date(lesson_before()!.end_date))} de trou
           </p>
         </Show>
 
@@ -119,7 +119,7 @@ const Timetable: Component<ITimetable> = (props) => {
             <p class="text-subgray text-center text-white text-sm sm:text-lg border p-2"
               style={{ "border-color": accentColor(), "background-color": accentColor() }}
             >
-              Aucun cours aujourd'hui !
+              Aucun cours pour ce jour !
             </p>
             <p class="text-center text-sm mt-2">
               En attendant, vous pouvez aller <a style={{ color: accentColor() }} class="hover:underline" href="/api/video" target="_blank">
