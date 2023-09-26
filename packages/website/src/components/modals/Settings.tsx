@@ -4,6 +4,7 @@ import { Dialog, Select } from "@kobalte/core";
 import MdiClose from '~icons/mdi/close'
 import MdiCheck from '~icons/mdi/check'
 import MdiChevronDown from '~icons/mdi/chevron-down'
+
 import { preferences, setMainGroup, setSubGroup, setYear } from "~/stores/preferences";
 import { changeTheme, theme } from "~/stores/theme";
 import { deleteAllStores } from "~/utils/timetables";

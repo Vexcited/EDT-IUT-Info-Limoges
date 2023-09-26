@@ -1,7 +1,7 @@
 import { createEvents } from "ics";
 import type { ITimetable } from "~/types/api";
 import { preferences } from "~/stores/preferences";
-import { TimetableLessonCM, TimetableLessonSAE, TimetableLessonTD, TimetableLessonTP } from "edt-iut-info-limoges";
+import { TimetableLessonCM, TimetableLessonOTHER, TimetableLessonSAE, TimetableLessonTD, TimetableLessonTP } from "edt-iut-info-limoges";
 
 export const generateICS = (timetable: ITimetable) => {
   const lessons = timetable.lessons.filter(lesson => {
@@ -70,10 +70,12 @@ export const generateICS = (timetable: ITimetable) => {
     const start = new Date(lesson.start_date);
     const end = new Date(lesson.end_date);
 
+    const content = (lesson as TimetableLessonCM | TimetableLessonSAE | TimetableLessonTD | TimetableLessonTP).content.lesson_from_reference || (lesson as TimetableLessonCM | TimetableLessonSAE | TimetableLessonTD | TimetableLessonTP).content.lesson_from_reference || (lesson as TimetableLessonOTHER).content.description;
+
     return {
-      title: lesson.type + " - " + ((lesson as TimetableLessonCM | TimetableLessonSAE | TimetableLessonTD | TimetableLessonTP).content.type ?? "??"),
+      title: lesson.type + " - " + ((lesson as TimetableLessonCM | TimetableLessonSAE | TimetableLessonTD | TimetableLessonTP).content.type ?? "??") + " - " + content,
       description: `
-${(lesson as TimetableLessonCM).content.lesson ?? ""}
+${content}
 Avec ${lesson.content.teacher} en salle ${lesson.content.room}.
       `.trim(),
 

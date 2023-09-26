@@ -178,7 +178,7 @@ const Page: Component = () => {
         </main>
 
         <footer class="w-full text-center mt-auto">
-          <p class="mt-4">
+          <p class="mt-16">
             Made with {"<3"} by <a class="font-medium hover:underline" style={{ color: accentColor() }} href="https://github.com/Vexcited">Vexcited</a>. 
           </p>
         </footer>
