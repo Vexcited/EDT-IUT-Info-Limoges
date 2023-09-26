@@ -6,6 +6,7 @@ import MdiCheck from '~icons/mdi/check'
 import MdiChevronDown from '~icons/mdi/chevron-down'
 import { preferences, setMainGroup, setSubGroup, setYear } from "~/stores/preferences";
 import { changeTheme, theme } from "~/stores/theme";
+import { deleteAllStores } from "~/utils/timetables";
 
 export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> }> = (props) => {
   return (
@@ -192,6 +193,24 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
                   </Select.Content>
                 </Select.Portal>
               </Select.Root>
+            </section>
+
+            <section class="mt-4">
+              <h3 class="text-gray text-[18px] mb-1">
+                Données
+              </h3>
+              <button class="w-full text-center border border-gray px-4 py-2 text-gray bg-white hover:text-white hover:bg-gray"
+                type="button"
+                onClick={async () => {
+                  await deleteAllStores();
+                  window.location.reload();
+                }}
+              >
+                Effacer le cache
+              </button>
+              <p class="text-subgray text-xs mt-1">
+                Supprime les EDTs stockés dans le navigateur.
+              </p>
             </section>
 
           </Dialog.Content>

@@ -13,6 +13,12 @@ interface TimetableStore {
   last_fetch: number
 }
 
+export const deleteAllStores = async () => {
+  for (const year of [1, 2, 3]) {
+    await timetable_store(year).clear();
+  }
+}
+
 /**
  * Get the latest week number stored in the local database.
  */
