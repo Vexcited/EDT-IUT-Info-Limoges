@@ -65,7 +65,7 @@ export const BUT_INFO_REF = {
   "R3.14": "Projet personnel et professionnel",
 
   // Semestre 4, parcours A.
-  "S4.01": "Développement d'une application complexe",
+  "S4A.01": "Développement d'une application complexe",
 
   "R4.01": "Architecture logicielle",
   "R4.02": "Qualité de développement",
@@ -75,39 +75,39 @@ export const BUT_INFO_REF = {
   "R4.06": "Communication interne",
   "R4.07": "Projet personnel et professionnel",
   // .Real.
-  "R4.08": "Virtualisation",
-  "R4.09": "Systèmes d'information",
-  "R4.10": "Complément web",
-  "R4.11": "Développement pour applications mobiles",
-  "R4.12": "Automates et Langages",
+  "R4A.08": "Virtualisation",
+  "R4A.09": "Systèmes d'information",
+  "R4A.10": "Complément web",
+  "R4A.11": "Développement pour applications mobiles",
+  "R4A.12": "Automates et Langages",
 
   // Semestre 5, parcours A.
-  "S5.01": "Développement avancé",
+  "S5A.01": "Développement avancé",
 
   "R5.01": "Initiation au management d'une équipe de projet informatique",
   "R5.02": "Projet personnel et professionnel",
   "R5.03": "Politique de communication",
   // .Real.
-  "R5.04": "Qualité algorithmique",
-  "R5.05": "Programmation avancée",
-  "R5.06": "Sensibilisation à la programmation multimédia",
-  "R5.07": "Automatisation de la chaîne de production",
-  "R5.08": "Qualité de développement",
-  "R5.09": "Virtualisation avancée",
-  "R5.10": "Nouveaux paradigmes de base de données",
-  "R5.11": "Méthodes d'optimisation pour l'aide à la décision",
-  "R5.12": "Modélisations mathématiques",
-  "R5.13": "Économie durable et numérique",
-  "R5.14": "Anglais",
+  "R5A.04": "Qualité algorithmique",
+  "R5A.05": "Programmation avancée",
+  "R5A.06": "Sensibilisation à la programmation multimédia",
+  "R5A.07": "Automatisation de la chaîne de production",
+  "R5A.08": "Qualité de développement",
+  "R5A.09": "Virtualisation avancée",
+  "R5A.10": "Nouveaux paradigmes de base de données",
+  "R5A.11": "Méthodes d'optimisation pour l'aide à la décision",
+  "R5A.12": "Modélisations mathématiques",
+  "R5A.13": "Économie durable et numérique",
+  "R5A.14": "Anglais",
 
   // Semestre 6, parcours A.
-  "S6.01": "Évolution d'une application existante",
+  "S6A.01": "Évolution d'une application existante",
 
   "R6.01": "Initiation à l'entrepreneuriat",
   "R6.02": "Droit du numérique et de la propriété intellectuelle",
   "R6.03": "Communication : organisation et diffusion de l'information",
   "R6.04": "Projet personnel et professionnel",
   // .Real.
-  "R6.05": "Développement avancé",
-  "R6.06": "Maintenance applicative"
+  "R6A.05": "Développement avancé",
+  "R6A.06": "Maintenance applicative"
 };
