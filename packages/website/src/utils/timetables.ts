@@ -2,6 +2,7 @@ import localforage from "localforage";
 import type { ITimetable, ApiTimetable } from "~/types/api";
 import { APIError, APIErrorType } from "./errors";
 
+const key = (week_number_in_year: number, day: Date) => week_number_in_year.toString() + "-" + day.getFullYear()
 const timetable_store = (year: number) => localforage.createInstance({
   name: "timetables",
   storeName: "A" + year
@@ -17,6 +18,11 @@ export const deleteAllStores = async () => {
   for (const year of [1, 2, 3]) {
     await timetable_store(year).clear();
   }
+}
+
+export const deleteTimetableFromStore = async (year: number, day: Date) => {
+  const week_number_in_year = getWeekNumber(day);
+  await timetable_store(year).removeItem(key(week_number_in_year, day));
 }
 
 /**
@@ -79,7 +85,6 @@ export const listTimetablesOnline = async (year: number) => {
 }
 
 const NUMBER_OF_WEEKS_IN_YEAR = 52;
-const key = (week_number_in_year: number, day: Date) => week_number_in_year.toString() + "-" + day.getFullYear()
 
 export const getTimetableFor = async (day: Date, year: number): Promise<ITimetable> => {
   const year_str = "A" + year;

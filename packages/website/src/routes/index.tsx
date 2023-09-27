@@ -9,7 +9,7 @@ import { preferences } from "~/stores/preferences";
 import { day, moveDay } from "~/stores/temporary";
 
 import { accentColor } from "~/utils/colors";
-import { getTimetableFor, getWeekNumber } from "~/utils/timetables";
+import { getTimetableFor, getWeekNumber, deleteTimetableFromStore } from "~/utils/timetables";
 
 import MdiCog from '~icons/mdi/cog'
 import MdiChevronLeft from '~icons/mdi/chevron-left'
@@ -20,6 +20,7 @@ import MdiFileDocumentAlertOutline from '~icons/mdi/file-document-alert-outline'
 import MdiLoading from '~icons/mdi/loading'
 import MdiDownload from '~icons/mdi/download'
 import MdiFilePdfBox from '~icons/mdi/file-pdf-box'
+import MdiReload from '~icons/mdi/reload'
 
 import { APIError } from "~/utils/errors";
 import { generateICS } from "~/utils/ics";
@@ -36,19 +37,16 @@ const Page: Component = () => {
   const [settingsOpen, setSettingsOpen] = createSignal(false);
   const [haveError, setHaveError] = createSignal<string | null>(null);
   
-  /** Reference to preferences.year to simplify the comparaison. */
-  let oldYearState = preferences.year;
-  createEffect(on([() => preferences.year, day], async ([year, day]) => {
-    const old_timetable = timetableRAW();
-    if (year === oldYearState && old_timetable?.header.week_number_in_year === getWeekNumber(day)) return;
-
+  const updateTimetable = async (force_update = false) => {
     setTimetableRAW(null);
     setHaveError(null);
-    // Update the old year state to the new one.
-    oldYearState = year;
     
     try {
-      const timetable = await getTimetableFor(day, year);
+      if (force_update) {
+        await deleteTimetableFromStore(preferences.year, day());
+      }
+
+      const timetable = await getTimetableFor(day(), preferences.year);
       setTimetableRAW(timetable);
     }
     catch (error) {
@@ -59,6 +57,17 @@ const Page: Component = () => {
 
       setHaveError((error as Error).message);
     }
+  }
+
+  /** Reference to preferences.year to simplify the comparaison. */
+  let oldYearState = preferences.year;
+  createEffect(on([() => preferences.year, day], async ([year, day]) => {
+    const old_timetable = timetableRAW();
+    if (year === oldYearState && old_timetable?.header.week_number_in_year === getWeekNumber(day)) return;
+
+    // Update the old year state to the new one.
+    oldYearState = year;
+    await updateTimetable();
   }));
 
   return (
@@ -93,23 +102,33 @@ const Page: Component = () => {
         </header>
 
         <Show when={timetableRAW()}>
-          <div class="w-full text-center mt-4 flex justify-center items-center gap-4">
-            <button
-              class="flex gap-2 items-center font-medium border px-3 py-1 text-sm sm:text-base"
-              style={{ color: accentColor(), "border-color": accentColor() }}
-              type="button"
-              onClick={() => generateICS(timetableRAW()!)}
-            >
-              <MdiDownload /> .ics
-            </button>
+          <>
+            <div class="w-full text-center mt-6 flex justify-center items-center gap-4">
+              <button
+                class="flex gap-2 items-center font-medium border px-3 py-1 text-sm sm:text-base"
+                style={{ color: accentColor(), "border-color": accentColor() }}
+                type="button"
+                onClick={() => generateICS(timetableRAW()!)}
+              >
+                <MdiDownload /> .ics
+              </button>
 
-            <a class="flex gap-2 items-center font-medium border px-3 py-1 text-sm sm:text-base"
+              <a class="flex gap-2 items-center font-medium border px-3 py-1 text-sm sm:text-base"
+                style={{ color: accentColor(), "border-color": accentColor() }}
+                href={"http://edt-iut-info.unilim.fr/edt/A" + preferences.year + "/A" + preferences.year + "_S" + timetableRAW()?.header.week_number + ".pdf"}
+              >
+                <MdiFilePdfBox /> .pdf
+              </a>
+            </div>
+
+            <button type="button"
+              class="mx-auto w-fit mt-3 flex gap-2 items-center font-medium border px-3 py-1 text-xs sm:text-sm"
               style={{ color: accentColor(), "border-color": accentColor() }}
-              href={"http://edt-iut-info.unilim.fr/edt/A" + preferences.year + "/A" + preferences.year + "_S" + timetableRAW()?.header.week_number + ".pdf"}
+              onClick={() => updateTimetable(true)}
             >
-              <MdiFilePdfBox /> PDF
-            </a>
-          </div>
+              <MdiReload /> Actualiser
+            </button>
+          </>
         </Show>
 
         <main class="mt-6">
