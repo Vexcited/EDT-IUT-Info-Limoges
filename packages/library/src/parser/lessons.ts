@@ -101,7 +101,7 @@ export const getTimetableLessons = (page: Page, header: TimetableHeader, timings
     if (![COLORS.CM, COLORS.TD, COLORS.TP, COLORS.SAE].includes(color)) continue;
     
     const bounds = getFillBounds(fill);
-    const contained_texts = getTextsInFillBounds(page, bounds, 4, color === COLORS.CM ? 6 : 0);
+    const contained_texts = getTextsInFillBounds(page, bounds, 4, color === COLORS.CM ? 6 : 4);
     
     const texts = contained_texts.map(text => decodeURIComponent(text.R[0].T));
 
@@ -165,7 +165,7 @@ export const getTimetableLessons = (page: Page, header: TimetableHeader, timings
       }
 
       case COLORS.TD: {
-        const [type, teacher, room] = texts[0].split(" - ");
+        const [type, teacher, room] = texts[0].split("-").map(text => text.trim());
 
         const lesson: TimetableLesson = {
           type: LESSON_TYPES.TD,
