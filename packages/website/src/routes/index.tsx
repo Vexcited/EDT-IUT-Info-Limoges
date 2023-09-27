@@ -35,13 +35,17 @@ const Page: Component = () => {
   const [timetableRAW, setTimetableRAW] = createSignal<ITimetable | null>(null);
   const [settingsOpen, setSettingsOpen] = createSignal(false);
   const [haveError, setHaveError] = createSignal<string | null>(null);
-
+  
+  /** Reference to preferences.year to simplify the comparaison. */
+  let oldYearState = preferences.year;
   createEffect(on([() => preferences.year, day], async ([year, day]) => {
     const old_timetable = timetableRAW();
-    if (old_timetable?.header.week_number_in_year === getWeekNumber(day)) return;
+    if (year === oldYearState && old_timetable?.header.week_number_in_year === getWeekNumber(day)) return;
 
     setTimetableRAW(null);
     setHaveError(null);
+    // Update the old year state to the new one.
+    oldYearState = year;
     
     try {
       const timetable = await getTimetableFor(day, year);
