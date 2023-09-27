@@ -285,10 +285,11 @@ interface TimetableLessonTD {
 interface TimetableLessonSAE {
   type: LESSON_TYPES.SAE;
 
-  // eg.: If you're in G1, `main` will be `1`.
+  // When `undefined`, it means that it's for every groups.
   group: {
+    // eg.: If you're in G1, `main` will be `1`.
     main: number;
-  }
+  } | undefined
 
   content: {
     // eg.: "S1.01"

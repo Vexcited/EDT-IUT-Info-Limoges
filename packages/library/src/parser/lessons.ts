@@ -54,9 +54,10 @@ export interface TimetableLessonTD {
 export interface TimetableLessonSAE {
   type: LESSON_TYPES.SAE;
 
+  /** When `undefined`, it means that it's for every groups. */
   group: {
     main: number;
-  }
+  } | undefined
 
   content: {
     type: string;
@@ -184,7 +185,7 @@ export const getTimetableLessons = (page: Page, header: TimetableHeader, timings
       case COLORS.SAE: {
         let lesson: TimetableLesson;
 
-        // It's an SAE
+        // It's an SAE for a single group.
         if (texts.length === 1) {
           const [type, teacher, room] = texts[0].split(" - ");
   
@@ -214,16 +215,22 @@ export const getTimetableLessons = (page: Page, header: TimetableHeader, timings
           // if the first word is in the reference.
           const first_word = description.split(" ")[0];
           if (BUT_INFO_REF[first_word as keyof typeof BUT_INFO_REF]) {
-            const [type, ...description_from_after_separator] = description.split(" - ");
-            const lesson_from_reference = BUT_INFO_REF[type as keyof typeof BUT_INFO_REF];
+            const [, ...description_from_after_separator] = description.split(" - ");
+            const lesson_from_reference = BUT_INFO_REF[first_word as keyof typeof BUT_INFO_REF];
+
+            // see if it's a group SAE or a global SAE.
+            const groupsInsideBounds = Object.entries(groups).filter(([rounded_start_y, the_group]) => {
+              const rounded_start_y_number = parseFloat(rounded_start_y);
+              return rounded_start_y_number >= bounds.start_y && rounded_start_y_number < bounds.end_y;
+            });
 
             lesson = {
               type: LESSON_TYPES.SAE,
               start_date, end_date,
 
-              group: {
+              group: groupsInsideBounds.length === 1 ? {
                 main: group.main
-              },
+              } : undefined,
 
               content: { type: first_word, teacher, room, lesson_from_reference, raw_lesson: description_from_after_separator.join(" ") }
             };

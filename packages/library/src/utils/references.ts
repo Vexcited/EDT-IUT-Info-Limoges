@@ -8,7 +8,7 @@ export const BUT_INFO_REF = {
   "S1.03": "Installation d'un poste pour le développement",
   "S1.04": "Création d'une base de données",
   "S1.05": "Recueil de besoins",
-  "S1.06": "Découverte de l'environnement économique et écologique",
+  "S1.06": "Environnement économique",
 
   "R1.01": "Initiation au développement",
   "R1.02": "Développement d'interfaces web",
