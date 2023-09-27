@@ -18,7 +18,7 @@ export const generateICS = (timetable: ITimetable) => {
       // need to check the subgroup.
       case "TD":
       case "SAE":
-        if (lesson.group.main === preferences.main_group) {
+        if (typeof lesson.group === "undefined" || lesson.group.main === preferences.main_group) {
           isForUser = true;
         }
         break;
@@ -70,7 +70,7 @@ export const generateICS = (timetable: ITimetable) => {
     const start = new Date(lesson.start_date);
     const end = new Date(lesson.end_date);
 
-    const content = (lesson as TimetableLessonCM | TimetableLessonSAE | TimetableLessonTD | TimetableLessonTP).content.lesson_from_reference || (lesson as TimetableLessonCM | TimetableLessonSAE | TimetableLessonTD | TimetableLessonTP).content.lesson_from_reference || (lesson as TimetableLessonOTHER).content.description;
+    const content = (lesson as TimetableLessonCM | TimetableLessonSAE | TimetableLessonTD | TimetableLessonTP).content.lesson_from_reference || (lesson as TimetableLessonCM | TimetableLessonSAE).content.raw_lesson || (lesson as TimetableLessonOTHER).content.description;
 
     return {
       title: lesson.type + " - " + ((lesson as TimetableLessonCM | TimetableLessonSAE | TimetableLessonTD | TimetableLessonTP).content.type ?? "??") + " - " + content,

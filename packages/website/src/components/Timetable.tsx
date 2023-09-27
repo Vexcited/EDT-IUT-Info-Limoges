@@ -28,7 +28,7 @@ const Timetable: Component<ITimetable> = (props) => {
         // need to check the subgroup.
         case "TD":
         case "SAE":
-          if (lesson.group.main === preferences.main_group) {
+          if (typeof lesson.group === "undefined" || lesson.group.main === preferences.main_group) {
             isForUser = true;
           }
           break;
@@ -101,7 +101,7 @@ const Timetable: Component<ITimetable> = (props) => {
             }}
           >
             <p class="text-lg font-medium">{props.lesson.type} - {(props.lesson as TimetableLessonCM | TimetableLessonSAE | TimetableLessonTD | TimetableLessonTP).content.type ?? "??"}</p>
-            <Show when={(props.lesson as TimetableLessonCM | TimetableLessonSAE | TimetableLessonTD | TimetableLessonTP).content.lesson_from_reference || (props.lesson as TimetableLessonCM | TimetableLessonSAE | TimetableLessonTD | TimetableLessonTP).content.lesson_from_reference || (props.lesson as TimetableLessonOTHER).content.description}>
+            <Show when={(props.lesson as TimetableLessonCM | TimetableLessonSAE | TimetableLessonTD | TimetableLessonTP).content.lesson_from_reference || (props.lesson as TimetableLessonCM | TimetableLessonSAE).content.raw_lesson || (props.lesson as TimetableLessonOTHER).content.description}>
               {lesson => <p class="text-subgray">{lesson()}</p>}
             </Show>
             <p>En <span class="font-medium">{props.lesson.content.room}</span> avec {props.lesson.content.teacher}</p>
