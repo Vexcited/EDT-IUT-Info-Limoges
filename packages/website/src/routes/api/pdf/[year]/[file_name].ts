@@ -9,9 +9,8 @@ export const GET = async ({ params }: APIEvent): Promise<Response> => {
   headers.set("Content-Length", response.headers.get("Content-Length")!);
   headers.set("Last-Modified", response.headers.get("Last-Modified")!);
 
-  const buffer = await response.arrayBuffer();
+  const data = await response.blob();
+  const blob = new Blob([data], { type: "application/pdf" });
 
-  return new Response(buffer, {
-    headers
-  });
+  return new Response(blob, { headers });
 };
