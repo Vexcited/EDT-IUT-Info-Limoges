@@ -8,12 +8,12 @@ export const GET = async ({ params }: APIEvent): Promise<Response> => {
   headers.set("Content-Type", "application/pdf");
   headers.set("Content-Disposition", "inline; filename=\"" + params.file_name + "\"");
   headers.set("Content-Length", response.headers.get("Content-Length")!);
-  headers.set("Cache-Control", "public, max-age=604800, immutable");
-  headers.set("Expires", new Date(Date.now() + 604800000).toUTCString());
   headers.set("Last-Modified", response.headers.get("Last-Modified")!);
-  headers.set("ETag", response.headers.get("ETag")!);
 
-  return new Response(response.body, {
+  const body = await response.blob();
+  const blob = new Blob([body], { type: "application/pdf" });
+
+  return new Response(blob, {
     status: response.status,
     statusText: response.statusText,
 
