@@ -4,12 +4,5 @@
   "installCommand": "pnpm install",
   "devCommand": "pnpm -w run website:dev",
   "buildCommand": "pnpm -w run full:build",
-  "outputDirectory": "packages/website/.output",
-
-  "rewrites": [
-    {
-      "source": "/api/pdf/:path*",
-      "destination": "http://edt-iut-info.unilim.fr/edt/:path*"
-    }
-  ]
+  "outputDirectory": "packages/website/.output"
 }
