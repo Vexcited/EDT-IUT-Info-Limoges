@@ -10,10 +10,11 @@ export const GET = async ({ params }: APIEvent): Promise<Response> => {
   headers.set("Content-Length", response.headers.get("Content-Length")!);
   headers.set("Last-Modified", response.headers.get("Last-Modified")!);
 
-  const body = await response.blob();
-  const blob = new Blob([body], { type: "application/pdf" });
+  const buffer = await response.arrayBuffer();
+  const uint = new Uint8Array(buffer);
+  const body = uint.reduce((data, byte) => data + String.fromCharCode(byte), "");
 
-  return new Response(blob, {
+  return new Response(body, {
     status: response.status,
     statusText: response.statusText,
 
