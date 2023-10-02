@@ -113,17 +113,12 @@ const Page: Component = () => {
                 <MdiDownload /> .ics
               </button>
 
-              <button
-                class="flex gap-2 items-center font-medium border px-3 py-1 text-sm sm:text-base"
+              <a class="flex gap-2 items-center font-medium border px-3 py-1 text-sm sm:text-base"
                 style={{ color: accentColor(), "border-color": accentColor() }}
-                type="button"
-                onClick={() => {
-                  // @ts-expect-error
-                  window.location = "/api/pdf/A" + preferences.year + "/A" + preferences.year + "_S" + timetableRAW()?.header.week_number + ".pdf";
-                }}
+                href={"http://edt-iut-info.unilim.fr/edt/A" + preferences.year + "/A" + preferences.year + "_S" + timetableRAW()?.header.week_number + ".pdf"}
               >
                 <MdiFilePdfBox /> .pdf
-              </button>
+              </a>
             </div>
 
             <button type="button"
