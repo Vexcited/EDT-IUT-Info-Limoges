@@ -6,6 +6,12 @@ export const GET = async ({ params }: APIEvent): Promise<Response> => {
 
   return new Response(response.body, {
     status: response.status,
-    statusText: response.statusText
+    statusText: response.statusText,
+
+    headers: {
+      "Content-Type": "application/pdf",
+      "Content-Length": response.headers.get("Content-length") || "",
+      "Last-Modified": response.headers.get("Last-Modified") || ""
+    }
   });
 };
