@@ -119,7 +119,7 @@ const Page: Component = () => {
                 type="button"
                 onClick={() => {
                   // @ts-expect-error
-                  window.location = "http://edt-iut-info.unilim.fr/edt/A" + preferences.year + "/A" + preferences.year + "_S" + timetableRAW()?.header.week_number + ".pdf";
+                  window.location = "/api/pdf/A" + preferences.year + "/A" + preferences.year + "_S" + timetableRAW()?.header.week_number + ".pdf";
                 }}
               >
                 <MdiFilePdfBox /> .pdf
