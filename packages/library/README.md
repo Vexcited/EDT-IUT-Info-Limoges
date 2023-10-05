@@ -185,6 +185,10 @@ interface TimetableEntry {
   getBuffer(): Promise<Buffer>;
   // Fetch the buffer of the PDF file, parse it and returns the timetable.
   getTimetable(): Promise<Timetable>;
+
+  // Get the date of the last update made to the PDF file.
+  // Where DateTime is a class from the `luxon` package.
+  lastUpdated(): Promise<DateTime>;
 } 
 ```
 

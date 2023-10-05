@@ -15,6 +15,8 @@ export class TimetableEntry {
   /** The direct link to the timetable. */
   public link: string
 
+  private response: Response | undefined;
+
   /**
    * @param file_name - format: A{from_year}_S{week_number}.pdf
    * @param raw_date - format: yyyy-MM-dd HH:mm
@@ -27,11 +29,19 @@ export class TimetableEntry {
     this.link = `${FTP_ENDPOINT_URL}/${this.from_year}/${this.file_name}`;
   }
 
+  private async getResponse (): Promise<Response> {
+    if (!this.response) {
+      this.response = await fetch(this.link);
+    }
+
+    return this.response;
+  }
+
   /**
    * @returns The timetable's PDF as a buffer.
    */
-  async getBuffer (): Promise<ArrayBuffer> {
-    const response = await fetch(this.link);
+  public async getBuffer (): Promise<ArrayBuffer> {
+    const response = await this.getResponse();
     const array = await response.arrayBuffer();
     return array
   }
@@ -39,9 +49,23 @@ export class TimetableEntry {
   /**
    * @returns The timetable's content parsed.
    */
-  async getTimetable () {
+  public async getTimetable () {
     const buffer = await this.getBuffer();
     const timetable = await getTimetableFromBuffer(buffer);
     return timetable;
+  }
+
+  /**
+   * @returns The date of the last update made to the file.
+   */
+  public async lastUpdated (): Promise<DateTime> {
+    const response = await this.getResponse();
+    const last_updated = response.headers.get("Last-Modified");
+    if (!last_updated) {
+      throw new Error("Could not get date from \"Last-Modified\" header, probably not existant.");
+    }
+
+    const date = DateTime.fromFormat(last_updated, "EEE, dd MMM yyyy HH:mm:ss zzz", DATE_TIME_OPTIONS);
+    return date;
   }
 }
