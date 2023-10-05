@@ -6,6 +6,7 @@ export const COLORS = {
   CM: "#ffff0c",
   TD: "#ffbab3",
   TP: "#b3ffff",
+  DS: "#f23ea7",
   SAE: "#9fff9f",
 
   RULERS: "#ffffa7",
@@ -40,6 +41,7 @@ export enum LESSON_TYPES {
   CM = "CM",
   TD = "TD",
   TP = "TP",
+  DS = "DS",
   SAE = "SAE",
   OTHER = "OTHER"
 }

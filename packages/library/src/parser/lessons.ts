@@ -51,6 +51,21 @@ export interface TimetableLessonTD {
   }
 }
 
+export interface TimetableLessonDS {
+  type: LESSON_TYPES.DS;
+
+  group: {
+    main: number;
+  }
+
+  content: {
+    type: string;
+    teacher: string;
+    lesson_from_reference?: string
+    room: string;
+  }
+}
+
 export interface TimetableLessonSAE {
   type: LESSON_TYPES.SAE;
 
@@ -85,6 +100,7 @@ export type TimetableLesson = {
   | TimetableLessonCM
   | TimetableLessonTP
   | TimetableLessonTD
+  | TimetableLessonDS
   | TimetableLessonSAE
   | TimetableLessonOTHER
 );
@@ -98,7 +114,7 @@ export const getTimetableLessons = (page: Page, header: TimetableHeader, timings
 
     const color = fill.oc.toLowerCase();
     // We only care about the colors that are in our COLORS object.
-    if (![COLORS.CM, COLORS.TD, COLORS.TP, COLORS.SAE].includes(color)) continue;
+    if (![COLORS.CM, COLORS.TD, COLORS.TP, COLORS.DS, COLORS.SAE].includes(color)) continue;
     
     const bounds = getFillBounds(fill);
     const contained_texts = getTextsInFillBounds(page, bounds, 4, color === COLORS.CM ? 6 : 4);
@@ -169,6 +185,24 @@ export const getTimetableLessons = (page: Page, header: TimetableHeader, timings
 
         const lesson: TimetableLesson = {
           type: LESSON_TYPES.TD,
+          start_date, end_date,
+
+          group: {
+            main: group.main
+          },
+
+          content: { type, teacher, room, lesson_from_reference: BUT_INFO_REF[type as keyof typeof BUT_INFO_REF] }
+        };
+
+        lessons.push(lesson);
+        break;
+      }
+
+      case COLORS.DS: {
+        const [type, teacher, room] = texts[0].split("-").map(text => text.trim());
+
+        const lesson: TimetableLesson = {
+          type: LESSON_TYPES.DS,
           start_date, end_date,
 
           group: {

@@ -94,24 +94,23 @@ const lessonsForG1A = timetable.lessons.filter(lesson => {
     case LESSON_TYPES.TP:
       // We only want to keep the TP lessons that are
       // for the subgroup A and the group 1.
-      if (lesson.group.sub === SUBGROUPS.A && lesson.group.main === 1) {
-        isForG1A = true;
-      }
+      isForG1A = lesson.group.sub === SUBGROUPS.A && lesson.group.main === 1;
       break;
 
     // Since TD lessons are the whole group, we don't
     // need to check the subgroup.
     case LESSON_TYPES.TD:
-      // We only want to keep the TD lessons that are
+    case LESSON_TYPES.DS:
+    case LESSON_TYPES.SAE:
+      // We only want to keep the TD, DS, SAE lessons that are
       // for the group 1.
-      if (lesson.group.main === 1) {
-        isForG1A = true;
-      }
+      isForG1A = typeof lesson.group === "undefined" || lesson.group.main === 1
       break;
 
-    // Since CM lessons are for the whole year, we don't
-    // need to check the group and subgroup.
+    // Since CM and OTHER lessons are for the whole year, we don't
+    // need to check any group and/or subgroup.
     case LESSON_TYPES.CM:
+    case LESSON_TYPES.OTHER:
       isForG1A = true;
       break;
   }
@@ -119,8 +118,6 @@ const lessonsForG1A = timetable.lessons.filter(lesson => {
   return isForG1A;
 });
 ```
-
-Note that we're not checking for `SAE` and potential `OTHER` lessons.
 
 ## API
 
@@ -161,6 +158,7 @@ import { LESSON_TYPES } from "edt-iut-info-limoges";
 console.log(LESSON_TYPES.CM); // "CM"
 console.log(LESSON_TYPES.TD); // "TD"
 console.log(LESSON_TYPES.TP); // "TP"
+console.log(LESSON_TYPES.DS); // "DS"
 console.log(LESSON_TYPES.SAE); // "SAE"
 console.log(LESSON_TYPES.OTHER); // "OTHER", used for unknown lessons
 ```
@@ -282,6 +280,26 @@ interface TimetableLessonTD {
   }
 }
 
+interface TimetableLessonDS {
+  type: LESSON_TYPES.DS;
+
+  // eg.: If you're in G1, `main` will be `1`.
+  group: {
+    main: number;
+  }
+
+  content: {
+    // eg.: "R1.01"
+    type: string;
+    // Name of the teacher
+    teacher: string;
+    // eg.: "AmphiB"
+    room: string;
+    // Lesson name in the official reference.
+    lesson_from_reference?: string;
+  }
+}
+
 interface TimetableLessonSAE {
   type: LESSON_TYPES.SAE;
 
@@ -323,6 +341,7 @@ type TimetableLesson = {
   | TimetableLessonCM
   | TimetableLessonTP
   | TimetableLessonTD
+  | TimetableLessonDS
   | TimetableLessonSAE
   | TimetableLessonOTHER
 );
