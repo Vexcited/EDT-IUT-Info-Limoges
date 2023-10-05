@@ -1,4 +1,4 @@
-import type { TimetableLessonCM, TimetableLessonOTHER, TimetableLessonSAE, TimetableLessonTD, TimetableLessonTP } from "edt-iut-info-limoges";
+import type { TimetableLessonCM, TimetableLessonOTHER, TimetableLessonSAE, TimetableLessonTD, TimetableLessonTP, TimetableLessonDS } from "edt-iut-info-limoges";
 import { type Component, For, createMemo, Show, Accessor } from "solid-js";
 import type { ITimetable } from "~/types/api";
 
@@ -19,22 +19,17 @@ const Timetable: Component<ITimetable> = (props) => {
     
       switch (lesson.type) {
         case "TP":
-          if (lesson.group.sub === preferences.sub_group && lesson.group.main === preferences.main_group) {
-            isForUser = true;
-          }
+          isForUser = lesson.group.sub === preferences.sub_group && lesson.group.main === preferences.main_group;
           break;
 
-        // Since TD lessons are the whole group, we don't
-        // need to check the subgroup.
         case "TD":
+        case "DS":
         case "SAE":
-          if (typeof lesson.group === "undefined" || lesson.group.main === preferences.main_group) {
-            isForUser = true;
-          }
+          isForUser = typeof lesson.group === "undefined" || lesson.group.main === preferences.main_group;
           break;
 
         // Since CM lessons are for the whole year, we don't
-        // need to check the group and subgroup.
+        // need to check any group and/or subgroup.
         case "CM":
         case "OTHER":
           isForUser = true;
@@ -100,8 +95,8 @@ const Timetable: Component<ITimetable> = (props) => {
               "border-t-none": Boolean(lesson_before()) && start_date().getHours() === new Date(lesson_before()!.end_date).getHours()
             }}
           >
-            <p class="text-lg font-medium">{props.lesson.type} - {(props.lesson as TimetableLessonCM | TimetableLessonSAE | TimetableLessonTD | TimetableLessonTP).content.type ?? "??"}</p>
-            <Show when={(props.lesson as TimetableLessonCM | TimetableLessonSAE | TimetableLessonTD | TimetableLessonTP).content.lesson_from_reference || (props.lesson as TimetableLessonCM | TimetableLessonSAE).content.raw_lesson || (props.lesson as TimetableLessonOTHER).content.description}>
+            <p class="text-lg font-medium">{props.lesson.type} - {(props.lesson as TimetableLessonCM | TimetableLessonSAE | TimetableLessonTD | TimetableLessonTP | TimetableLessonDS).content.type ?? "??"}</p>
+            <Show when={(props.lesson as TimetableLessonCM | TimetableLessonSAE | TimetableLessonTD | TimetableLessonTP | TimetableLessonDS).content.lesson_from_reference || (props.lesson as TimetableLessonCM | TimetableLessonSAE).content.raw_lesson || (props.lesson as TimetableLessonOTHER).content.description}>
               {lesson => <p class="text-subgray">{lesson()}</p>}
             </Show>
             <p>En <span class="font-medium">{props.lesson.content.room}</span> avec {props.lesson.content.teacher}</p>

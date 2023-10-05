@@ -1,30 +1,25 @@
 import { createEvents } from "ics";
 import type { ITimetable } from "~/types/api";
 import { preferences } from "~/stores/preferences";
-import { TimetableLessonCM, TimetableLessonOTHER, TimetableLessonSAE, TimetableLessonTD, TimetableLessonTP } from "edt-iut-info-limoges";
+import { TimetableLessonCM, TimetableLessonOTHER, TimetableLessonSAE, TimetableLessonTD, TimetableLessonTP, TimetableLessonDS } from "edt-iut-info-limoges";
 
-export const generateICS = (timetable: ITimetable) => {
+export const generateICS = (timetable: ITimetable): void => {
   const lessons = timetable.lessons.filter(lesson => {
     let isForUser = false;
   
     switch (lesson.type) {
       case "TP":
-        if (lesson.group.sub === preferences.sub_group && lesson.group.main === preferences.main_group) {
-          isForUser = true;
-        }
+        isForUser = lesson.group.sub === preferences.sub_group && lesson.group.main === preferences.main_group;
         break;
 
-      // Since TD lessons are the whole group, we don't
-      // need to check the subgroup.
       case "TD":
+      case "DS":
       case "SAE":
-        if (typeof lesson.group === "undefined" || lesson.group.main === preferences.main_group) {
-          isForUser = true;
-        }
+        isForUser = typeof lesson.group === "undefined" || lesson.group.main === preferences.main_group;
         break;
 
       // Since CM lessons are for the whole year, we don't
-      // need to check the group and subgroup.
+      // need to check any group and/or subgroup.
       case "CM":
       case "OTHER":
         isForUser = true;
@@ -70,10 +65,10 @@ export const generateICS = (timetable: ITimetable) => {
     const start = new Date(lesson.start_date);
     const end = new Date(lesson.end_date);
 
-    const content = (lesson as TimetableLessonCM | TimetableLessonSAE | TimetableLessonTD | TimetableLessonTP).content.lesson_from_reference || (lesson as TimetableLessonCM | TimetableLessonSAE).content.raw_lesson || (lesson as TimetableLessonOTHER).content.description;
+    const content = (lesson as TimetableLessonCM | TimetableLessonSAE | TimetableLessonTD | TimetableLessonTP | TimetableLessonDS).content.lesson_from_reference || (lesson as TimetableLessonCM | TimetableLessonSAE).content.raw_lesson || (lesson as TimetableLessonOTHER).content.description;
 
     return {
-      title: lesson.type + " - " + ((lesson as TimetableLessonCM | TimetableLessonSAE | TimetableLessonTD | TimetableLessonTP).content.type ?? "??") + " - " + content,
+      title: lesson.type + " - " + ((lesson as TimetableLessonCM | TimetableLessonSAE | TimetableLessonTD | TimetableLessonTP | TimetableLessonDS).content.type ?? "??") + " - " + content,
       description: `
 ${content}
 Avec ${lesson.content.teacher} en salle ${lesson.content.room}.
