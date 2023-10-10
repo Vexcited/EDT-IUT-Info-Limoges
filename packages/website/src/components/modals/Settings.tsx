@@ -157,7 +157,9 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
                 options={[
                   "catppuccin-latte",
                   "catppuccin-macchiato",
-                  "nord-dark", "nord-light"
+                  "nord-dark", "nord-light",
+                  "rose-pine",
+                  "rose-pine-dawn-iris",
                 ]}
                 placeholder="Sélectionner un thème…"
                 itemComponent={props => (

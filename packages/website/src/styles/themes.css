@@ -35,3 +35,19 @@ html.theme-nord-light {
   --overlay: #2E3440;
   --iut: #5E81AC;
 }
+
+html.theme-rose-pine {
+  --white: #191724;
+  --gray: #e0def4;
+  --iut: #eb6f92;
+  --overlay: #1f1d2e;
+  --subgray: #908caa;
+}
+
+html.theme-rose-pine-dawn-iris {
+  --white: #907aa9;
+  --gray: #faf4ed;
+  --iut: #c4a7e7;
+  --overlay: #1f1d2e;
+  --subgray:#dfdad9;
+}
