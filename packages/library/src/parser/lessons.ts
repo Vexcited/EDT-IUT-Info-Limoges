@@ -72,6 +72,8 @@ export interface TimetableLessonSAE {
   /** When `undefined`, it means that it's for every groups. */
   group: {
     main: number;
+    /** When `undefined`, it means that it's for the whole group. */
+    sub?: SUBGROUPS;
   } | undefined
 
   content: {
@@ -219,19 +221,41 @@ export const getTimetableLessons = (page: Page, header: TimetableHeader, timings
       case COLORS.SAE: {
         let lesson: TimetableLesson;
 
-        // It's an SAE for a single group.
+        /**
+         * Numbers of groups that are inside the lesson bounds.
+         */
+        const groupsInsideBounds = Object.keys(groups).filter(rounded_start_y => {
+          const rounded_start_y_number = parseFloat(rounded_start_y);
+          // Added a 2pt gap to make sure that the group checked
+          // is really inside the bounds. 
+          return rounded_start_y_number > (bounds.start_y + 2) && rounded_start_y_number < (bounds.end_y - 2);
+        }).length;
+        
+
+        // It's an SAE for a single group,
+        // but in some cases can also be an SAE for a subgroup.
         if (texts.length === 1) {
           const [type, teacher, room] = texts[0].split(" - ");
-  
+          const lesson_from_reference = BUT_INFO_REF[type as keyof typeof BUT_INFO_REF];
+
           lesson = {
             type: LESSON_TYPES.SAE,
             start_date, end_date,
   
             group: {
-              main: group.main
+              main: group.main,
+              // When there's no group inside the bounds,
+              // then it's for sure for a single subgroup.
+              // Otherwise, it's for the full main group.
+              sub: groupsInsideBounds === 0 ? group.sub : undefined
             },
   
-            content: { type, teacher, room, lesson_from_reference: BUT_INFO_REF[type as keyof typeof BUT_INFO_REF] }
+            content: {
+              type,
+              room,
+              teacher,
+              lesson_from_reference
+            }
           };
         }
         else {
@@ -243,32 +267,33 @@ export const getTimetableLessons = (page: Page, header: TimetableHeader, timings
             teacher = texts.pop()?.trim();
           }
 
-          const description = texts.map(text => text.trim()).join(" ");
+          let description = texts.map(text => text.trim()).join(" ");
           if (!teacher || !room || !description) continue;
 
-          // if the first word is in the reference.
           const first_word = description.split(" ")[0];
-          if (BUT_INFO_REF[first_word as keyof typeof BUT_INFO_REF]) {
-            const [, ...description_from_after_separator] = description.split(" - ");
-            const lesson_from_reference = BUT_INFO_REF[first_word as keyof typeof BUT_INFO_REF];
-
-            // see if it's a group SAE or a global SAE.
-            const groupsInsideBounds = Object.entries(groups).filter(([rounded_start_y, the_group]) => {
-              const rounded_start_y_number = parseFloat(rounded_start_y);
-              return rounded_start_y_number >= bounds.start_y && rounded_start_y_number < bounds.end_y;
-            });
+          const lesson_from_reference = BUT_INFO_REF[first_word as keyof typeof BUT_INFO_REF] as string | undefined;
+          
+          // When the lesson is in the reference, then we're sure it's an SAE.
+          if (lesson_from_reference) {
+            description = description.split(" - ").slice(1).join(" ");
 
             lesson = {
               type: LESSON_TYPES.SAE,
               start_date, end_date,
 
-              group: groupsInsideBounds.length === 1 ? {
-                main: group.main
-              } : undefined,
+              // Only full year lessons have more than one text in the bounds.
+              group: undefined,
 
-              content: { type: first_word, teacher, room, lesson_from_reference, raw_lesson: description_from_after_separator.join(" ") }
+              content: {
+                type: first_word,
+                teacher,
+                room,
+                lesson_from_reference,
+                raw_lesson: description
+              }
             };
           }
+          // If it's not in the reference, then we can't really know what it is.
           else {
             lesson = {
               type: LESSON_TYPES.OTHER,

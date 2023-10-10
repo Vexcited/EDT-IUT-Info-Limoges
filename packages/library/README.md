@@ -311,6 +311,8 @@ interface TimetableLessonSAE {
   group: {
     // eg.: If you're in G1, `main` will be `1`.
     main: number;
+    /** When `undefined`, it means that it's for the whole group. */
+    sub?: SUBGROUPS;
   } | undefined
 
   content: {
