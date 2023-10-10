@@ -36,6 +36,9 @@ html.theme-nord-light {
   --iut: #5E81AC;
 }
 
+/**
+ * <https://rosepinetheme.com/>
+ */
 html.theme-rose-pine {
   --white: #191724;
   --gray: #e0def4;
