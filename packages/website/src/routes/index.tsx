@@ -74,7 +74,7 @@ const Page: Component = () => {
     <>
       <SettingsModal open={settingsOpen()} setOpen={setSettingsOpen} />
 
-      <div class="flex flex-col gap-0 min-h-screen h-full px-6 py-12">
+      <div class="flex flex-col min-h-screen h-full px-6 py-12">
         <header class="flex flex-col items-center justify-center">
           <h1 class="text-center sm:text-2xl text-gray">
             Bienvenue, étudiant en <span class="font-medium" style={{ color: accentColor() }}>
@@ -200,8 +200,8 @@ const Page: Component = () => {
 
         </main>
 
-        <footer class="w-full text-center mt-auto">
-          <p class="mt-16">
+        <footer class="w-full text-center mt-16">
+          <p>
             Made with {"<3"} by <a class="font-medium hover:underline" style={{ color: accentColor() }} href="https://github.com/Vexcited">Vexcited</a>. 
           </p>
         </footer>
