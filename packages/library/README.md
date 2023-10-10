@@ -108,14 +108,14 @@ const lessonsForG1A = timetable.lessons.filter(lesson => {
         break;
       }
       // There's a specific subgroup can happen on SAEs.
-      else if (lesson.type === "SAE" && typeof lesson.group.sub !== "undefined") {
+      else if (lesson.type === LESSON_TYPES.SAE && typeof lesson.group.sub !== "undefined") {
         // So in that case we should check for main group and subgroup.
-        isForUser = lesson.group.main === preferences.main_group && lesson.group.sub === preferences.sub_group;
+        isForUser = lesson.group.main === 1 && lesson.group.sub === SUBGROUPS.A;
         break;
       }
       // Otherwise, we just check for the main group.
       else {
-        isForUser = lesson.group.main === preferences.main_group;
+        isForUser = lesson.group.main === 1;
         break;
       }
 
