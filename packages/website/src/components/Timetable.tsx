@@ -25,8 +25,22 @@ const Timetable: Component<ITimetable> = (props) => {
         case "TD":
         case "DS":
         case "SAE":
-          isForUser = typeof lesson.group === "undefined" || lesson.group.main === preferences.main_group;
-          break;
+          // It's for everyone.
+          if (typeof lesson.group === "undefined") {
+            isForUser = true;
+            break;
+          }
+          // There's a specific subgroup can happen on SAEs.
+          else if (lesson.type === "SAE" && typeof lesson.group.sub !== "undefined") {
+            // So in that case we should check for main group and subgroup.
+            isForUser = lesson.group.main === preferences.main_group && lesson.group.sub === preferences.sub_group;
+            break;
+          }
+          // Otherwise, we just check for the main group.
+          else {
+            isForUser = lesson.group.main === preferences.main_group;
+            break;
+          }
 
         // Since CM lessons are for the whole year, we don't
         // need to check any group and/or subgroup.
