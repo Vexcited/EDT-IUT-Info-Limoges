@@ -102,10 +102,22 @@ const lessonsForG1A = timetable.lessons.filter(lesson => {
     case LESSON_TYPES.TD:
     case LESSON_TYPES.DS:
     case LESSON_TYPES.SAE:
-      // We only want to keep the TD, DS, SAE lessons that are
-      // for the group 1.
-      isForG1A = typeof lesson.group === "undefined" || lesson.group.main === 1
-      break;
+      // It's for everyone.
+      if (typeof lesson.group === "undefined") {
+        isForUser = true;
+        break;
+      }
+      // There's a specific subgroup can happen on SAEs.
+      else if (lesson.type === "SAE" && typeof lesson.group.sub !== "undefined") {
+        // So in that case we should check for main group and subgroup.
+        isForUser = lesson.group.main === preferences.main_group && lesson.group.sub === preferences.sub_group;
+        break;
+      }
+      // Otherwise, we just check for the main group.
+      else {
+        isForUser = lesson.group.main === preferences.main_group;
+        break;
+      }
 
     // Since CM and OTHER lessons are for the whole year, we don't
     // need to check any group and/or subgroup.
