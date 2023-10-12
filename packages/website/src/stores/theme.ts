@@ -1,7 +1,14 @@
 import { createSignal } from "solid-js";
 
 const defaultValue = "catppuccin-latte";
-const initialValue = typeof window === "undefined" ? defaultValue : localStorage.getItem("theme") ?? defaultValue;
+let initialValue = typeof window === "undefined" ? defaultValue : localStorage.getItem("theme") ?? defaultValue;
+
+// Can happen if people did the "no-theme bug" before it was fixed.
+if (initialValue === "null") {
+  initialValue = defaultValue;
+  localStorage.setItem("theme", defaultValue);
+}
+
 const [theme, setTheme] = createSignal(initialValue);
 export { theme };
 

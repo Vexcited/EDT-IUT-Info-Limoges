@@ -153,7 +153,8 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
               </h3>
               <Select.Root
                 value={theme()}
-                onChange={(theme) => changeTheme(theme)}
+                onChange={(theme) =>  changeTheme(theme)}
+                disallowEmptySelection
                 options={[
                   "catppuccin-latte",
                   "catppuccin-macchiato",
