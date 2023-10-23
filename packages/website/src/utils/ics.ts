@@ -65,7 +65,7 @@ export const generateICS = (timetable: ITimetable): void => {
       }
     }
 
-    if (previousLesson && previousLesson.type === lesson.type && previousLesson.content.room === lesson.content.room && previousLesson.content.teacher === lesson.content.teacher) {
+    if (previousLesson && (previousLesson.content as any).type === (lesson.content as any).type && previousLesson.type === lesson.type && previousLesson.content.room === lesson.content.room && previousLesson.content.teacher === lesson.content.teacher) {
       previousLesson.end_date = lesson.end_date;
     }
     else {
