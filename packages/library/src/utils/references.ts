@@ -91,6 +91,8 @@ export const BUT_INFO_REF = {
 
   // Semestre 5, parcours A.
   "S5A.01": "Développement avancé",
+  // Same as S5A.01, somehow the IUT has two different codes for the same SAE.
+  "S5A.02": "Développement avancé",
 
   "R5.01": "Management d'une équipe de projet informatique",
   "R5.02": "Projet personnel et professionnel",
