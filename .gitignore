@@ -11,3 +11,6 @@ node_modules
 .DS_Store
 Thumbs.db
 tests/*.json
+
+# Prevent from committing the bundle
+/packages/library/src/converter/pdfjs_bundle.ts
