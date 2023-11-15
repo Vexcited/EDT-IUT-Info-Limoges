@@ -1,15 +1,14 @@
-import { type Component, on, createSignal, Show, createEffect } from "solid-js";
+import { type Component, on, createSignal, Show, createEffect, For, onMount } from "solid-js";
 
 import type { ITimetable } from "~/types/api";
 import Timetable from "~/components/Timetable";
 
 import { SettingsModal } from "~/components/modals/Settings";
 
-import { preferences } from "~/stores/preferences";
-import { day, moveDay } from "~/stores/temporary";
+import { preferences, setCurrentWeek } from "~/stores/preferences";
 
 import { accentColor } from "~/utils/colors";
-import { getTimetableFor, getWeekNumber, deleteTimetableFromStore } from "~/utils/timetables";
+import { deleteTimetableFromStore, getTimetableForWeek } from "~/utils/timetables";
 
 import MdiCog from '~icons/mdi/cog'
 import MdiChevronLeft from '~icons/mdi/chevron-left'
@@ -24,29 +23,29 @@ import MdiReload from '~icons/mdi/reload'
 
 import { APIError } from "~/utils/errors";
 import { generateICS } from "~/utils/ics";
-
-const getDayString = () => day().toLocaleDateString("fr-FR", {
-  weekday: "long",
-  day: "numeric",
-  month: "long",
-  year: "numeric",
-});
+import { createMemo } from "solid-js";
+import { lessonsForSubGroup } from "~/utils/lessons";
 
 const Page: Component = () => {
   const [timetableRAW, setTimetableRAW] = createSignal<ITimetable | null>(null);
   const [settingsOpen, setSettingsOpen] = createSignal(false);
   const [haveError, setHaveError] = createSignal<string | null>(null);
-  
+  const [dayIndex, setDayIndex] = createSignal(0); // 0 is Monday
+  const subGroupTimetable = createMemo(() => timetableRAW() && lessonsForSubGroup(timetableRAW()!, {
+    main_group: preferences.main_group,
+    sub_group: preferences.sub_group
+  }));
+
   const updateTimetable = async (force_update = false) => {
     setTimetableRAW(null);
     setHaveError(null);
-    
+
     try {
       if (force_update) {
-        await deleteTimetableFromStore(preferences.year, day());
+        await deleteTimetableFromStore(preferences.current_week, preferences.year);
       }
 
-      const timetable = await getTimetableFor(day(), preferences.year);
+      const timetable = await getTimetableForWeek(preferences.current_week, preferences.year);
       setTimetableRAW(timetable);
     }
     catch (error) {
@@ -59,16 +58,25 @@ const Page: Component = () => {
     }
   }
 
-  /** Reference to preferences.year to simplify the comparaison. */
-  let oldYearState = preferences.year;
-  createEffect(on([() => preferences.year, day], async ([year, day]) => {
-    const old_timetable = timetableRAW();
-    if (year === oldYearState && old_timetable?.header.week_number_in_year === getWeekNumber(day)) return;
+  const getDayFromTimetable = (index: number) => {
+    const start_week_day = new Date(timetableRAW()!.header.start_date);
+    // according to the day index, get the right day
+    const day = new Date(start_week_day.setDate(start_week_day.getDate() + index));
+    return day;
+  }
 
-    // Update the old year state to the new one.
+  // Check if both didn't changed; don't update.
+  let oldYearState = preferences.year;
+  let oldCurrentWeek = preferences.current_week;
+  createEffect(on([() => preferences.year, () => preferences.current_week], async ([year, week]) => {
+    if (year === oldYearState && week === oldCurrentWeek) return;
+
     oldYearState = year;
+    oldCurrentWeek = week;
     await updateTimetable();
   }));
+
+  onMount(() => updateTimetable());
 
   return (
     <>
@@ -88,7 +96,7 @@ const Page: Component = () => {
           <p class="text-subgray text-center text-sm sm:text-lg">
             <Show when={timetableRAW()} fallback={haveError() ? "Une erreur s'est produite." : "Récupération de l'EDT en cours..."}>
               Vous visualisez actuellement l'emploi du temps de la semaine <span class="font-medium" style={{ color: accentColor() }}>
-                {timetableRAW()!.header.week_number}
+                {preferences.current_week}
               </span>.
             </Show>
           </p>
@@ -99,7 +107,55 @@ const Page: Component = () => {
           >
             <MdiCog /> Paramètres
           </button>
+
+          <nav class="flex gap-2 justify-center items-center mb-4 mt-6">
+            <button type="button"
+              class="text-gray border border-gray p-1 text-lg hover:bg-gray hover:text-white"
+              onClick={() => setCurrentWeek(preferences.current_week - 1)}
+            >
+              <MdiChevronDoubleLeft />
+            </button>
+            <button type="button"
+              class="xl:hidden text-gray border border-gray p-1 text-xl hover:bg-gray hover:text-white"
+              onClick={() => setDayIndex(prev => {
+                let new_value = prev - 1;
+                if (new_value < 0) {
+                  setCurrentWeek(preferences.current_week - 1);
+                  new_value = 5;
+                }
+
+                return new_value;
+              })}
+            >
+              <MdiChevronLeft />
+            </button>
+
+            <span class="px-1 xl:hidden" />
+
+            <button type="button"
+              class="xl:hidden text-gray border border-gray p-1 text-xl hover:bg-gray hover:text-white"
+              onClick={() => setDayIndex(prev => {
+                let new_value = prev + 1;
+                if (new_value > 5) {
+                  setCurrentWeek(preferences.current_week + 1);
+                  new_value = 0;
+                }
+
+                return new_value;
+              })}
+            >
+              <MdiChevronRight />
+            </button>
+            <button type="button"
+              class="text-gray border border-gray p-1 text-lg hover:bg-gray hover:text-white"
+              onClick={() => setCurrentWeek(preferences.current_week + 1)}
+            >
+              <MdiChevronDoubleRight />
+            </button>
+          </nav>
         </header>
+
+
 
         <Show when={timetableRAW()}>
           <>
@@ -131,46 +187,8 @@ const Page: Component = () => {
           </>
         </Show>
 
-        <main class="mt-6">
-          <p class="text-gray mt-6 mb-4 text-center sm:hidden">
-            {getDayString()}
-          </p>
-
-          <nav class="flex gap-2 justify-center items-center mb-12">
-            <button type="button"
-              class="text-gray border border-gray p-1 text-lg hover:bg-gray hover:text-white"
-              onClick={() => moveDay(-7)}
-            >
-              <MdiChevronDoubleLeft />
-            </button>
-            <button type="button"
-              class="text-gray border border-gray p-1 text-xl hover:bg-gray hover:text-white"
-              onClick={() => moveDay(-1)}
-            >
-              <MdiChevronLeft />
-            </button>
-
-            <p class="px-2 text-xl hidden sm:block px-4 max-w-[320px] w-full text-center">
-              {getDayString()}
-            </p>
-
-            <span class="px-1 sm:hidden" />
-
-            <button type="button"
-              class="text-gray border border-gray p-1 text-xl hover:bg-gray hover:text-white"
-              onClick={() => moveDay(+1)}
-            >
-              <MdiChevronRight />
-            </button>
-            <button type="button"
-              class="text-gray border border-gray p-1 text-lg hover:bg-gray hover:text-white"
-              onClick={() => moveDay(+7)}
-            >
-              <MdiChevronDoubleRight />
-            </button>
-          </nav>
-
-          <Show when={timetableRAW()}
+        <main class="mt-16">
+          <Show when={subGroupTimetable()}
             fallback={
               <Show when={haveError()}
                 fallback={
@@ -192,17 +210,25 @@ const Page: Component = () => {
             }
           >
             {timetable => (
-              <>
-                <Timetable {...timetable()} />
-              </>
+              <div class="flex gap-1">
+                <For each={Array(6).fill(null)}>
+                  {(_, index) => (
+                    <Timetable
+                      dayDate={getDayFromTimetable(index())}
+                      lessonsOfDay={timetable().filter(lesson => new Date(lesson.start_date).getDay() === index() + 1)}
+                      currentMobileIndex={dayIndex()}
+                      index={index()}
+                    />
+                  )}
+                </For>
+              </div>
             )}
           </Show>
-
         </main>
 
         <footer class="w-full text-center mt-16">
           <p>
-            Made with {"<3"} by <a class="font-medium hover:underline" style={{ color: accentColor() }} href="https://github.com/Vexcited">Vexcited</a>. 
+            Made with {"<3"} by <a class="font-medium hover:underline" style={{ color: accentColor() }} href="https://github.com/Vexcited">Vexcited</a>.
           </p>
         </footer>
       </div>
