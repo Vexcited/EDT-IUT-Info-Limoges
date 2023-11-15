@@ -1,31 +1,35 @@
 {
   "name": "edt-iut-info-limoges-website",
+  "private": true,
+  "license": "MIT",
   "scripts": {
     "dev": "solid-start dev",
     "build": "solid-start build"
   },
   "type": "module",
   "devDependencies": {
-    "@iconify-json/mdi": "^1.1.54",
-    "@types/node": "^20.8.4",
-    "solid-start-node": "^0.3.6",
-    "solid-start-vercel": "^0.3.6",
+    "@iconify-json/mdi": "^1.1.55",
+    "@types/node": "^20.9.0",
+    "solid-start-node": "^0.3.10",
+    "solid-start-vercel": "^0.3.10",
     "typescript": "^5.2.2",
-    "unocss": "^0.56.5",
-    "unplugin-icons": "^0.17.0",
-    "vite": "^4.4.11",
-    "vite-plugin-pwa": "^0.16.5"
+    "unocss": "^0.57.4",
+    "unplugin-icons": "^0.17.4",
+    "vite": "^4.5.0",
+    "vite-plugin-pwa": "^0.16.7"
   },
   "dependencies": {
     "@fontsource/poppins": "^5.0.8",
-    "@kobalte/core": "^0.11.0",
-    "@solidjs/meta": "^0.28.6",
-    "@solidjs/router": "^0.8.3",
-    "@unocss/reset": "^0.56.5",
-    "edt-iut-info-limoges": "^1.6.2",
+    "@kobalte/core": "^0.11.2",
+    "@solidjs/meta": "^0.29.1",
+    "@solidjs/router": "^0.8.4",
+    "@unocss/reset": "^0.57.4",
+    "edt-iut-info-limoges": "workspace:*",
     "ics": "^3.5.0",
     "localforage": "^1.10.0",
-    "solid-js": "^1.8.0",
-    "solid-start": "^0.3.6"
-  }
+    "solid-js": "^1.8.5",
+    "solid-start": "^0.3.10"
+  },
+  "author": "Mikkel RINGAUD <mikkel@milescode.dev> (https://github.com/Vexcited)",
+  "repository": "github:Vexcited/EDT-IUT-Info-Limoges"
 }
