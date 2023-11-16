@@ -1,8 +1,6 @@
 import { type APIEvent, json } from "solid-start/api";
 import { YEARS } from "edt-iut-info-limoges";
 
-import type { ApiTimetableMeta } from "~/types/api";
-
 import {
   connectDatabase,
   getCachedEntries,
