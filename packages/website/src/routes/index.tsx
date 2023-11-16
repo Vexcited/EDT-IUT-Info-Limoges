@@ -508,7 +508,7 @@ const MobileView: Component<{
                       ) : (props.error ? "Oups, y a un problème..." : "En attente de l'EDT...")}
                     </p>
                   </div>
-                  <div class="flex gap-3 items-center flex-shrink-0 w-full">
+                  <div class="flex gap-3 items-center w-full">
                     <button type="button" class="p-1 bg-red/20 hover:bg-red active:bg-red/60 transition border border-red rounded-full laptop-sm:(w-auto p-1.5) w-full flex justify-center items-center"
                       onClick={() => {
                         props.setWeekNumber(curr => curr - 1);
