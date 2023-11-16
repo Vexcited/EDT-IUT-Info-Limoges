@@ -1,10 +1,18 @@
 import { createStore } from "solid-js/store";
 
+export interface UserCustomization {
+  primary_color?: string
+}
+
+const DEFAULT_USER_CUSTOMIZATION: Required<UserCustomization> = {
+  primary_color: "248, 113, 113"
+}
+
 const [preferences, setPreferences] = createStore({
   year: parseInt(localStorage.getItem("year") ?? "1"),
   main_group: parseInt(localStorage.getItem("main_group") ?? "1"),
   sub_group: parseInt(localStorage.getItem("sub_group") ?? "0") as 0 | 1,
-  current_week: parseInt(localStorage.getItem("current_week") ?? "-1")
+  customization: JSON.parse(localStorage.getItem("user_customization") ?? "{}") as UserCustomization,
 });
 
 const setYear = (year: number) => {
@@ -22,9 +30,9 @@ const setSubGroup = (sub_group: 0 | 1) => {
   setPreferences({ sub_group });
 }
 
-const setCurrentWeek = (week_number: number) => {
-  localStorage.setItem("current_week", week_number.toString());
-  setPreferences({ current_week: week_number });
+const setUserCustomization = (customization: UserCustomization) => {
+  localStorage.setItem("user_customization", JSON.stringify(customization));
+  setPreferences({ customization });
 }
 
-export { preferences, setYear, setMainGroup, setSubGroup, setCurrentWeek }
+export { preferences, setYear, setMainGroup, setSubGroup, setUserCustomization, DEFAULT_USER_CUSTOMIZATION }

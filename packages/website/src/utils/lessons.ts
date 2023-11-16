@@ -1,7 +1,7 @@
-import { ITimetable } from "~/types/api";
-import { } from "~/types/api"
+import type { TimetableLessonCM, TimetableLessonDS, TimetableLessonOTHER, TimetableLessonSAE, TimetableLessonTD, TimetableLessonTP } from "edt-iut-info-limoges";
+import type { ITimetable } from "~/types/api";
 
-export const lessonsForSubGroup = (timetable: ITimetable, preferences: {
+export const lessonsForSubGroup = (timetable: Omit<ITimetable, "last_update">, preferences: {
   main_group: number
   sub_group: 0 | 1;
 }) => {
@@ -78,3 +78,32 @@ export const lessonsForSubGroup = (timetable: ITimetable, preferences: {
 
   return lessons;
 }
+
+export const getLessonDescription = (lesson: ITimetable["lessons"][number]): string => (
+  (
+    (lesson as (
+      | TimetableLessonCM
+      | TimetableLessonSAE
+      | TimetableLessonTD
+      | TimetableLessonTP
+      | TimetableLessonDS
+    )).content.lesson_from_reference
+  ) || (
+    (lesson as (
+      | TimetableLessonCM
+      | TimetableLessonSAE
+    )).content.raw_lesson
+  ) || (
+    (lesson as TimetableLessonOTHER).content.description
+  ) || "(Inconnu)"
+);
+
+export const getLessonType = (lesson: ITimetable["lessons"][number]): string => (
+  (lesson as (
+    | TimetableLessonCM
+    | TimetableLessonSAE
+    | TimetableLessonTD
+    | TimetableLessonTP
+    | TimetableLessonDS
+  )).content.type ?? "??"
+);

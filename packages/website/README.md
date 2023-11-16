@@ -11,10 +11,26 @@ Make an empty request to this endpoint and the API will always return the follow
 ```typescript
 interface Response {
   success: true
-  
+
   data: {
     /** URL to this documentation. */
-    documentation: string
+    documentation: string,
+    /** Supported inputs to pass in `:year` parameter. */
+    years: string[]
+  }
+}
+```
+
+### `GET /timetables/:year`
+
+Get **ALL** the timetables for a given school year.
+
+```typescript
+interface Response {
+  success: true
+
+  data: {
+    // TODO
   }
 }
 ```
@@ -25,6 +41,8 @@ We're using `pnpm` as the main package manager.
 Don't forget to install the dependencies using `pnpm install`.
 
 This website only works if you've built the library first. You can do so by running `pnpm --filter edt-iut-info-limoges run build`.
+
+Also, don't forget to fill the `MONGODB_URI` environment variable in the `.env` file. A sample has been made in `.env.sample`. MongoDB is used to store timetables to prevent requesting and extracting them too much.
 
 | Command | Description |
 | ------- | ----------- |

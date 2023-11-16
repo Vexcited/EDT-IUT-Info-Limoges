@@ -1,16 +1,18 @@
-import { defineConfig, presetUno } from 'unocss'
+import { defineConfig, presetUno, transformerVariantGroup } from 'unocss';
 
 export default defineConfig({
-  presets: [
-    presetUno()
-  ],
+  presets: [presetUno()],
+  transformers: [transformerVariantGroup()],
 
   theme: {
     colors: {
-      white: "var(--white)",
-      gray: "var(--gray)",
-      subgray: "var(--subgray)",
-      overlay: "var(--overlay)"
+      red: "rgba(var(--custom-color), %alpha)"
+    },
+
+    breakpoints: {
+      tablet: "768px",
+      "laptop-sm": "1024px",
+      "laptop-lg": "1440px",
     }
   }
 });

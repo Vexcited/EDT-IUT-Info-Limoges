@@ -4,7 +4,7 @@ import { preferences } from "~/stores/preferences";
 import { TimetableLessonCM, TimetableLessonOTHER, TimetableLessonSAE, TimetableLessonTD, TimetableLessonTP, TimetableLessonDS } from "edt-iut-info-limoges";
 import { lessonsForSubGroup } from "./lessons";
 
-export const generateICS = (timetable: ITimetable): void => {
+export const generateICS = (timetable: Omit<ITimetable, "last_update">): void => {
   const lessons = lessonsForSubGroup(timetable, {
     main_group: preferences.main_group,
     sub_group: preferences.sub_group
