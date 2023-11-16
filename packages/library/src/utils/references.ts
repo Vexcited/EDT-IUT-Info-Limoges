@@ -95,7 +95,7 @@ export const BUT_INFO_REF = {
   "S5A.02": "Développement avancé",
 
   "R5.01": "Management d'une équipe de projet informatique",
-  "R5.02": "Projet personnel et professionnel",
+  "R5.02A": "Projet personnel et professionnel",
   "R5.03": "Politique de communication",
   // .Real.
   "R5A.04": "Qualité algorithmique",
@@ -110,7 +110,7 @@ export const BUT_INFO_REF = {
   "R5A.13": "Économie durable et numérique",
   "R5A.14": "Anglais",
 
-  "P5.01": "Démarche portfolio",
+  "P5.01A": "Démarche portfolio",
 
   // Semestre 6, parcours A.
   "S6A.01": "Évolution d'une application existante",
