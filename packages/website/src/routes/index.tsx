@@ -125,7 +125,16 @@ const MobileDayTimetable: Component<{
   const day = () => getDayFromTimetable(props.header, props.dayIndex);
 
   const now = new Date();
-  const dayIsDone = () => now >= new Date(props.lessons.at(-1)!.end_date);
+  const dayIsDone = () => {
+    // if there's no lessons, it's always `true`.
+    if (props.lessons.length === 0) return true;
+    
+    const lastLesson = props.lessons.at(-1);
+    // if we don't find the last lesson, it means there's nothing so `true`.
+    if (!lastLesson) return true;
+
+    return now >= new Date(lastLesson.end_date);
+  };
 
   return (
     <div class="w-full relative pt-6">
@@ -161,7 +170,7 @@ const MobileDayTimetable: Component<{
           )}
         </For>
 
-        <Show when={props.isToday && dayIsDone()}>
+        <Show when={props.isToday && props.lessons.length > 0 && dayIsDone()}>
           <div class="flex p-4 gap-2 items-center justify-center text-red bg-red/15 mt-2">
             <MdiCheck class="text-xl" />
             <p>La journée est terminée !</p>
