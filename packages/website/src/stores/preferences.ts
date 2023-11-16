@@ -8,18 +8,21 @@ const DEFAULT_USER_CUSTOMIZATION: Required<UserCustomization> = {
   primary_color: "248, 113, 113"
 }
 
-let setPreferences, preferences;
-export const initializePreferencesStore = () => {
-  const [preferences2, setPreferences2] = createStore({
-    year: parseInt(localStorage.getItem("year") ?? "1"),
-    main_group: parseInt(localStorage.getItem("main_group") ?? "1"),
-    sub_group: parseInt(localStorage.getItem("sub_group") ?? "0") as 0 | 1,
-    customization: JSON.parse(localStorage.getItem("user_customization") ?? "{}") as UserCustomization,
-  });
+const safelyGetInLocalStorage = (key: string, default_value: string): string => {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem(key) ?? default_value;
+  }
 
-  preferences = preferences2;
-  setPreferences = setPreferences2;
+  // only happens server-side.
+  return default_value;
 }
+
+const [preferences, setPreferences] = createStore({
+  year: parseInt(safelyGetInLocalStorage("year", "1")),
+  main_group: parseInt(safelyGetInLocalStorage("main_group", "1")),
+  sub_group: parseInt(safelyGetInLocalStorage("sub_group", "0")) as 0 | 1,
+  customization: JSON.parse(safelyGetInLocalStorage("user_customization", "{}")) as UserCustomization,
+});
 
 const setYear = (year: number) => {
   localStorage.setItem("year", year.toString());

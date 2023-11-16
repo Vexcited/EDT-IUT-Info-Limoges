@@ -23,7 +23,6 @@ import {
 
 import {
   DEFAULT_USER_CUSTOMIZATION,
-  initializePreferencesStore,
   preferences
 } from "./stores/preferences";
 
@@ -32,8 +31,6 @@ const Root: Component = () => {
   const FONT_FAMILY = "'Poppins', sans-serif";
 
   createEffect(() => {
-    initializePreferencesStore();
-
     const root = document.querySelector(':root') as HTMLElement;
     root.style.setProperty('--custom-color', preferences.customization.primary_color ?? DEFAULT_USER_CUSTOMIZATION.primary_color);
   });
