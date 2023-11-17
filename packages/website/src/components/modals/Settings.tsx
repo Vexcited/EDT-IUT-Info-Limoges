@@ -167,7 +167,10 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
 
               <button class="w-full text-center border border-red text-red px-3 py-1 rounded-lg"
                 type="button"
-                onClick={() => resetAppCache()}
+                onClick={async () => {
+                  await resetAppCache();
+                  window.location.reload();
+                }}
               >
                 Effacer les données
               </button>

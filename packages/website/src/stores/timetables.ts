@@ -156,6 +156,10 @@ export const resetAppCache = async (): Promise<void> => {
     localStorage.removeItem("timetables-meta-" + year);
   }
 
-  // Done, we reload to restore default settings.
-  window.location.reload();
+  [ // Reset all preferences.
+    "user_customization",
+    "year",
+    "main_group",
+    "sub_group",
+  ].forEach(key => localStorage.removeItem(key));
 };
