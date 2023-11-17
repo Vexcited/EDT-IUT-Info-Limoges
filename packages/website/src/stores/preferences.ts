@@ -1,4 +1,5 @@
 import { createStore } from "solid-js/store";
+import { getYearFromMainGroup } from "~/utils/groups";
 
 interface UserCustomization {
   primary_color?: string
@@ -18,7 +19,9 @@ const safelyGetInLocalStorage = (key: string, default_value: string): string => 
 }
 
 export const [preferences, setPreferences] = createStore({
-  year: parseInt(safelyGetInLocalStorage("year", "1")),
+  get year(): number {
+    return getYearFromMainGroup(this.main_group);
+  },
   main_group: parseInt(safelyGetInLocalStorage("main_group", "1")),
   sub_group: parseInt(safelyGetInLocalStorage("sub_group", "0")) as 0 | 1,
   customization: JSON.parse(safelyGetInLocalStorage("user_customization", "{}")) as UserCustomization,

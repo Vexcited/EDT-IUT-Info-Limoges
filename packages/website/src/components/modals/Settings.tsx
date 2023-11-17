@@ -43,29 +43,6 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
             </div>
 
             <div class="p-4 flex flex-col gap-6">
-              <section class="flex flex-col gap-2">
-                <h2 class="text-[rgb(240,240,240)] text-[18px]">
-                  Année
-                </h2>
-                <div class="flex gap-2">
-                  <SelectionButton
-                    content="A1"
-                    active={preferences.year === 1}
-                    onClick={() => setYear(1)}
-                  />
-                  <SelectionButton
-                    content="A2"
-                    active={preferences.year === 2}
-                    onClick={() => setYear(2)}
-                  />
-                  <SelectionButton
-                    content="A3"
-                    active={preferences.year === 3}
-                    onClick={() => setYear(3)}
-                  />
-                </div>
-              </section>
-
               <section>
                 <h3 class="text-[rgb(240,240,240)] text-[18px] mb-2">
                   Groupe principal
@@ -75,8 +52,10 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
                     disabled={preferences.main_group <= 1}
                     class="text-center border-2 border-red text-[rgb(220,220,220)] disabled:(bg-red text-transparent) px-4 py-1 border-r-none rounded-l-lg"
                     onClick={() => {
-                      const value = preferences.main_group - 1;
+                      let value = preferences.main_group - 1;
+                      if (value === 6) value--;
                       if (value < 1) return;
+
                       setMainGroup(value);
                     }}
                   >
@@ -92,8 +71,10 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
                     disabled={preferences.main_group >= 8}
                     class="text-center border-2 border-red text-[rgb(220,220,220)] disabled:(bg-red text-transparent) px-4 py-1 border-l-none rounded-r-lg"
                     onClick={() => {
-                      const value = preferences.main_group + 1;
+                      let value = preferences.main_group + 1;
+                      if (value === 6) value++;
                       if (value > 8) return;
+
                       setMainGroup(value);
                     }}
                   >
@@ -102,7 +83,8 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
                 </div>
 
                 <p class="text-[rgb(190,190,190)] text-xs mt-1.5">
-                  Ajustez le groupe dans lequel vous êtes (ex.: G1, G2, …)
+                  Ajustez le groupe dans lequel vous êtes (ex.: G1, G2, …) <br />
+                  C'est avec le groupe qu'est déterminé l'année.
                 </p>
               </section>
 
@@ -159,11 +141,11 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
             <div class="h-[1px] w-full border-b border-b-[rgb(90,90,90)]" />
 
             <section class="p-4">
-              <h3 class="text-[rgb(240,240,240)] text-[18px] mb-3">
-                Zone dangeureuse
+              <h3 class="text-[rgb(240,240,240)] text-[18px] mb-2">
+                Zone dangereuse
               </h3>
 
-              <button class="w-full text-center border border-red text-red px-3 py-1 rounded-lg"
+              <button class="w-full text-center border border-red text-red hover:bg-red/10 active:bg-red/20 transition px-3 py-1 rounded-lg"
                 type="button"
                 onClick={async () => {
                   await resetAppCache();
