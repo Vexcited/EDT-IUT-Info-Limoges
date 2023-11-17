@@ -295,12 +295,15 @@ const NextLessonWidget: Component<TopNextLessonWidget> = (props) => {
 
 const OngoingWidget: Component<TopOngoingWidget> = (props) => {
   const getRemainingTime = () => DateTime.fromISO(props.lesson.end_date).setLocale("fr").toRelative();
+  const getNextLessonRemainingTime = () => props.next_lesson ? DateTime.fromISO(props.next_lesson.start_date).setLocale("fr").toRelative() : null;
   const [remaining, setRemaining] = createSignal(getRemainingTime());
+  const [nextLessonRemaining, setNextLessonRemaining] = createSignal(getNextLessonRemainingTime());
 
   let interval: ReturnType<typeof setInterval> | undefined;
   onMount(() => {
     interval = setInterval(() => {
       setRemaining(getRemainingTime())
+      setNextLessonRemaining(getNextLessonRemainingTime())
     }, 1000 * 60) // update every minutes
   });
 
@@ -318,7 +321,7 @@ const OngoingWidget: Component<TopOngoingWidget> = (props) => {
         <div class="flex flex-col gap-0.5">
           <div class="flex justify-between">
             <p>{getLessonType(props.lesson)}</p>
-            <p class="bg-red px-2 rounded-full font-medium text-[rgb(245,245,245)]">
+            <p class="bg-red px-2 rounded-full font-medium text-[rgb(27,27,27)]">
               {props.lesson.content.room}
             </p>
           </div>
@@ -336,7 +339,22 @@ const OngoingWidget: Component<TopOngoingWidget> = (props) => {
       <Show when={props.next_lesson}>
         {next_lesson => (
           <div class="pl-4 py-3 w-full">
-            <p>Vous avez {getLessonType(next_lesson())} après à {getHourString(new Date(next_lesson().start_date))}.</p>
+            <div class="flex flex-col gap-0.5">
+              <div class="flex justify-between">
+                <p>{getLessonType(next_lesson())}</p>
+                <p class="bg-red px-2 rounded-full font-medium text-[rgb(27,27,27)]">
+                  {next_lesson().content.room}
+                </p>
+              </div>
+
+              <p class="text-xs text-[rgb(190,190,190)]">
+                {next_lesson().type} avec {next_lesson().content.teacher}
+              </p>
+            </div>
+
+            <p class="text-xs pt-2 text-[rgb(200,200,200)]">
+              Débute <span class="text-red">{nextLessonRemaining() === remaining() ? "à la suite" : nextLessonRemaining()}</span>
+            </p>
           </div>
         )}
       </Show>
@@ -491,7 +509,7 @@ const MobileView: Component<{
           <div class="flex justify-between gap-4">
 
             {/* Actual widget's code. */}
-            <div class="bg-[rgb(27,27,27)] rounded-lg shadow-xl mx-auto w-full tablet:(mx-0 w-auto)">
+            <div class="bg-[rgb(27,27,27)] rounded-lg h-full shadow-xl mx-auto w-full tablet:(mx-0 max-w-[450px])">
               <Show when={!props.isCurrentlyInVacation}
                 fallback={
                   <div class="flex flex-col justify-center py-4 px-8 h-full gap-1">
@@ -538,7 +556,7 @@ const MobileView: Component<{
             </div>
 
             <Show when={matches.tablet}>
-              <div class="bg-[rgb(27,27,27)] rounded-lg shadow-xl">
+              <div class="bg-[rgb(27,27,27)] rounded-lg shadow-xl ">
                 <div class="flex flex-col items-center justify-center gap-2 px-4 py-4 laptop-sm:(flex-row justify-between gap-6 px-8) h-full">
                   <div class="flex flex-col flex-shrink-0">
                     <p class="text-lg text-[rgb(240,240,240)]">
