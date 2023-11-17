@@ -1,4 +1,5 @@
 import localforage from "localforage";
+
 import type { ApiTimetableMeta, ITimetable } from "~/types/api";
 import { APIError, APIErrorType } from "~/utils/errors";
 
@@ -11,52 +12,73 @@ interface TimetableMeta {
   timetables: ApiTimetableMeta["data"]
 }
 
-/** @param year - Example: "A1" */
 const getTimetableMetaStore = async (year: number, forceRefreshAll = false): Promise<TimetableMeta> => {
   const key = "timetables-meta-" + makeYearSTR(year);
   const metasInStorage = localStorage.getItem(key);
-  let meta: TimetableMeta | undefined;
+
+  const renew = async () => {
+    const response = await fetch(`/api/timetables/${makeYearSTR(year)}`);
+    const { data: timetables } = await response.json() as ApiTimetableMeta;
+
+    const meta = {
+      last_fetch: Date.now(),
+      timetables
+    };
+
+    localStorage.setItem(key, JSON.stringify(meta));
+    return meta;
+  }
+
+  /** Used in case we're using `forceRefreshAll` while being offline. */
+  let stored_meta: TimetableMeta | undefined;
 
   if (metasInStorage) {
     try {
-      const raw_meta = JSON.parse(metasInStorage) as TimetableMeta;
+      stored_meta = JSON.parse(metasInStorage) as TimetableMeta;
 
       const now = Date.now();
-      const diff = now - raw_meta.last_fetch;
+      const diff = now - stored_meta.last_fetch;
 
       // is not older than four hour (renew every 12 hours)
-      if (forceRefreshAll || diff < 1000 * 60 * 60 * 12) {
-        // Debug.
-        console.info("[getTimetableMetaStore]: retreieved cache from store.");
-
-        meta = raw_meta;
+      if (diff < 1000 * 60 * 60 * 12) {
+        // if we don't force refresh all, we can return the cache.
+        if (!forceRefreshAll) {
+          // Debug.
+          console.info("[getTimetableMetaStore]: retreieved cache from store.");
+          return stored_meta;
+        }
       }
-    } catch { /** No-op since non-parsable. */ }
+      else {
+        // Debug.
+        console.info("[getTimetableMetaStore]: cache is outdated, fetching again...");
+
+        try {
+          const renewed_meta = await renew();
+          return renewed_meta;
+        }
+        catch {
+          // No internet connection, return the old cache.
+          return stored_meta;
+        }
+      }
+    }
+    catch { /** No-op since non-parsable. */ }
   }
 
-  if (!meta) {
-    try {
-      console.info("[getTimetableMetaStore]: empty store : fetching all timetables...");
-
-      const response = await fetch(`/api/timetables/${makeYearSTR(year)}`);
-      const { data: timetables } = await response.json() as ApiTimetableMeta;
-
-      meta = {
-        last_fetch: Date.now(),
-        timetables
-      };
-
-      localStorage.setItem(key, JSON.stringify(meta));
-      console.info("[getTimetableMetaStore]: empty store : fetching done, replaced in localStorage.");
+  try {
+    console.info("[getTimetableMetaStore]: cache is empty, fetching all timetables...");
+    const meta = await renew();
+    return meta
+  }
+  catch {
+    if (forceRefreshAll && stored_meta) {
+      return stored_meta;
     }
+
     // No internet connection, throw a cache error.
-    catch {
-      throw new APIError(APIErrorType.NO_CACHE);
-    }
+    throw new APIError(APIErrorType.NO_CACHE);
   }
-
-  return meta;
-}
+};
 
 export const getTodaysWeekNumber = async (year: number, forceRefreshMetas = false): Promise<number> => {
   const today = new Date();
@@ -115,6 +137,22 @@ const fetchTimetableWithoutCache = async (year: number, week_number: number): Pr
 };
 
 export const getTimetableForWeekNumber = async (year: number, week_number: number): Promise<ITimetable> => {
+  const renew = async () => {
+    try {
+      const timetable = await fetchTimetableWithoutCache(year, week_number);
+      return timetable;
+    }
+    // No connection and no cache,
+    // there's nothing we can do.
+    catch (error) {
+      if (error instanceof APIError && error.type === APIErrorType.NOT_FOUND) {
+        throw error;
+      }
+
+      throw new APIError(APIErrorType.NO_CACHE);
+    }
+  }
+
   const stored_timetable = await getTimetableStore(makeYearSTR(year)).getItem<ITimetable & {
     last_fetch: number
   }>(makeWeekSTR(week_number));
@@ -129,21 +167,21 @@ export const getTimetableForWeekNumber = async (year: number, week_number: numbe
       console.info(`[CACHE][${year}]:`, week_number);
       return stored_timetable;
     }
-  }
 
-  try {
-    const timetable = await fetchTimetableWithoutCache(year, week_number);
-    return timetable;
-  }
-  // No connection and no cache,
-  // there's nothing we can do.
-  catch (error) {
-    if (error instanceof APIError && error.type === APIErrorType.NOT_FOUND) {
+    try {
+      const renewed_timetable = await renew();
+      return renewed_timetable;
+    }
+    catch (error) {
+      if (error instanceof APIError && error.type === APIErrorType.NO_CACHE) {
+        return stored_timetable;
+      }
+
       throw error;
     }
-
-    throw new APIError(APIErrorType.NO_CACHE);
   }
+
+  return renew();
 };
 
 export const deleteTimeTableForWeekNumber = async (year: number, week_number: number): Promise<void> => {
