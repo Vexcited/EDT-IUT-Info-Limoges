@@ -37,17 +37,18 @@ const Root: Component = () => {
   // TODO: Should be configurable in the future.
   const FONT_FAMILY = "'Poppins', sans-serif";
 
+  const primaryColor = () => preferences.customization.primary_color ?? DEFAULT_USER_CUSTOMIZATION.primary_color;
+  const primaryColorHEX = () => primaryColor()
+    .split(",")
+    .map(i => parseInt(i.trim())) as [r: number, g: number, b: number];
+
   createEffect(() => {
     initializeNowRefresh();
 
     // setup the custom color from the user preferences.
     const root = document.querySelector(':root') as HTMLElement;
-    root.style.setProperty('--custom-color', preferences.customization.primary_color ?? DEFAULT_USER_CUSTOMIZATION.primary_color);
+    root.style.setProperty('--custom-color', primaryColor());
   });
-
-  const primaryColorHEX = () => preferences.customization.primary_color!
-    .split(",")
-    .map(i => parseInt(i.trim())) as [r: number, g: number, b: number];
 
   return (
     <Html lang="fr">
