@@ -585,7 +585,7 @@ const MobileView: Component<{
                       onClick={() => {
                         if (swiperInstanceRef) {
                           // go to saturday, we skip sunday
-                          swiperInstanceRef.swiper.slideTo(5);
+                          swiperInstanceRef.swiper.slideTo(5, 0);
                         }
 
                         setActiveDayIndex(5);
@@ -597,7 +597,7 @@ const MobileView: Component<{
                     <button type="button" class="p-1 bg-red/20 hover:bg-red active:bg-red/60 transition border border-red rounded-full laptop-sm:(w-auto p-1.5) w-full flex justify-center items-center"
                       onClick={() => {
                         if (swiperInstanceRef) {
-                          swiperInstanceRef.swiper.slideTo(0);
+                          swiperInstanceRef.swiper.slideTo(0, 0);
                         };
 
                         setActiveDayIndex(0)
@@ -633,7 +633,7 @@ const MobileView: Component<{
                 onClick={() => {
                   if (swiperInstanceRef) {
                     // go to saturday, we skip sunday
-                    swiperInstanceRef.swiper.slideTo(5);
+                    swiperInstanceRef.swiper.slideTo(5, 0);
                   }
 
                   setActiveDayIndex(5);
@@ -645,7 +645,7 @@ const MobileView: Component<{
               <button type="button" class="p-1.5 bg-red/20 hover:bg-red active:bg-red/60 transition border border-red rounded-full"
                 onClick={() => {
                   if (swiperInstanceRef) {
-                    swiperInstanceRef.swiper.slideTo(0);
+                    swiperInstanceRef.swiper.slideTo(0, 0);
                   };
 
                   setActiveDayIndex(0)
