@@ -12,12 +12,13 @@ import MdiCalendar from '~icons/mdi/calendar'
 import MdiLoading from '~icons/mdi/loading'
 import MdiFileDocumentAlertOutline from '~icons/mdi/file-document-alert-outline'
 import MdiCheck from '~icons/mdi/check'
+import MdiHeart from '~icons/mdi/heart'
 
-import { getTodaysWeekNumber, getTimetableForWeekNumber, deleteTimeTableForWeekNumber } from "~/stores/timetables";
+import { getTodaysWeekNumber, getTimetableForWeekNumber, deleteTimeTableForWeekNumber, getLatestWeekNumber } from "~/stores/timetables";
 import { getLessonDescription, getLessonType, lessonsForSubGroup } from "~/utils/lessons";
 import { getDayFromTimetable, getDayString, getGreeting, getHourString, getSmolDayString, hoursAndMinutesBetween } from "~/utils/dates";
 import { generateICS } from "~/utils/ics";
-import { APIError } from "~/utils/errors";
+import { APIError, APIErrorType } from "~/utils/errors";
 
 import { DateTime } from "luxon";
 import { createBreakpoints } from "@solid-primitives/media";
@@ -128,7 +129,7 @@ const MobileDayTimetable: Component<{
   const dayIsDone = () => {
     // if there's no lessons, it's always `true`.
     if (props.lessons.length === 0) return true;
-    
+
     const lastLesson = props.lessons.at(-1);
     // if we don't find the last lesson, it means there's nothing so `true`.
     if (!lastLesson) return true;
@@ -351,6 +352,7 @@ const MobileView: Component<{
   currentWeekHeader?: ITimetableHeader
   selectedWeekNumber: number
   setWeekNumber: Setter<number>
+  isCurrentlyInVacation: boolean
   error: string | null
 }> = (props) => {
   // Returns `undefined` when loading.
@@ -368,14 +370,20 @@ const MobileView: Component<{
 
     const lessonsForNextDay = props.currentWeekLessons.filter(
       lesson => now.getDay() + 1 === new Date(lesson.start_date).getDay()
-    )
+    );
 
     // Check if we're done for the week.
-    const isDoneForWeek = now >= new Date(props.currentWeekLessons.at(-1)!.end_date);
+    const lastLessonOfWeek = props.currentWeekLessons[props.currentWeekLessons.length - 1];
+    let isDoneForWeek: boolean;
+    if (!lastLessonOfWeek) isDoneForWeek = true;
+    else isDoneForWeek = now >= new Date(lastLessonOfWeek.end_date);
 
     if (!isDoneForWeek) {
       // Check if we're after the last lesson.
-      const isDoneForToday = now >= new Date(lessonsForCurrentDay.at(-1)!.end_date);
+      const lastLessonOfDay = lessonsForCurrentDay[lessonsForCurrentDay.length - 1];
+      let isDoneForToday: boolean;
+      if (!lastLessonOfDay) isDoneForToday = true;
+      else isDoneForToday = now >= new Date(lastLessonOfDay.end_date);
 
       if (isDoneForToday) return {
         type: "DONE_FOR_TODAY",
@@ -388,7 +396,7 @@ const MobileView: Component<{
           type: "NEXT_LESSON",
           lesson: first_lesson_of_day
         }
-        // We're currently in a lesson
+        // We're currently in a lesson.
         else {
           const current_lesson_index = lessonsForCurrentDay.findIndex(
             lesson => now >= new Date(lesson.start_date) && now < new Date(lesson.end_date)
@@ -417,13 +425,14 @@ const MobileView: Component<{
 
             if (!next_lesson) {
               // throw debug informations in case someone reports.
+              // NOTE: maybe say end of day ?
               console.error("debug: what should happen here ?", now.toISOString(), JSON.stringify(lessonsForCurrentDay));
               return;
             }
 
             return {
               type: "NEXT_LESSON",
-              lesson: next_lesson!
+              lesson: next_lesson
             }
           }
         }
@@ -433,6 +442,10 @@ const MobileView: Component<{
       type: "DONE_FOR_WEEK"
     }
   });
+
+  const vacationRemaining = () => props.header?.start_date
+    ? DateTime.fromISO(props.header.start_date).setLocale("fr").toRelative()
+    : "(calcul en cours...)";
 
   let swiperInstanceRef: SwiperContainer | undefined;
 
@@ -478,29 +491,48 @@ const MobileView: Component<{
 
             {/* Actual widget's code. */}
             <div class="bg-[rgb(27,27,27)] rounded-lg shadow-xl mx-auto w-full tablet:(mx-0 w-auto)">
-              <Show when={topContent()} fallback={
-                <div class="flex justify-center items-center py-4 px-8 h-full">
-                  <p class="text-[rgb(240,240,240)] animate-pulse">
-                    Chargement du contenu...
-                  </p>
-                </div>
-              }>
-                {top => (
-                  <Switch>
-                    <Match when={top().type === "DONE_FOR_TODAY"}>
-                      <DoneForTodayWidget {...top() as TopDoneForTodayWidget} />
-                    </Match>
-                    <Match when={top().type === "DONE_FOR_WEEK"}>
-                      <DoneForWeekWidget {...top() as TopDoneForWeekWidget} />
-                    </Match>
-                    <Match when={top().type === "NEXT_LESSON"}>
-                      <NextLessonWidget {...top() as TopNextLessonWidget} />
-                    </Match>
-                    <Match when={top().type === "ONGOING"}>
-                      <OngoingWidget {...top() as TopOngoingWidget} />
-                    </Match>
-                  </Switch>
-                )}
+              <Show when={!props.isCurrentlyInVacation}
+                fallback={
+                  <div class="flex flex-col justify-center py-4 px-8 h-full gap-1">
+                    <div class="flex gap-2 items-center">
+                      <MdiCheck class="text-red text-lg" />
+                      <p class="text-[rgb(240,240,240)]">
+                        Vous êtes actuellement en vacances !
+                      </p>
+                    </div>
+                    <div class="flex gap-2 items-center">
+                      <MdiCalendar class="text-red text-lg" />
+                      <p class="text-[rgb(240,240,240)]">
+                        Vous reprenez {vacationRemaining()}
+                      </p>
+                    </div>
+                  </div>
+                }
+              >
+                <Show when={topContent()} fallback={
+                  <div class="flex justify-center items-center py-4 px-8 h-full">
+                    <p class="text-[rgb(240,240,240)] animate-pulse">
+                      Chargement du contenu...
+                    </p>
+                  </div>
+                }>
+                  {top => (
+                    <Switch>
+                      <Match when={top().type === "DONE_FOR_TODAY"}>
+                        <DoneForTodayWidget {...top() as TopDoneForTodayWidget} />
+                      </Match>
+                      <Match when={top().type === "DONE_FOR_WEEK"}>
+                        <DoneForWeekWidget {...top() as TopDoneForWeekWidget} />
+                      </Match>
+                      <Match when={top().type === "NEXT_LESSON"}>
+                        <NextLessonWidget {...top() as TopNextLessonWidget} />
+                      </Match>
+                      <Match when={top().type === "ONGOING"}>
+                        <OngoingWidget {...top() as TopOngoingWidget} />
+                      </Match>
+                    </Switch>
+                  )}
+                </Show>
               </Show>
             </div>
 
@@ -509,7 +541,7 @@ const MobileView: Component<{
                 <div class="flex flex-col items-center justify-center gap-2 px-4 py-4 laptop-sm:(flex-row justify-between gap-6 px-8) h-full">
                   <div class="flex flex-col flex-shrink-0">
                     <p class="text-lg a">
-                      Semaine {props.selectedWeekNumber}
+                      {props.selectedWeekNumber === -1 ? "Récupération de la semaine..." : `Semaine ${props.selectedWeekNumber}`}
                     </p>
                     <p class="text-sm text-[rgb(190,190,190)]">
                       {props.header ? (
@@ -546,7 +578,7 @@ const MobileView: Component<{
           <div class="flex items-center justify-between gap-2 mb-6 px-4">
             <div class="flex flex-col flex-shrink-0">
               <p class="text-lg a">
-                Semaine {props.selectedWeekNumber}
+                {props.selectedWeekNumber === -1 ? "Récupération de la semaine..." : `Semaine ${props.selectedWeekNumber}`}
               </p>
               <p class="text-xs text-[rgb(190,190,190)]">
                 {props.header ? (
@@ -646,12 +678,12 @@ const MobileView: Component<{
             </swiper-container>
           </div>
         </Show>
-      </main >
+      </main>
 
-      <footer class="w-full text-center pt-4">
-        {/* <p class="text-sm">
-          Made with {"<3"} by <a class="font-medium hover:underline text-red" href="https://github.com/Vexcited">Vexcited</a>
-        </p> */}
+      <footer class="w-full text-center pb-8 pt-6">
+        <p class="text-sm flex gap-1 justify-center items-center">
+          Made with <MdiHeart class="text-red a" /> by <a class="font-medium hover:underline text-red" href="https://github.com/Vexcited">Vexcited</a>
+        </p>
       </footer>
     </>
   )
@@ -662,15 +694,40 @@ const Page: Component = () => {
   const [currentWeekTimetable, setCurrentWeekTimetable] = createSignal<ITimetable | null>(null);
   const [selectedWeekTimetable, setSelectedWeekTimetable] = createSignal<ITimetable | null>(null);
   const [error, setError] = createSignal<string | null>(null);
+  const [isCurrentlyInVacation, setCurrentlyInVacation] = createSignal(false);
 
   onMount(async () => {
-    const currentWeekNumber = await getTodaysWeekNumber(preferences.year);
+    let currentWeekNumber: number | undefined;
+
+    try {
+      currentWeekNumber = await getTodaysWeekNumber(preferences.year);
+    }
+    catch (error) {
+      if (error instanceof APIError) {
+        // when the current week is not found
+        // => we're in vacation.
+        if (error.type === APIErrorType.NOT_FOUND) {
+          currentWeekNumber = await getLatestWeekNumber(preferences.year);
+          setCurrentlyInVacation(true);
+        }
+        else {
+          setError(error.message);
+          return;
+        }
+      }
+      else {
+        console.error("unhandled:", error);
+        setError("Erreur inconnue(2): voir la console.");
+        return;
+      }
+    }
+
     const currentWeekTimetable = await getTimetableForWeekNumber(preferences.year, currentWeekNumber);
 
     batch(() => {
       setCurrentWeekTimetable(currentWeekTimetable);
       // we select current week by default, so yes copy here too.
-      setSelectedWeek(currentWeekNumber);
+      setSelectedWeek(currentWeekNumber!);
       setSelectedWeekTimetable(currentWeekTimetable);
     });
   });
@@ -704,7 +761,7 @@ const Page: Component = () => {
       }
       else {
         console.error("unhandled:", error);
-        setError("Erreur inconnue: voir la console.");
+        setError("Erreur inconnue(1): voir la console.");
       }
     }
   };
@@ -713,7 +770,7 @@ const Page: Component = () => {
   let oldYearState = preferences.year;
   createEffect(on([() => preferences.year, selectedWeek], async ([year, week]) => {
     // prevent to run during first setup.
-    if (week < 1) return;
+    if (week === -1) return;
 
     if (year === oldYearState) {
       // also check if the week was already defined
@@ -738,6 +795,7 @@ const Page: Component = () => {
         currentWeekHeader={currentWeekTimetable()?.header}
         selectedWeekNumber={selectedWeek()}
         setWeekNumber={setSelectedWeek}
+        isCurrentlyInVacation={isCurrentlyInVacation()}
         error={error()}
       />
     </>

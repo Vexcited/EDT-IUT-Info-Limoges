@@ -80,6 +80,16 @@ const getTimetableMetaStore = async (year: number, forceRefreshAll = false): Pro
   }
 };
 
+/**
+ * used only when we're in vacation.
+ */
+export const getLatestWeekNumber = async (year: number): Promise<number> => {
+  const metas = await getTimetableMetaStore(year);
+
+  const last_timetable = metas.timetables[metas.timetables.length - 1];
+  return last_timetable.week_number;
+}
+
 export const getTodaysWeekNumber = async (year: number, forceRefreshMetas = false): Promise<number> => {
   const today = new Date();
 
@@ -108,9 +118,8 @@ export const getTodaysWeekNumber = async (year: number, forceRefreshMetas = fals
       return getTodaysWeekNumber(year, true);
     }
 
-    // we're in vacation, return the last timetable.
-    const last_timetable = metas.timetables[metas.timetables.length - 1];
-    return last_timetable.week_number;
+    // we're in vacation, to be handled by the caller (main Page view).
+    throw new APIError(APIErrorType.NOT_FOUND);
   }
 
   return timetable_meta.week_number;
