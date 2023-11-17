@@ -3,7 +3,7 @@ import { Dialog } from "@kobalte/core";
 
 import MdiClose from '~icons/mdi/close'
 
-import { DEFAULT_USER_CUSTOMIZATION, preferences, setMainGroup, setSubGroup, setUserCustomization, setYear } from "~/stores/preferences";
+import { DEFAULT_USER_CUSTOMIZATION, preferences, setMainGroup, setSubGroup, setUserCustomization } from "~/stores/preferences";
 import { resetAppCache } from "~/stores/timetables";
 
 const SelectionButton: Component<{
@@ -38,7 +38,7 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
                 Paramètres
               </Dialog.Title>
               <Dialog.CloseButton class="flex items-center justify-center p-1">
-                <MdiClose class="text-lg a" />
+                <MdiClose class="text-lg" />
               </Dialog.CloseButton>
             </div>
 

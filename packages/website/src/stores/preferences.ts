@@ -27,11 +27,6 @@ export const [preferences, setPreferences] = createStore({
   customization: JSON.parse(safelyGetInLocalStorage("user_customization", "{}")) as UserCustomization,
 });
 
-export const setYear = (year: number) => {
-  localStorage.setItem("year", year.toString());
-  setPreferences({ year });
-};
-
 export const setMainGroup = (main_group: number) => {
   localStorage.setItem("main_group", main_group.toString());
   setPreferences({ main_group });

@@ -62,7 +62,7 @@ const Root: Component = () => {
         <Title>EDT - IUT Informatique de Limoges</Title>
         <Link rel="icon" href="/favicon.ico" />
       </Head>
-      <Body class="bg-[rgb(18,18,18)] dark:bg-[rgb(18,18,18)]" style={{ "font-family": FONT_FAMILY }}>
+      <Body class="bg-[rgb(18,18,18)]" style={{ "font-family": FONT_FAMILY }}>
         <Suspense>
           <ErrorBoundary>
             <Routes>

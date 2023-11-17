@@ -154,7 +154,7 @@ const MobileDayTimetable: Component<{
         <For each={props.lessons} fallback={
           <div class="flex flex-col gap-2 items-center pt-4">
             <MdiCheck class="text-2xl text-[rgb(240,240,240)]" />
-            <p class="text-[rgb(200,200,200)] a">
+            <p class="text-[rgb(200,200,200)]">
               Pas de cours !
             </p>
           </div>
@@ -222,16 +222,20 @@ const DoneForTodayWidget: Component<TopDoneForTodayWidget> = (props) => {
     <div class="flex flex-col gap-1 py-3">
       <div class="flex items-center gap-2 px-4">
         <MdiCheck class="text-lg text-red" />
-        <p class="text-sm a">Les cours d'aujourd'hui sont terminés</p>
+        <p class="text-sm text-[rgb(240,240,240)]">
+          Les cours d'aujourd'hui sont terminés
+        </p>
       </div>
       <div class="flex items-center gap-2 px-4">
         <MdiCalendar class="text-lg text-red" />
-        <p class="text-sm">
+        <p class="text-sm text-[rgb(240,240,240)]">
           Le prochain est {farString()} à <span class="text-red font-medium">{timeString()}</span>
         </p>
       </div>
+
       <div class="my-2 h-[1px] border-b border-b-[rgb(50,50,50)]" />
-      <p class="text-xs px-4 tablet:text-sm">
+
+      <p class="text-xs px-4 tablet:text-sm text-[rgb(240,240,240)]">
         Prochain: {props.next_lesson.type} de <span class="text-red font-medium">{getLessonType(props.next_lesson)}</span> ({getLessonDescription(props.next_lesson)}) en <span class="text-red font-medium">{props.next_lesson.content.room}</span> avec {props.next_lesson.content.teacher}
       </p>
     </div>
@@ -243,7 +247,9 @@ const DoneForWeekWidget: Component<TopDoneForWeekWidget> = () => {
     <div class="flex flex-col gap-1 py-3">
       <div class="flex items-center gap-2 px-4">
         <MdiCheck class="text-lg text-red" />
-        <p class="text-sm a">Les cours de la semaine sont terminés !</p>
+        <p class="text-sm text-[rgb(240,240,240)]">
+          Les cours de la semaine sont terminés !
+        </p>
       </div>
     </div>
   );
@@ -271,6 +277,7 @@ const NextLessonWidget: Component<TopNextLessonWidget> = (props) => {
           <h2 class="text-lg text-[rgb(240,240,240)]">
             {getLessonType(props.lesson)}
           </h2>
+
           <div class="flex gap-2.5">
             <p class="text-sm border border-red text-red bg-red/10 rounded-full px-3 py-0.5 h-fit">
               {props.lesson.type}
@@ -320,7 +327,9 @@ const OngoingWidget: Component<TopOngoingWidget> = (props) => {
       >
         <div class="flex flex-col gap-0.5">
           <div class="flex justify-between">
-            <p>{getLessonType(props.lesson)}</p>
+            <p class="text-[rgb(240,240,240)]">
+              {getLessonType(props.lesson)}
+            </p>
             <p class="bg-red px-2 rounded-full font-medium text-[rgb(27,27,27)]">
               {props.lesson.content.room}
             </p>
@@ -372,6 +381,9 @@ const MobileView: Component<{
   isCurrentlyInVacation: boolean
   error: string | null
 }> = (props) => {
+  // only used for slide container
+  const [activeDayIndex, setActiveDayIndex] = createSignal(now().weekday - 1);
+
   // Returns `undefined` when loading.
   const topContent = createMemo<TopContent | undefined>(() => {
     if (!props.currentWeekLessons) return;
@@ -437,7 +449,7 @@ const MobileView: Component<{
           }
           // we're in a break, we should get the very next lesson
           else {
-            // get the very first occurence of after now (so the next lesson) 
+            // get the very first occurrence of after now (so the next lesson) 
             const next_lesson = lessonsForCurrentDay.find(
               lesson => new Date(lesson.start_date) >= njs
             );
@@ -475,7 +487,7 @@ const MobileView: Component<{
           <p class="text-xl font-medium">
             {getGreeting()}
           </p>
-          <p class="text-sm a">
+          <p class="text-sm">
             Vous êtes en G{preferences.main_group}{preferences.sub_group === 0 ? "A" : "B"}.
           </p>
         </div>
@@ -488,14 +500,14 @@ const MobileView: Component<{
                 lessons: props.lessons!
               })}
             >
-              <MdiCalendar class="text-lg a" />
+              <MdiCalendar class="text-lg" />
             </button>
           </Show>
           <button type="button"
             class="flex items-center justify-center p-2"
             onClick={() => setSettingsOpen(true)}
           >
-            <MdiCog class="text-lg a" />
+            <MdiCog class="text-lg" />
           </button>
         </div>
       </header>
@@ -568,20 +580,31 @@ const MobileView: Component<{
                       ) : (props.error ? "Oups, y a un problème..." : "En attente de l'EDT...")}
                     </p>
                   </div>
-                  <div class="flex gap-3 items-center w-full">
+                  <div class="flex gap-3 items-center w-full text-[rgb(240,240,240)]">
                     <button type="button" class="p-1 bg-red/20 hover:bg-red active:bg-red/60 transition border border-red rounded-full laptop-sm:(w-auto p-1.5) w-full flex justify-center items-center"
                       onClick={() => {
+                        if (swiperInstanceRef) {
+                          // go to saturday, we skip sunday
+                          swiperInstanceRef.swiper.slideTo(5);
+                        }
+
+                        setActiveDayIndex(5);
                         props.setWeekNumber(curr => curr - 1);
                       }}
                     >
-                      <MdiChevronLeft class="text-lg a" />
+                      <MdiChevronLeft class="text-lg" />
                     </button>
                     <button type="button" class="p-1 bg-red/20 hover:bg-red active:bg-red/60 transition border border-red rounded-full laptop-sm:(w-auto p-1.5) w-full flex justify-center items-center"
                       onClick={() => {
+                        if (swiperInstanceRef) {
+                          swiperInstanceRef.swiper.slideTo(0);
+                        };
+
+                        setActiveDayIndex(0)
                         props.setWeekNumber(curr => curr + 1);
                       }}
                     >
-                      <MdiChevronRight class="text-lg a" />
+                      <MdiChevronRight class="text-lg" />
                     </button>
                   </div>
                 </div>
@@ -608,6 +631,12 @@ const MobileView: Component<{
             <div class="flex gap-3 items-center flex-shrink-0">
               <button type="button" class="p-1.5 bg-red/20 hover:bg-red active:bg-red/60 transition border border-red rounded-full"
                 onClick={() => {
+                  if (swiperInstanceRef) {
+                    // go to saturday, we skip sunday
+                    swiperInstanceRef.swiper.slideTo(5);
+                  }
+
+                  setActiveDayIndex(5);
                   props.setWeekNumber(curr => curr - 1);
                 }}
               >
@@ -615,6 +644,11 @@ const MobileView: Component<{
               </button>
               <button type="button" class="p-1.5 bg-red/20 hover:bg-red active:bg-red/60 transition border border-red rounded-full"
                 onClick={() => {
+                  if (swiperInstanceRef) {
+                    swiperInstanceRef.swiper.slideTo(0);
+                  };
+
+                  setActiveDayIndex(0)
                   props.setWeekNumber(curr => curr + 1);
                 }}
               >
@@ -657,7 +691,7 @@ const MobileView: Component<{
                 swiperInstanceRef.swiper.slidePrev();
               }}
             >
-              <MdiChevronLeft class="text-lg a" />
+              <MdiChevronLeft class="text-lg text-[rgb(240,240,240)]" />
             </button>
             <button type="button"
               class="hidden tablet:block absolute top-1/2 right-4 transform -translate-y-1/2 bg-red/20 hover:bg-red active:bg-red/60 transition border border-red rounded-full p-2 z-50"
@@ -666,13 +700,13 @@ const MobileView: Component<{
                 swiperInstanceRef.swiper.slideNext();
               }}
             >
-              <MdiChevronRight class="text-lg a" />
+              <MdiChevronRight class="text-lg text-[rgb(240,240,240)]" />
             </button>
 
             <swiper-container ref={swiperInstanceRef}
               class="mx-0 tablet:mx-12"
               grab-cursor={true}
-              initial-slide={now().weekday - 1}
+              initial-slide={activeDayIndex()}
               slides-per-view={1}
               breakpoints={{
                 1440: { slidesPerView: 4 },
@@ -701,7 +735,7 @@ const MobileView: Component<{
 
       <footer class="w-full text-center pb-8 pt-6">
         <p class="text-sm flex gap-1 justify-center items-center text-[rgb(220,220,220)]">
-          Made with <MdiHeart class="text-red a" /> by <a class="font-medium hover:underline text-red" href="https://github.com/Vexcited">Vexcited</a>
+          Made with <MdiHeart class="text-red" /> by <a class="font-medium hover:underline text-red" href="https://github.com/Vexcited">Vexcited</a>
         </p>
       </footer>
     </>
