@@ -91,14 +91,14 @@ const MobileDayTimetableLesson: Component<{
       <div class="px-4 py-3">
         <div class="flex flex-col gap-2">
           <div class="flex justify-between gap-2">
-            <h2 class="text-lg a">
+            <h2 class="text-lg text-[rgb(240,240,240)]">
               {getLessonType(props.lesson)}
             </h2>
             <div class="flex gap-2.5">
               <p class="text-sm border border-red text-red bg-red/10 rounded-full px-3 py-0.5 h-fit">
                 {props.lesson.type}
               </p>
-              <p class="text-sm bg-red rounded-full px-3 py-0.5 h-fit">
+              <p class="text-sm text-[rgb(21,21,21)] bg-red rounded-full font-medium px-3 py-0.5 h-fit">
                 {props.lesson.content.room}
               </p>
             </div>
@@ -141,7 +141,7 @@ const MobileDayTimetable: Component<{
     <div class="w-full relative pt-6">
       <div class="absolute top-3 left-0 right-0">
         <div class="w-fit mx-auto bg-red px-4 py-1 rounded-full">
-          <p class="text-sm a">
+          <p class="text-sm text-[rgb(18,18,18)] font-medium">
             {getDayString(day())}
           </p>
         </div>
@@ -154,7 +154,7 @@ const MobileDayTimetable: Component<{
       >
         <For each={props.lessons} fallback={
           <div class="flex flex-col gap-2 items-center pt-4">
-            <MdiCheck class="text-2xl a" />
+            <MdiCheck class="text-2xl text-[rgb(240,240,240)]" />
             <p class="text-[rgb(200,200,200)] a">
               Pas de cours !
             </p>
@@ -269,14 +269,14 @@ const NextLessonWidget: Component<TopNextLessonWidget> = (props) => {
     <div class="py-3 px-4">
       <div class="flex flex-col gap-2">
         <div class="flex justify-between gap-2">
-          <h2 class="text-lg a">
+          <h2 class="text-lg text-[rgb(240,240,240)]">
             {getLessonType(props.lesson)}
           </h2>
           <div class="flex gap-2.5">
             <p class="text-sm border border-red text-red bg-red/10 rounded-full px-3 py-0.5 h-fit">
               {props.lesson.type}
             </p>
-            <p class="text-sm bg-red rounded-full px-3 py-0.5 h-fit">
+            <p class="text-sm text-[rgb(27,27,27)] font-semibold bg-red rounded-full px-3 py-0.5 h-fit">
               {props.lesson.content.room}
             </p>
           </div>
@@ -319,7 +319,7 @@ const OngoingWidget: Component<TopOngoingWidget> = (props) => {
         <div class="flex flex-col gap-0.5">
           <div class="flex justify-between">
             <p>{getLessonType(props.lesson)}</p>
-            <p class="bg-red text-white px-2 rounded-full font-medium">
+            <p class="bg-red px-2 rounded-full font-medium text-[rgb(245,245,245)]">
               {props.lesson.content.room}
             </p>
           </div>
@@ -329,7 +329,7 @@ const OngoingWidget: Component<TopOngoingWidget> = (props) => {
           </p>
         </div>
 
-        <p class="text-xs pt-2">
+        <p class="text-xs pt-2 text-[rgb(200,200,200)]">
           Fin <span class="text-red">{remaining()}</span>
         </p>
       </div>
@@ -451,7 +451,7 @@ const MobileView: Component<{
 
   return (
     <>
-      <header class="p-4 pb-2 bg-red flex justify-between items-center">
+      <header class="p-4 pb-2 bg-red flex justify-between items-center text-[rgb(245,245,245)]">
         <div class="flex flex-col">
           <p class="text-xl a">
             {getGreeting()}
@@ -540,7 +540,7 @@ const MobileView: Component<{
               <div class="bg-[rgb(27,27,27)] rounded-lg shadow-xl">
                 <div class="flex flex-col items-center justify-center gap-2 px-4 py-4 laptop-sm:(flex-row justify-between gap-6 px-8) h-full">
                   <div class="flex flex-col flex-shrink-0">
-                    <p class="text-lg a">
+                    <p class="text-lg text-[rgb(240,240,240)]">
                       {props.selectedWeekNumber === -1 ? "Récupération de la semaine..." : `Semaine ${props.selectedWeekNumber}`}
                     </p>
                     <p class="text-sm text-[rgb(190,190,190)]">
@@ -577,7 +577,7 @@ const MobileView: Component<{
         <Show when={!matches.tablet}>
           <div class="flex items-center justify-between gap-2 mb-6 px-4">
             <div class="flex flex-col flex-shrink-0">
-              <p class="text-lg a">
+              <p class="text-lg text-[rgb(240,240,240)]">
                 {props.selectedWeekNumber === -1 ? "Récupération de la semaine..." : `Semaine ${props.selectedWeekNumber}`}
               </p>
               <p class="text-xs text-[rgb(190,190,190)]">
@@ -592,14 +592,14 @@ const MobileView: Component<{
                   props.setWeekNumber(curr => curr - 1);
                 }}
               >
-                <MdiChevronLeft class="text-lg a" />
+                <MdiChevronLeft class="text-lg text-[rgb(240,240,240)]" />
               </button>
               <button type="button" class="p-1.5 bg-red/20 hover:bg-red active:bg-red/60 transition border border-red rounded-full"
                 onClick={() => {
                   props.setWeekNumber(curr => curr + 1);
                 }}
               >
-                <MdiChevronRight class="text-lg a" />
+                <MdiChevronRight class="text-lg text-[rgb(240,240,240)]" />
               </button>
             </div>
           </div>
@@ -681,7 +681,7 @@ const MobileView: Component<{
       </main>
 
       <footer class="w-full text-center pb-8 pt-6">
-        <p class="text-sm flex gap-1 justify-center items-center">
+        <p class="text-sm flex gap-1 justify-center items-center text-[rgb(220,220,220)]">
           Made with <MdiHeart class="text-red a" /> by <a class="font-medium hover:underline text-red" href="https://github.com/Vexcited">Vexcited</a>
         </p>
       </footer>

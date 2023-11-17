@@ -1,9 +1,7 @@
 import type { Component, Setter } from "solid-js";
-import { Dialog, Select } from "@kobalte/core";
+import { Dialog } from "@kobalte/core";
 
 import MdiClose from '~icons/mdi/close'
-import MdiCheck from '~icons/mdi/check'
-import MdiChevronDown from '~icons/mdi/chevron-down'
 
 import { DEFAULT_USER_CUSTOMIZATION, preferences, setMainGroup, setSubGroup, setUserCustomization, setYear } from "~/stores/preferences";
 import { resetAppCache } from "~/stores/timetables";
@@ -79,17 +77,17 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
                     onClick={() => {
                       const value = preferences.main_group - 1;
                       if (value < 1) return;
-                      setMainGroup(value)
+                      setMainGroup(value);
                     }}
                   >
                     -1
                   </button>
-                  <div
+                  <p
                     aria-label="Groupe principal"
-                    class="w-full text-center text-rgb(240,240,240)] bg-red px-3 py-1 font-medium text-lg"
+                    class="w-full text-center text-[rgb(240,240,240)] bg-red px-3 py-1 font-medium text-lg"
                   >
                     G{preferences.main_group}
-                  </div>
+                  </p>
                   <button type="button"
                     disabled={preferences.main_group >= 8}
                     class="text-center border-2 border-red text-[rgb(220,220,220)] disabled:(bg-red text-transparent) px-4 py-1 border-l-none rounded-r-lg"
