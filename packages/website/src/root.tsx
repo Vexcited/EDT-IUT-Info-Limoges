@@ -4,7 +4,11 @@ import '@fontsource/poppins/400.css';
 import '@fontsource/poppins/500.css';
 import "virtual:uno.css";
 
-import { type Component, Suspense, createEffect } from "solid-js";
+import {
+  type Component,
+  Suspense,
+  createEffect
+} from "solid-js";
 
 import {
   Html,
@@ -27,6 +31,7 @@ import {
 } from "./stores/preferences";
 
 import { initializeNowRefresh } from "./stores/temporary";
+import { rgbToHex } from "./utils/colors";
 
 const Root: Component = () => {
   // TODO: Should be configurable in the future.
@@ -40,13 +45,19 @@ const Root: Component = () => {
     root.style.setProperty('--custom-color', preferences.customization.primary_color ?? DEFAULT_USER_CUSTOMIZATION.primary_color);
   });
 
+  const primaryColorHEX = () => preferences.customization.primary_color!
+    .split(",")
+    .map(i => parseInt(i.trim())) as [r: number, g: number, b: number];
+
   return (
     <Html lang="fr">
       <Head>
         <Meta charset="utf-8" />
         <Meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        <Meta name="color-scheme" content="dark light" data-sm />
+        <Meta name="color-scheme" content="dark light" />
+        <Meta name="theme-color" content={rgbToHex(...primaryColorHEX())} />
+
         <Title>EDT - IUT Informatique de Limoges</Title>
         <Link rel="icon" href="/favicon.ico" />
       </Head>
