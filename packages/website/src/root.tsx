@@ -26,11 +26,16 @@ import {
   preferences
 } from "./stores/preferences";
 
+import { initializeNowRefresh } from "./stores/temporary";
+
 const Root: Component = () => {
   // TODO: Should be configurable in the future.
   const FONT_FAMILY = "'Poppins', sans-serif";
 
   createEffect(() => {
+    initializeNowRefresh();
+
+    // setup the custom color from the user preferences.
     const root = document.querySelector(':root') as HTMLElement;
     root.style.setProperty('--custom-color', preferences.customization.primary_color ?? DEFAULT_USER_CUSTOMIZATION.primary_color);
   });
@@ -45,7 +50,7 @@ const Root: Component = () => {
         <Title>EDT - IUT Informatique de Limoges</Title>
         <Link rel="icon" href="/favicon.ico" />
       </Head>
-      <Body class="bg-[rgb(18,18,18)] a" style={{ "font-family": FONT_FAMILY }}>
+      <Body class="bg-[rgb(18,18,18)] dark:bg-[rgb(18,18,18)]" style={{ "font-family": FONT_FAMILY }}>
         <Suspense>
           <ErrorBoundary>
             <Routes>

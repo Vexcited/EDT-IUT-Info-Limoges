@@ -68,7 +68,7 @@ const getTimetableMetaStore = async (year: number, forceRefreshAll = false): Pro
   try {
     console.info("[getTimetableMetaStore]: cache is empty, fetching all timetables...");
     const meta = await renew();
-    return meta
+    return meta;
   }
   catch {
     if (forceRefreshAll && stored_meta) {
@@ -91,7 +91,7 @@ export const getLatestWeekNumber = async (year: number): Promise<number> => {
 }
 
 export const getTodaysWeekNumber = async (year: number, forceRefreshMetas = false): Promise<number> => {
-  const today = new Date();
+  const today = new Date(); // we don't use the global `now()` getter here.
 
   // if we're on sunday, skip to next week.
   if (today.getDay() === 0) {

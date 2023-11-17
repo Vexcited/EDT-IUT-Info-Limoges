@@ -26,6 +26,7 @@ import { createBreakpoints } from "@solid-primitives/media";
 // Implement Swiper Element.
 // See <https://swiperjs.com/element>.
 import { SwiperContainer, register as registerSwiperElements } from 'swiper/element/bundle';
+import { now } from "~/stores/temporary";
 registerSwiperElements();
 
 // Type elements from Swiper Element.
@@ -38,8 +39,6 @@ declare module "solid-js" {
   }
 }
 
-const CURRENT_DAY = new Date();
-const CURRENT_DAY_INDEX = CURRENT_DAY.getDay() - 1;
 const [settingsOpen, setSettingsOpen] = createSignal(false);
 
 const matches = createBreakpoints({
@@ -358,32 +357,34 @@ const MobileView: Component<{
   // Returns `undefined` when loading.
   const topContent = createMemo<TopContent | undefined>(() => {
     if (!props.currentWeekLessons) return;
-    const now = new Date();
+
+    const n = now();
+    const njs = n.toJSDate();
 
     /**
      * Note that the lessons are sorted by default.
      * So first item will be the first lesson of the day and so on.
      */
     const lessonsForCurrentDay = props.currentWeekLessons.filter(
-      lesson => now.getDay() === new Date(lesson.start_date).getDay()
+      lesson => n.weekday === DateTime.fromISO(lesson.start_date).weekday
     );
 
     const lessonsForNextDay = props.currentWeekLessons.filter(
-      lesson => now.getDay() + 1 === new Date(lesson.start_date).getDay()
+      lesson => n.weekday + 1 === DateTime.fromISO(lesson.start_date).weekday
     );
 
     // Check if we're done for the week.
     const lastLessonOfWeek = props.currentWeekLessons[props.currentWeekLessons.length - 1];
     let isDoneForWeek: boolean;
     if (!lastLessonOfWeek) isDoneForWeek = true;
-    else isDoneForWeek = now >= new Date(lastLessonOfWeek.end_date);
+    else isDoneForWeek = njs >= new Date(lastLessonOfWeek.end_date);
 
     if (!isDoneForWeek) {
       // Check if we're after the last lesson.
       const lastLessonOfDay = lessonsForCurrentDay[lessonsForCurrentDay.length - 1];
       let isDoneForToday: boolean;
       if (!lastLessonOfDay) isDoneForToday = true;
-      else isDoneForToday = now >= new Date(lastLessonOfDay.end_date);
+      else isDoneForToday = njs >= new Date(lastLessonOfDay.end_date);
 
       if (isDoneForToday) return {
         type: "DONE_FOR_TODAY",
@@ -392,14 +393,14 @@ const MobileView: Component<{
       else {
         // Check if we're at the beginning of the day.
         const first_lesson_of_day = lessonsForCurrentDay[0];
-        if (now < new Date(first_lesson_of_day.start_date)) return {
+        if (njs < new Date(first_lesson_of_day.start_date)) return {
           type: "NEXT_LESSON",
           lesson: first_lesson_of_day
         }
         // We're currently in a lesson.
         else {
           const current_lesson_index = lessonsForCurrentDay.findIndex(
-            lesson => now >= new Date(lesson.start_date) && now < new Date(lesson.end_date)
+            lesson => njs >= new Date(lesson.start_date) && njs < new Date(lesson.end_date)
           );
 
           if (current_lesson_index !== -1) {
@@ -420,13 +421,13 @@ const MobileView: Component<{
           else {
             // get the very first occurence of after now (so the next lesson) 
             const next_lesson = lessonsForCurrentDay.find(
-              lesson => new Date(lesson.start_date) >= now
+              lesson => new Date(lesson.start_date) >= njs
             );
 
             if (!next_lesson) {
               // throw debug informations in case someone reports.
               // NOTE: maybe say end of day ?
-              console.error("debug: what should happen here ?", now.toISOString(), JSON.stringify(lessonsForCurrentDay));
+              console.error("debug: what should happen here ?", n.toISO(), JSON.stringify(lessonsForCurrentDay));
               return;
             }
 
@@ -653,7 +654,7 @@ const MobileView: Component<{
             <swiper-container ref={swiperInstanceRef}
               class="mx-0 tablet:mx-12"
               grab-cursor={true}
-              initial-slide={CURRENT_DAY_INDEX}
+              initial-slide={now().weekday - 1}
               slides-per-view={1}
               breakpoints={{
                 1440: { slidesPerView: 4 },
@@ -667,7 +668,7 @@ const MobileView: Component<{
                     <MobileDayTimetable
                       header={props.header!}
                       dayIndex={index()}
-                      isToday={index() === CURRENT_DAY_INDEX && props.currentWeekHeader?.week_number === props.selectedWeekNumber}
+                      isToday={index() === (now().weekday - 1) && props.currentWeekHeader?.week_number === props.selectedWeekNumber}
                       lessons={props.lessons!.filter(
                         lesson => new Date(lesson.start_date).getDay() === index() + 1
                       )}
