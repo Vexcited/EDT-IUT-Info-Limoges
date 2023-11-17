@@ -23,7 +23,7 @@ export const BUT_INFO_REF = {
   "R1.11": "Communication",
   "R1.12": "Projet professionnel et personnel",
 
-  "P1.01": "Démarche portfolio",
+  "P1.01": "Portfolio",
 
   // Semestre 2, commun.
   "S2.01": "Développement d'une application",
@@ -48,7 +48,7 @@ export const BUT_INFO_REF = {
   "R2.13": "Communication technique",
   "R2.14": "Projet professionnel et personnel",
 
-  "P2.01": "Démarche portfolio",
+  "P2.01": "Portfolio",
 
   // Semestre 3, parcours A - we only have parcours A in this IUT.
   "S3.01A": "Développement logiciel",
@@ -68,7 +68,7 @@ export const BUT_INFO_REF = {
   "R3.13": "Communication professionnelle",
   "R3.14": "Projet personnel et professionnel",
 
-  "P3.01": "Démarche portfolio",
+  "P3.01": "Portfolio",
 
   // Semestre 4, parcours A.
   "S4A.01": "Développement d'une application complexe",
@@ -87,7 +87,7 @@ export const BUT_INFO_REF = {
   "R4A.11": "Développement pour applications mobiles",
   "R4A.12": "Automates et Langages",
 
-  "P4.01": "Démarche portfolio",
+  "P4.01": "Portfolio",
 
   // Semestre 5, parcours A.
   "S5A.01": "Développement avancé",
@@ -95,7 +95,9 @@ export const BUT_INFO_REF = {
   "S5A.02": "Développement avancé",
 
   "R5.01": "Management d'une équipe de projet informatique",
+  "R5.02": "Projet personnel et professionnel",
   "R5.02A": "Projet personnel et professionnel",
+  "R5A.02": "Projet personnel et professionnel",
   "R5.03": "Politique de communication",
   // .Real.
   "R5A.04": "Qualité algorithmique",
@@ -110,7 +112,9 @@ export const BUT_INFO_REF = {
   "R5A.13": "Économie durable et numérique",
   "R5A.14": "Anglais",
 
-  "P5.01A": "Démarche portfolio",
+  "P5A.01": "Portfolio",
+  "P5.01A": "Portfolio",
+  "P5.01": "Portfolio",
 
   // Semestre 6, parcours A.
   "S6A.01": "Évolution d'une application existante",
@@ -123,5 +127,5 @@ export const BUT_INFO_REF = {
   "R6A.05": "Développement avancé",
   "R6A.06": "Maintenance applicative",
 
-  "P6.01": "Démarche portfolio"
+  "P6.01": "Portfolio"
 };
