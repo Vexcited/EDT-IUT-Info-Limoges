@@ -454,7 +454,7 @@ const MobileView: Component<{
     <>
       <header class="p-4 pb-2 bg-red flex justify-between items-center text-[rgb(245,245,245)]">
         <div class="flex flex-col">
-          <p class="text-xl a">
+          <p class="text-xl font-medium">
             {getGreeting()}
           </p>
           <p class="text-sm a">
