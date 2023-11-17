@@ -5,19 +5,19 @@ import { VitePWA as pwa } from "vite-plugin-pwa";
 
 import { defineConfig } from "vite";
 
-// @ts-expect-error
 import node from "solid-start-node";
 import vercel from "solid-start-vercel";
 
 export default defineConfig({
   plugins: [
+    unocss(),
+
     solid({
       ssr: false,
       // If we're building using Vercel, use the Vercel adapter.
       adapter: process.env.VERCEL ? vercel({ edge: false }) : node()
     }),
 
-    unocss(),
     icons({ compiler: "solid" }),
 
     pwa({
