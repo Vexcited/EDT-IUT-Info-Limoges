@@ -39,7 +39,7 @@ const makeRequestNativeHTTP = async (url: string) => {
   return new Promise<{
     headers: http.IncomingHttpHeaders;
     body: Buffer;
-  }>((resolve, reject) => {
+  }>(resolve => {
     const req = http.request(url, { method: "GET" }, (res) => {
       let buffer = Buffer.from("", "utf8");
       const proxy_res = decompress(res, res.headers["content-encoding"]);
@@ -67,9 +67,12 @@ export const GET = async ({ params }: APIEvent): Promise<Response> => {
   const proxied_res = await makeRequestNativeHTTP(url);
 
   const headers = new Headers();
-  headers.set("Content-Type", "application/pdf");
   headers.set("Content-Length", Buffer.byteLength(proxied_res.body).toString());
   headers.set("Last-Modified", proxied_res.headers["last-modified"]!);
+  headers.set("Content-Type", "application/pdf");
+  headers.set("Connection", "Keep-Alive");
+  headers.set("Accept-Ranges", "bytes");
+  headers.set("Server", "Apache");
 
   return new Response(proxied_res.body, { headers });
 };
