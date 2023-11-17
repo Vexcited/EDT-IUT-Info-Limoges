@@ -68,7 +68,7 @@ export const GET = async ({ params }: APIEvent): Promise<Response> => {
 
   const headers = new Headers();
   headers.set("Content-Type", "application/pdf");
-  // headers.set("Content-Length", proxied_res.headers["content-length"]!);
+  headers.set("Content-Length", Buffer.byteLength(proxied_res.body).toString());
   headers.set("Last-Modified", proxied_res.headers["last-modified"]!);
 
   return new Response(proxied_res.body, { headers });
