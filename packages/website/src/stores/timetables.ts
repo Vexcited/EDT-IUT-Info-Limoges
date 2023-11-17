@@ -108,7 +108,9 @@ export const getTodaysWeekNumber = async (year: number, forceRefreshMetas = fals
       return getTodaysWeekNumber(year, true);
     }
 
-    throw new APIError(APIErrorType.NOT_FOUND);
+    // we're in vacation, return the last timetable.
+    const last_timetable = metas.timetables[metas.timetables.length - 1];
+    return last_timetable.week_number;
   }
 
   return timetable_meta.week_number;
