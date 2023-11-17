@@ -152,10 +152,10 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
                   window.location.reload();
                 }}
               >
-                Effacer les données
+                Effacer le cache
               </button>
               <p class="text-[rgb(190,190,190)] text-xs mt-1.5">
-                Supprime les données stockées par l'application dans le navigateur.
+                Supprime le cache stocké par l'application dans le navigateur.
               </p>
             </section>
 
