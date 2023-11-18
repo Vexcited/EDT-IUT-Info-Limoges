@@ -1,7 +1,9 @@
 import localforage from "localforage";
+import { DateTime } from "luxon";
 
 import type { ApiTimetableMeta, ITimetable } from "~/types/api";
 import { APIError, APIErrorType } from "~/utils/errors";
+import { now } from "./temporary";
 
 const makeYearSTR = (year: number): string => `A${year}`;
 const makeWeekSTR = (week_number: number): string => `S${week_number}`;
@@ -91,21 +93,12 @@ export const getLatestWeekNumber = async (year: number): Promise<number> => {
 }
 
 export const getTodaysWeekNumber = async (year: number, forceRefreshMetas = false): Promise<number> => {
-  const today = new Date(); // we don't use the global `now()` getter here.
-
-  // if we're on sunday, skip to next week.
-  if (today.getDay() === 0) {
-    today.setDate(today.getDate() + 1);
-  }
-
   const metas = await getTimetableMetaStore(year, forceRefreshMetas);
 
   const timetable_meta = metas.timetables.find(
     meta => {
-      const start_date = new Date(meta.start_date);
-      const end_date = new Date(meta.end_date);
-
-      return today >= start_date && today < end_date;
+      const start_date = DateTime.fromISO(meta.start_date);
+      return start_date.weekNumber === now().weekNumber;
     }
   );
 
