@@ -3,7 +3,6 @@ import { DateTime } from "luxon";
 
 import type { ApiTimetableMeta, ITimetable } from "~/types/api";
 import { APIError, APIErrorType } from "~/utils/errors";
-import { now } from "./temporary";
 
 const makeYearSTR = (year: number): string => `A${year}`;
 const makeWeekSTR = (week_number: number): string => `S${week_number}`;
@@ -92,13 +91,15 @@ export const getLatestWeekNumber = async (year: number): Promise<number> => {
   return last_timetable.week_number;
 }
 
-export const getTodaysWeekNumber = async (year: number, forceRefreshMetas = false): Promise<number> => {
+/**
+ * Get the week number of the a given day.
+ */
+export const getDayWeekNumber = async (day: DateTime, year: number, forceRefreshMetas = false): Promise<number> => {
   const metas = await getTimetableMetaStore(year, forceRefreshMetas);
 
   const timetable_meta = metas.timetables.find(
     meta => {
-      const start_date = DateTime.fromISO(meta.start_date);
-      return start_date.weekNumber === now().weekNumber;
+      return meta.week_number_in_year === day.weekNumber;
     }
   );
 
@@ -108,7 +109,7 @@ export const getTodaysWeekNumber = async (year: number, forceRefreshMetas = fals
   if (!timetable_meta) {
     // try to see if we're in outdated cache.
     if (!forceRefreshMetas) {
-      return getTodaysWeekNumber(year, true);
+      return getDayWeekNumber(day, year, true);
     }
 
     // we're in vacation, to be handled by the caller (main Page view).
@@ -188,7 +189,7 @@ export const getTimetableForWeekNumber = async (year: number, week_number: numbe
   return renew();
 };
 
-export const deleteTimeTableForWeekNumber = async (year: number, week_number: number): Promise<void> => {
+export const deleteTimetableForWeekNumber = async (year: number, week_number: number): Promise<void> => {
   await getTimetableStore(makeYearSTR(year)).removeItem(makeWeekSTR(week_number));
 }
 

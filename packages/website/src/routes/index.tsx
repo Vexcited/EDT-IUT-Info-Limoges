@@ -14,19 +14,20 @@ import MdiFileDocumentAlertOutline from '~icons/mdi/file-document-alert-outline'
 import MdiCheck from '~icons/mdi/check'
 import MdiHeart from '~icons/mdi/heart'
 
-import { getTodaysWeekNumber, getTimetableForWeekNumber, deleteTimeTableForWeekNumber, getLatestWeekNumber } from "~/stores/timetables";
+import { getDayWeekNumber, getTimetableForWeekNumber, deleteTimetableForWeekNumber, getLatestWeekNumber } from "~/stores/timetables";
 import { getLessonDescription, getLessonType, lessonsForSubGroup } from "~/utils/lessons";
 import { getDayFromTimetable, getDayString, getGreeting, getHourString, getSmolDayString, hoursAndMinutesBetween } from "~/utils/dates";
 import { generateICS } from "~/utils/ics";
 import { APIError, APIErrorType } from "~/utils/errors";
+import { now } from "~/stores/temporary";
 
 import { DateTime } from "luxon";
 import { createBreakpoints } from "@solid-primitives/media";
 
 // Implement Swiper Element.
 // See <https://swiperjs.com/element>.
-import { SwiperContainer, register as registerSwiperElements } from 'swiper/element/bundle';
-import { now } from "~/stores/temporary";
+import { type SwiperContainer, register as registerSwiperElements } from 'swiper/element/bundle';
+import type Swiper from "swiper";
 registerSwiperElements();
 
 // Type elements from Swiper Element.
@@ -189,9 +190,11 @@ interface TopDoneForTodayWidget {
 }
 
 // When there's no more lesson for the rest of the week.
-interface TopDoneForWeekWidget {
-  type: "DONE_FOR_WEEK"
-}
+type TopDoneForWeekWidget = { type: "DONE_FOR_WEEK" } & (
+  | { loading: true }
+  | { loading: false, is_vacation: true }
+  | { loading: false, is_vacation: false, next_week_lesson?: ITimetableLesson }
+)
 
 // When it's first lesson of the day.
 interface TopNextLessonWidget {
@@ -242,14 +245,72 @@ const DoneForTodayWidget: Component<TopDoneForTodayWidget> = (props) => {
   );
 };
 
-const DoneForWeekWidget: Component<TopDoneForWeekWidget> = () => {
+const DoneForWeekWidget: Component<TopDoneForWeekWidget> = (props) => {
+  const NextWeekLessonNotifier: Component<{ lesson: ITimetableLesson }> = (props) => {
+    const start_date = () => DateTime.fromISO(props.lesson.start_date).setLocale("fr");
+
+    return (
+      <>
+        <MdiCalendar class="text-lg text-red flex-shrink-0" />
+        <p class="text-sm text-[rgb(220,220,220)]">
+          Vous reprenez <span class="text-red font-medium">{start_date().toFormat("EEEE 'à' HH'h'mm")}</span> avec {props.lesson.type} de <span class="text-red font-medium">{getLessonDescription(props.lesson)}</span> ({getLessonType(props.lesson)}) en <span class="text-red font-medium">{props.lesson.content.room}</span> avec {props.lesson.content.teacher}
+        </p>
+      </>
+    )
+  }
+
   return (
     <div class="flex flex-col gap-1 py-3">
       <div class="flex items-center gap-2 px-4">
-        <MdiCheck class="text-lg text-red" />
+        <MdiCheck class="text-lg text-red flex-shrink-0" />
         <p class="text-sm text-[rgb(240,240,240)]">
           Les cours de la semaine sont terminés !
         </p>
+      </div>
+
+      <div class="flex items-start gap-2 px-4">
+        <Show keyed when={!props.loading && props}
+          fallback={
+            <>
+              <MdiLoading class="text-lg text-red animate-spin flex-shrink-0" />
+              <p class="text-sm text-[rgb(240,240,240)]">
+                Chargement de la semaine prochaine...
+              </p>
+            </>
+          }
+        >
+          {props => (
+            <Show when={!props.is_vacation && props}
+              fallback={
+                <>
+                  <MdiCheck class="text-lg text-red flex-shrink-0" />
+                  <p class="text-sm text-[rgb(240,240,240)]">
+                    Vous êtes maintenant en vacances !
+                  </p>
+                </>
+              }
+            >
+              {props => (
+                <Show when={props().next_week_lesson}
+                  fallback={
+                    <>
+                      <MdiCheck class="text-lg text-red flex-shrink-0" />
+                      <p class="text-sm text-[rgb(240,240,240)]">
+                        Vous n'avez pas cours la semaine prochaine !
+                      </p>
+                    </>
+                  }
+                >
+                  {next_week_lesson => (
+                    <NextWeekLessonNotifier
+                      lesson={next_week_lesson()}
+                    />
+                  )}
+                </Show>
+              )}
+            </Show>
+          )}
+        </Show>
       </div>
     </div>
   );
@@ -372,16 +433,23 @@ const OngoingWidget: Component<TopOngoingWidget> = (props) => {
 }
 
 const MobileView: Component<{
+  // Timetable of the selected week.
   header?: ITimetableHeader
   lessons?: ITimetableLesson[]
+  // Timetable of the current week (from today)
   currentWeekLessons?: ITimetableLesson[]
   currentWeekHeader?: ITimetableHeader
+  // Timetable of the next week (+1 from current week)
+  nextWeekLessons?: ITimetableLesson[]
+  nextWeekHeader?: ITimetableHeader
+  // Week number selected, defaults to current week.
   selectedWeekNumber: number
   setWeekNumber: Setter<number>
+  // Other properties defined in initialization.
   isCurrentlyInVacation: boolean
   error: string | null
 }> = (props) => {
-  // only used for slide container
+  // Only used for slide container.
   const [activeDayIndex, setActiveDayIndex] = createSignal(now().weekday - 1);
 
   // Returns `undefined` when loading.
@@ -469,8 +537,30 @@ const MobileView: Component<{
         }
       }
     }
-    else return {
-      type: "DONE_FOR_WEEK"
+    else {
+      // still loading but we know we're done for week.
+      if (!props.nextWeekHeader || typeof props.nextWeekLessons === "undefined") return {
+        type: "DONE_FOR_WEEK",
+        loading: true
+      }
+
+      const currentNextWeekNumber = n.plus({ weeks: 1 }).weekNumber;
+
+      // check if the week requested is really the one coming next current week.
+      if (currentNextWeekNumber === props.nextWeekHeader.week_number_in_year) {
+        return {
+          type: "DONE_FOR_WEEK",
+          loading: false,
+          is_vacation: false,
+          next_week_lesson: props.nextWeekLessons[0]
+        }
+      }
+      // if there's a gap, then it's vacations tbh
+      else return {
+        type: "DONE_FOR_WEEK",
+        loading: false,
+        is_vacation: true
+      }
     }
   });
 
@@ -743,17 +833,34 @@ const MobileView: Component<{
 };
 
 const Page: Component = () => {
-  const [selectedWeek, setSelectedWeek] = createSignal(-1);
+  const [selectedWeek, setSelectedWeek] = createSignal(1);
+
   const [currentWeekTimetable, setCurrentWeekTimetable] = createSignal<ITimetable | null>(null);
   const [selectedWeekTimetable, setSelectedWeekTimetable] = createSignal<ITimetable | null>(null);
+  // Useful for sneak peeks.
+  const [nextWeekTimetable, setNextWeekTimetable] = createSignal<ITimetable | null>(null);
+
   const [error, setError] = createSignal<string | null>(null);
   const [isCurrentlyInVacation, setCurrentlyInVacation] = createSignal(false);
+
+  /**
+   * Check if we go into another week while
+   * the app is opened.
+   */
+  let last_now = now();
+  createEffect(on(now, now => {
+    if (now.weekNumber === last_now.weekNumber) return;
+    last_now = now;
+
+    console.info("week changed.");
+    // TODO: update timetable according to this ?
+  }));
 
   onMount(async () => {
     let currentWeekNumber: number | undefined;
 
     try {
-      currentWeekNumber = await getTodaysWeekNumber(preferences.year);
+      currentWeekNumber = await getDayWeekNumber(now(), preferences.year);
     }
     catch (error) {
       if (error instanceof APIError) {
@@ -777,23 +884,28 @@ const Page: Component = () => {
 
     const currentWeekTimetable = await getTimetableForWeekNumber(preferences.year, currentWeekNumber);
 
+    let nextWeekTimetable: ITimetable | null = null;
+    try {
+      nextWeekTimetable = await getTimetableForWeekNumber(preferences.year, currentWeekNumber + 1);
+    } catch { /** No-op, we keep it `null`. */ }
+
     batch(() => {
       setCurrentWeekTimetable(currentWeekTimetable);
+      setNextWeekTimetable(nextWeekTimetable);
       // we select current week by default, so yes copy here too.
       setSelectedWeek(currentWeekNumber!);
       setSelectedWeekTimetable(currentWeekTimetable);
     });
   });
 
-  const subGroupTimetable = createMemo(() => selectedWeekTimetable() ? lessonsForSubGroup(selectedWeekTimetable()!, {
+  const forSubGroup = (timetable: ITimetable | null) => timetable ? lessonsForSubGroup(timetable, {
     main_group: preferences.main_group,
     sub_group: preferences.sub_group
-  }) : undefined);
+  }) : undefined;
 
-  const subGroupCurrentWeekTimetable = createMemo(() => currentWeekTimetable() ? lessonsForSubGroup(currentWeekTimetable()!, {
-    main_group: preferences.main_group,
-    sub_group: preferences.sub_group
-  }) : undefined);
+  const subGroupTimetable = createMemo(() => forSubGroup(selectedWeekTimetable()));
+  const subGroupCurrentWeekTimetable = createMemo(() => forSubGroup(currentWeekTimetable()));
+  const subGroupNextWeekTimetable = createMemo(() => forSubGroup(nextWeekTimetable()));
 
   const updateTimetable = async (force_update = false) => {
     setSelectedWeekTimetable(null);
@@ -801,7 +913,7 @@ const Page: Component = () => {
 
     // delete the cache so it'll fetch it below anyway.
     if (force_update) {
-      await deleteTimeTableForWeekNumber(preferences.year, selectedWeek());
+      await deleteTimetableForWeekNumber(preferences.year, selectedWeek());
     }
 
     try {
@@ -822,9 +934,6 @@ const Page: Component = () => {
   // Check if both didn't changed; don't update.
   let oldYearState = preferences.year;
   createEffect(on([() => preferences.year, selectedWeek], async ([year, week]) => {
-    // prevent to run during first setup.
-    if (week === -1) return;
-
     if (year === oldYearState) {
       // also check if the week was already defined
       // and if the week didn't changed.
@@ -835,7 +944,7 @@ const Page: Component = () => {
 
     oldYearState = year;
     await updateTimetable();
-  }));
+  }, { defer: true }));
 
   return (
     <>
@@ -846,6 +955,8 @@ const Page: Component = () => {
         lessons={subGroupTimetable()}
         currentWeekLessons={subGroupCurrentWeekTimetable()}
         currentWeekHeader={currentWeekTimetable()?.header}
+        nextWeekLessons={subGroupNextWeekTimetable()}
+        nextWeekHeader={nextWeekTimetable()?.header}
         selectedWeekNumber={selectedWeek()}
         setWeekNumber={setSelectedWeek}
         isCurrentlyInVacation={isCurrentlyInVacation()}
