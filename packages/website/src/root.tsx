@@ -7,7 +7,8 @@ import "virtual:uno.css";
 import {
   type Component,
   Suspense,
-  createEffect
+  createEffect,
+  onMount
 } from "solid-js";
 
 import {
@@ -42,9 +43,8 @@ const Root: Component = () => {
     .split(",")
     .map(i => parseInt(i.trim())) as [r: number, g: number, b: number];
 
+  onMount(initializeNowRefresh);
   createEffect(() => {
-    initializeNowRefresh();
-
     // setup the custom color from the user preferences.
     const root = document.querySelector(':root') as HTMLElement;
     root.style.setProperty('--custom-color', primaryColor());

@@ -1,6 +1,11 @@
 function componentToHex(c: number) {
-  var hex = c.toString(16);
-  return hex.length == 1 ? "0" + hex : hex;
+  try {
+    var hex = c.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+  }
+  catch {
+    return "00";
+  }
 }
 
 export function rgbToHex(r: number, g: number, b: number) {
