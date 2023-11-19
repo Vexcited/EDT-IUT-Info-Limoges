@@ -779,7 +779,7 @@ const MobileView: Component<{
                 <div class="flex flex-col items-center justify-center gap-2 px-4 py-4 laptop-sm:(flex-row justify-between gap-6 px-8) h-full">
                   <div class="flex flex-col flex-shrink-0">
                     <p class="text-lg text-[rgb(240,240,240)]">
-                      {props.selectedWeekNumber === -1 ? "Récupération de la semaine..." : `Semaine ${props.selectedWeekNumber}`}
+                      {props.selectedWeekNumber === -1 ? "Récupération..." : `Semaine ${props.selectedWeekNumber}`}
                     </p>
                     <p class="text-sm text-[rgb(190,190,190)]">
                       {props.header ? (
@@ -812,7 +812,7 @@ const MobileView: Component<{
           <div class="flex items-center justify-between gap-2 mb-6 px-4">
             <div class="flex flex-col flex-shrink-0">
               <p class="text-lg text-[rgb(240,240,240)]">
-                {props.selectedWeekNumber === -1 ? "Récupération de la semaine..." : `Semaine ${props.selectedWeekNumber}`}
+                {props.selectedWeekNumber === -1 ? "Récupération..." : `Semaine ${props.selectedWeekNumber}`}
               </p>
               <p class="text-xs text-[rgb(190,190,190)]">
                 {props.header ? (
@@ -969,7 +969,7 @@ const MobileView: Component<{
 };
 
 const Page: Component = () => {
-  const [selectedWeek, setSelectedWeek] = createSignal(1);
+  const [selectedWeek, setSelectedWeek] = createSignal(-1);
 
   const [currentWeekTimetable, setCurrentWeekTimetable] = createSignal<ITimetable | null>(null);
   const [selectedWeekTimetable, setSelectedWeekTimetable] = createSignal<ITimetable | null>(null);
@@ -1070,6 +1070,8 @@ const Page: Component = () => {
   // Check if both didn't changed; don't update.
   let oldYearState = preferences.year;
   createEffect(on([() => preferences.year, selectedWeek], async ([year, week]) => {
+    if (week < 0) return;
+
     if (year === oldYearState) {
       // also check if the week was already defined
       // and if the week didn't changed.
@@ -1080,7 +1082,7 @@ const Page: Component = () => {
 
     oldYearState = year;
     await updateTimetable();
-  }, { defer: true }));
+  }));
 
   return (
     <>
