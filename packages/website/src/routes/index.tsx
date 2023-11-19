@@ -568,11 +568,128 @@ const MobileView: Component<{
     ? DateTime.fromISO(props.header.start_date).setLocale("fr").toRelative()
     : "(calcul en cours...)";
 
-  let swiperInstanceRef: SwiperContainer | undefined;
+  const goToPreviousWeek = () => {
+    if (swiperInstanceRef()) {
+      // Go to Saturday
+      // NOTE: Check previous week and navigate to the last non-empty day.
+      swiperInstanceRef()!.swiper.slideTo(5, 0);
+    }
+
+    setActiveDayIndex(5);
+    props.setWeekNumber(curr => curr - 1);
+  }
+
+  const goToNextWeek = () => {
+    if (swiperInstanceRef()) {
+      // go to Monday
+      swiperInstanceRef()!.swiper.slideTo(0, 0);
+    }
+
+    setActiveDayIndex(0);
+    props.setWeekNumber(curr => curr + 1);
+  }
+
+  let shouldSkipToNextWeek = false;
+  let shouldSkipToPreviousWeek = false;
+
+  const [swipeEdgesData, setSwipeEdgesData] = createSignal<{
+    where: "left" | "right" | "none"
+    progress: number
+  }>({
+    where: "none",
+    progress: 0
+  })
+
+  const [swiperInstanceRef, setSwiperInstanceRef] = createSignal<SwiperContainer | null>(null);
+  const [swiperIsBeginning, setSwiperIsBeginning] = createSignal(false);
+  const [swiperIsEnd, setSwiperIsEnd] = createSignal(false);
+
+  createEffect(on(swiperInstanceRef, (ref) => {
+    if (!ref) return;
+
+    const slideHandler = async (evt: Event & { detail: [instance: Swiper, progress: number] }) => {
+      const { isEnd, isBeginning } = evt.detail[0];
+      const progress = evt.detail[1];
+
+      if (isEnd && progress > 1) {
+        setSwipeEdgesData({
+          where: "right",
+          progress: progress - 1
+        });
+
+        shouldSkipToNextWeek = true;
+        shouldSkipToPreviousWeek = false;
+      }
+
+      if (isBeginning && progress < 0) {
+        setSwipeEdgesData({
+          where: "left",
+          progress: Math.abs(progress)
+        });
+
+        shouldSkipToNextWeek = false;
+        shouldSkipToPreviousWeek = true;
+      }
+    }
+
+    const transitionStartHandler = () => {
+      setSwipeEdgesData(prev => ({ where: prev.where, progress: 0 }));
+
+      if (shouldSkipToNextWeek) {
+        shouldSkipToNextWeek = false;
+        shouldSkipToPreviousWeek = false;
+        setTimeout(() => goToNextWeek(), 150);
+      }
+
+      if (shouldSkipToPreviousWeek) {
+        shouldSkipToNextWeek = false;
+        shouldSkipToPreviousWeek = false;
+        setTimeout(() => goToPreviousWeek(), 150);
+      }
+    }
+
+    const transitionEndHandler = () => {
+      setSwipeEdgesData({ where: "none", progress: 0 });
+    }
+
+    setSwiperIsBeginning(ref.swiper.isBeginning);
+    setSwiperIsEnd(ref.swiper.isEnd);
+
+    const edgeHandler = () => {
+      const { isEnd, isBeginning } = ref.swiper;
+
+      setSwiperIsBeginning(isBeginning);
+      if (shouldSkipToPreviousWeek) {
+        shouldSkipToPreviousWeek = false;
+        setSwipeEdgesData({ where: "none", progress: 0 });
+      }
+
+      setSwiperIsEnd(isEnd);
+      if (shouldSkipToNextWeek) {
+        shouldSkipToNextWeek = false;
+        setSwipeEdgesData({ where: "none", progress: 0 });
+      }
+    }
+
+    // @ts-expect-error
+    ref.addEventListener('swiperprogress', slideHandler);
+    ref.addEventListener('swipertransitionstart', transitionStartHandler);
+    ref.addEventListener('swipertransitionend', transitionEndHandler);
+    ref.addEventListener('swiperfromedge', edgeHandler);
+    ref.addEventListener('swipertoedge', edgeHandler);
+    onCleanup(() => {
+      // @ts-expect-error
+      ref.removeEventListener('swiperprogress', slideHandler)
+      ref.removeEventListener('swipertransitionstart', transitionStartHandler);
+      ref.removeEventListener('swipertransitionend', transitionEndHandler);
+      ref.removeEventListener('swiperfromedge', edgeHandler);
+      ref.removeEventListener('swipertoedge', edgeHandler);
+    });
+  }));
 
   return (
     <>
-      <header class="p-4 pb-2 bg-red flex justify-between items-center text-[rgb(245,245,245)]">
+      <header class="relative z-20 p-4 pb-2 bg-red flex justify-between items-center text-[rgb(245,245,245)]">
         <div class="flex flex-col">
           <p class="text-xl font-medium">
             {getGreeting()}
@@ -672,27 +789,12 @@ const MobileView: Component<{
                   </div>
                   <div class="flex gap-3 items-center w-full text-[rgb(240,240,240)]">
                     <button type="button" class="p-1 bg-red/20 hover:bg-red active:bg-red/60 transition border border-red rounded-full laptop-sm:(w-auto p-1.5) w-full flex justify-center items-center"
-                      onClick={() => {
-                        if (swiperInstanceRef) {
-                          // go to saturday, we skip sunday
-                          swiperInstanceRef.swiper.slideTo(5, 0);
-                        }
-
-                        setActiveDayIndex(5);
-                        props.setWeekNumber(curr => curr - 1);
-                      }}
+                      onClick={() => goToPreviousWeek()}
                     >
                       <MdiChevronLeft class="text-lg" />
                     </button>
                     <button type="button" class="p-1 bg-red/20 hover:bg-red active:bg-red/60 transition border border-red rounded-full laptop-sm:(w-auto p-1.5) w-full flex justify-center items-center"
-                      onClick={() => {
-                        if (swiperInstanceRef) {
-                          swiperInstanceRef.swiper.slideTo(0, 0);
-                        };
-
-                        setActiveDayIndex(0)
-                        props.setWeekNumber(curr => curr + 1);
-                      }}
+                      onClick={() => goToNextWeek()}
                     >
                       <MdiChevronRight class="text-lg" />
                     </button>
@@ -720,27 +822,12 @@ const MobileView: Component<{
             </div>
             <div class="flex gap-3 items-center flex-shrink-0">
               <button type="button" class="p-1.5 bg-red/20 hover:bg-red active:bg-red/60 transition border border-red rounded-full"
-                onClick={() => {
-                  if (swiperInstanceRef) {
-                    // go to saturday, we skip sunday
-                    swiperInstanceRef.swiper.slideTo(5, 0);
-                  }
-
-                  setActiveDayIndex(5);
-                  props.setWeekNumber(curr => curr - 1);
-                }}
+                onClick={() => goToPreviousWeek()}
               >
                 <MdiChevronLeft class="text-lg text-[rgb(240,240,240)]" />
               </button>
               <button type="button" class="p-1.5 bg-red/20 hover:bg-red active:bg-red/60 transition border border-red rounded-full"
-                onClick={() => {
-                  if (swiperInstanceRef) {
-                    swiperInstanceRef.swiper.slideTo(0, 0);
-                  };
-
-                  setActiveDayIndex(0)
-                  props.setWeekNumber(curr => curr + 1);
-                }}
+                onClick={() => goToNextWeek()}
               >
                 <MdiChevronRight class="text-lg text-[rgb(240,240,240)]" />
               </button>
@@ -773,27 +860,76 @@ const MobileView: Component<{
             </Show>
           }
         >
-          <div class="relative">
-            <button type="button"
-              class="hidden tablet:block absolute top-1/2 left-4 transform -translate-y-1/2 bg-red/20 hover:bg-red active:bg-red/60 transition border border-red rounded-full p-2 z-50"
-              onClick={() => {
-                if (!swiperInstanceRef) return;
-                swiperInstanceRef.swiper.slidePrev();
-              }}
-            >
-              <MdiChevronLeft class="text-lg text-[rgb(240,240,240)]" />
-            </button>
-            <button type="button"
-              class="hidden tablet:block absolute top-1/2 right-4 transform -translate-y-1/2 bg-red/20 hover:bg-red active:bg-red/60 transition border border-red rounded-full p-2 z-50"
-              onClick={() => {
-                if (!swiperInstanceRef) return;
-                swiperInstanceRef.swiper.slideNext();
-              }}
-            >
-              <MdiChevronRight class="text-lg text-[rgb(240,240,240)]" />
-            </button>
+          <div class="relative overflow-hidden">
+            <Show when={swipeEdgesData().where === "left"}>
+              <div class="fixed inset-y-0 right-0 blur-lg -left-6 bg-gradient-to-r from-red to-transparent pointer-events-none"
+                classList={{
+                  "transition-opacity": swipeEdgesData().progress === 0
+                }}
+                style={{
+                  opacity: swipeEdgesData().progress * 1.5
+                }}
+              />
 
-            <swiper-container ref={swiperInstanceRef}
+              {/* <div class="fixed inset-y-0 left-20 bg-red rounded-full p-2 h-fit my-auto z-50 flex flex-col justify-center pointer-events-none"
+                classList={{
+                  "transition-opacity": swipeEdgesData().progress === 0
+                }}
+                style={{
+                  opacity: swipeEdgesData().progress * 50
+                }}
+              >
+                <MdiChevronLeft class="text-2xl text-[rgb(200,200,200)]" />
+              </div> */}
+            </Show>
+
+            <Show when={swipeEdgesData().where === "right"}>
+              <div class="fixed inset-y-0 left-0 blur-lg -right-6 bg-gradient-to-l from-red to-transparent pointer-events-none"
+                classList={{
+                  "transition-opacity": swipeEdgesData().progress === 0
+                }}
+                style={{
+                  opacity: swipeEdgesData().progress * 1.5
+                }}
+              />
+
+              {/* <div class="fixed inset-y-0 right-20 bg-red rounded-full p-2 h-fit my-auto z-50 flex flex-col justify-center pointer-events-none"
+                classList={{
+                  "transition-opacity": swipeEdgesData().progress === 0
+                }}
+                style={{
+                  opacity: swipeEdgesData().progress * 50
+                }}
+              >
+                <MdiChevronRight class="text-2xl text-[rgb(200,200,200)]" />
+              </div> */}
+            </Show>
+
+            <Show when={!swiperIsBeginning()}>
+              <button type="button"
+                class="hidden tablet:block absolute top-1/2 left-4 transform -translate-y-1/2 bg-red/20 hover:bg-red active:bg-red/60 transition border border-red rounded-full p-2 z-50"
+                onClick={() => {
+                  if (!swiperInstanceRef()) return;
+                  swiperInstanceRef()!.swiper.slidePrev();
+                }}
+              >
+                <MdiChevronLeft class="text-lg text-[rgb(240,240,240)]" />
+              </button>
+            </Show>
+
+            <Show when={!swiperIsEnd()}>
+              <button type="button"
+                class="hidden tablet:block absolute top-1/2 right-4 transform -translate-y-1/2 bg-red/20 hover:bg-red active:bg-red/60 transition border border-red rounded-full p-2 z-50"
+                onClick={() => {
+                  if (!swiperInstanceRef()) return;
+                  swiperInstanceRef()!.swiper.slideNext();
+                }}
+              >
+                <MdiChevronRight class="text-lg text-[rgb(240,240,240)]" />
+              </button>
+            </Show>
+
+            <swiper-container ref={setSwiperInstanceRef}
               class="mx-0 tablet:mx-12"
               grab-cursor={true}
               initial-slide={activeDayIndex()}
