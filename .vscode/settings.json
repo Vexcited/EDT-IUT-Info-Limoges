@@ -3,6 +3,16 @@
   "editor.insertSpaces": true,
   "editor.tabSize": 2,
 
+  "eslint.workingDirectories": [
+    "packages/*"
+  ],
+
+  "prettier.enable": false,
+  "editor.formatOnSave": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+
   "cSpell.language": "en,fr",
   "cSpell.words": [
     "Boxset",
@@ -20,6 +30,10 @@
     "pdffont",
     "pdfparser"
   ],
+
+  "emmet.includeLanguages": {
+    "typescriptreact": "html"
+  },
 
   "unocss.root": ["./packages/website"]
 }

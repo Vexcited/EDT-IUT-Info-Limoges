@@ -11,6 +11,7 @@
     "jsx": "preserve",
     
     "strict": true,
+    "noEmit": true,
     "allowJs": true,
 
     "baseUrl": ".",
@@ -20,10 +21,11 @@
 
     "types": [
       "solid-start/env",
+      "vite-plugin-pwa/solid",
       "unplugin-icons/types/solid"
     ]
   },
 
-  "include": ["src", "vite.config.ts"],
+  "include": ["src", "vite.config.ts", "uno.config.ts", ".eslintrc.cjs"],
   "exclude": ["node_modules", "dist", ".solid"]
 }
