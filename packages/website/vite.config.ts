@@ -65,5 +65,9 @@ export default defineConfig({
         orientation: "portrait"
       }
     })
-  ]
+  ],
+
+  define: {
+    __APP_COMMIT_SHA__: JSON.stringify(process.env.VERCEL_GIT_COMMIT_SHA || "dev")
+  }
 });

@@ -960,10 +960,14 @@ const MobileView: Component<{
         </Show>
       </main>
 
-      <footer class="w-full text-center pb-8 pt-6">
-        <p class="text-sm flex gap-1 justify-center items-center text-[rgb(220,220,220)]">
+      <footer class="w-full text-center pb-8 pt-6 text-[rgb(220,220,220)]">
+        <p class="text-sm flex gap-1 justify-center items-center ">
           Made with <MdiHeart class="text-red" /> by <a class="font-medium hover:underline text-red" href="https://github.com/Vexcited">Vexcited</a>
         </p>
+
+        <a href={`https://github.com/Vexcited/EDT-IUT-Info-Limoges/tree/${__APP_COMMIT_SHA__=== "dev" ? "main" : __APP_COMMIT_SHA__}`} class="text-xs pt-1 text-red/80 hover:(underline text-red)">
+          {__APP_COMMIT_SHA__ === "dev" ? "development version" :__APP_COMMIT_SHA__}
+        </a>
       </footer>
     </>
   );
