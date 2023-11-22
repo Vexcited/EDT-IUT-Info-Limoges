@@ -84,7 +84,7 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
 
                 <p class="text-[rgb(190,190,190)] text-xs mt-1.5">
                   Ajustez le groupe dans lequel vous êtes (ex.: G1, G2, …) <br />
-                  C'est avec le groupe qu'est déterminé l'année.
+                  C'est avec le groupe qu'est déterminée l'année.
                 </p>
               </section>
 
