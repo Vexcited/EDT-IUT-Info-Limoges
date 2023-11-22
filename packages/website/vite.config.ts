@@ -58,6 +58,37 @@ export default defineConfig({
           }
         ],
 
+        screenshots: [
+          {
+            src: "/screenshots/WIDE_HOME.webp",
+            type: "image/webp",
+            sizes: "1280x720",
+            form_factor: "wide",
+            label: "Page d'accueil affichée au démarrage"
+          },
+          {
+            src: "/screenshots/WIDE_SETTINGS.webp",
+            type: "image/webp",
+            sizes: "1280x720",
+            form_factor: "wide",
+            label: "Paramètres de l'application"
+          },
+          {
+            src: "/screenshots/NARROW_HOME.webp",
+            type: "image/webp",
+            sizes: "828x1792",
+            form_factor: "narrow",
+            label: "Page d'accueil affichée au démarrage"
+          },
+          {
+            src: "/screenshots/NARROW_SETTINGS.webp",
+            type: "image/webp",
+            sizes: "828x1792",
+            form_factor: "narrow",
+            label: "Paramètres de l'application"
+          }
+        ],
+
         start_url: "/",
         theme_color: "#f2f4f4",
         background_color: "#f2f4f4",
