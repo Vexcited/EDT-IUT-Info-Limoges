@@ -4,15 +4,15 @@ import { SettingsModal } from "~/components/modals/Settings";
 
 import { preferences } from "~/stores/preferences";
 
-import MdiCog from '~icons/mdi/cog'
-import MdiChevronLeft from '~icons/mdi/chevron-left'
-import MdiChevronRight from '~icons/mdi/chevron-right'
-import MdiTimerSandFull from '~icons/mdi/timer-sand-full'
-import MdiCalendar from '~icons/mdi/calendar'
-import MdiLoading from '~icons/mdi/loading'
-import MdiFileDocumentAlertOutline from '~icons/mdi/file-document-alert-outline'
-import MdiCheck from '~icons/mdi/check'
-import MdiHeart from '~icons/mdi/heart'
+import MdiCog from '~icons/mdi/cog';
+import MdiChevronLeft from '~icons/mdi/chevron-left';
+import MdiChevronRight from '~icons/mdi/chevron-right';
+import MdiTimerSandFull from '~icons/mdi/timer-sand-full';
+import MdiCalendar from '~icons/mdi/calendar';
+import MdiLoading from '~icons/mdi/loading';
+import MdiFileDocumentAlertOutline from '~icons/mdi/file-document-alert-outline';
+import MdiCheck from '~icons/mdi/check';
+import MdiHeart from '~icons/mdi/heart';
 
 import { getDayWeekNumber, getTimetableForWeekNumber, deleteTimetableForWeekNumber, getLatestWeekNumber } from "~/stores/timetables";
 import { getLessonDescription, getLessonType, lessonsForSubGroup } from "~/utils/lessons";
@@ -34,8 +34,8 @@ registerSwiperElements();
 declare module "solid-js" {
   namespace JSX {
     interface IntrinsicElements {
-      "swiper-container": any
-      "swiper-slide": any
+      "swiper-container": any;
+      "swiper-slide": any;
     }
   }
 }
@@ -49,11 +49,11 @@ const matches = createBreakpoints({
 });
 
 const MobileDayTimetableLesson: Component<{
-  lesson: ITimetableLesson
+  lesson: ITimetableLesson;
   /** Whether the lesson is the last of the day or no. */
-  is_last_lesson: boolean
+  is_last_lesson: boolean;
   /** The lesson that is right before this one. */
-  lesson_before: ITimetableLesson | undefined
+  lesson_before: ITimetableLesson | undefined;
 }> = (props) => {
   const start_date = () => new Date(props.lesson.start_date);
 
@@ -61,7 +61,7 @@ const MobileDayTimetableLesson: Component<{
     start_date().getHours() !== new Date(props.lesson_before!.end_date).getHours()
   );
 
-  const Delimiter: Component<{ date: Date }> = (props) => (
+  const Delimiter: Component<{ date: Date; }> = (props) => (
     <div class="flex items-center gap-2">
       <span class="h-[1px] w-4 border-b border-b-[rgb(62,62,62)]" />
 
@@ -114,14 +114,14 @@ const MobileDayTimetableLesson: Component<{
         <Delimiter date={new Date(props.lesson.end_date)} />
       </Show>
     </>
-  )
-}
+  );
+};
 
 const MobileDayTimetable: Component<{
-  header: ITimetableHeader
-  lessons: ITimetableLesson[]
-  isToday: boolean
-  dayIndex: number
+  header: ITimetableHeader;
+  lessons: ITimetableLesson[];
+  isToday: boolean;
+  dayIndex: number;
 }> = (props) => {
   const day = () => getDayFromTimetable(props.header, props.dayIndex);
 
@@ -186,27 +186,27 @@ const MobileDayTimetable: Component<{
 interface TopDoneForTodayWidget {
   type: "DONE_FOR_TODAY",
   /** First lesson of the first day, to preview it quickly. */
-  next_lesson: ITimetableLesson
+  next_lesson: ITimetableLesson;
 }
 
 // When there's no more lesson for the rest of the week.
-type TopDoneForWeekWidget = { type: "DONE_FOR_WEEK" } & (
-  | { loading: true }
-  | { loading: false, is_vacation: true }
-  | { loading: false, is_vacation: false, next_week_lesson?: ITimetableLesson }
-)
+type TopDoneForWeekWidget = { type: "DONE_FOR_WEEK"; } & (
+  | { loading: true; }
+  | { loading: false, is_vacation: true; }
+  | { loading: false, is_vacation: false, next_week_lesson?: ITimetableLesson; }
+);
 
 // When it's first lesson of the day.
 interface TopNextLessonWidget {
-  type: "NEXT_LESSON"
-  lesson: ITimetableLesson
+  type: "NEXT_LESSON";
+  lesson: ITimetableLesson;
 }
 
 // When we're actually in a lesson, we also get the content of next lesson for preview.
 interface TopOngoingWidget {
-  type: "ONGOING"
-  lesson: ITimetableLesson
-  next_lesson?: ITimetableLesson
+  type: "ONGOING";
+  lesson: ITimetableLesson;
+  next_lesson?: ITimetableLesson;
 }
 
 type TopContent = (
@@ -217,7 +217,7 @@ type TopContent = (
 );
 
 const DoneForTodayWidget: Component<TopDoneForTodayWidget> = (props) => {
-  const nextDateTime = () => DateTime.fromISO(props.next_lesson.start_date).setLocale("fr")
+  const nextDateTime = () => DateTime.fromISO(props.next_lesson.start_date).setLocale("fr");
   const farString = () => nextDateTime().toRelativeCalendar();
   const timeString = () => nextDateTime().toFormat("HH:mm");
 
@@ -246,7 +246,7 @@ const DoneForTodayWidget: Component<TopDoneForTodayWidget> = (props) => {
 };
 
 const DoneForWeekWidget: Component<TopDoneForWeekWidget> = (props) => {
-  const NextWeekLessonNotifier: Component<{ lesson: ITimetableLesson }> = (props) => {
+  const NextWeekLessonNotifier: Component<{ lesson: ITimetableLesson; }> = (props) => {
     const start_date = () => DateTime.fromISO(props.lesson.start_date).setLocale("fr");
 
     return (
@@ -256,8 +256,8 @@ const DoneForWeekWidget: Component<TopDoneForWeekWidget> = (props) => {
           Vous reprenez <span class="text-red font-medium">{start_date().toFormat("EEEE 'à' HH'h'mm")}</span> avec {props.lesson.type} de <span class="text-red font-medium">{getLessonDescription(props.lesson)}</span> ({getLessonType(props.lesson)}) en <span class="text-red font-medium">{props.lesson.content.room}</span> avec {props.lesson.content.teacher}
         </p>
       </>
-    )
-  }
+    );
+  };
 
   return (
     <div class="flex flex-col gap-1 py-3">
@@ -323,13 +323,13 @@ const NextLessonWidget: Component<TopNextLessonWidget> = (props) => {
   let interval: ReturnType<typeof setInterval> | undefined;
   onMount(() => {
     interval = setInterval(() => {
-      setRemaining(getRemainingTime())
-    }, 1000 * 60) // update every minutes
-  })
+      setRemaining(getRemainingTime());
+    }, 1000 * 60); // update every minutes
+  });
 
   onCleanup(() => {
-    if (typeof interval !== "undefined") clearInterval(interval)
-  })
+    if (typeof interval !== "undefined") clearInterval(interval);
+  });
 
   return (
     <div class="py-3 px-4">
@@ -370,13 +370,13 @@ const OngoingWidget: Component<TopOngoingWidget> = (props) => {
   let interval: ReturnType<typeof setInterval> | undefined;
   onMount(() => {
     interval = setInterval(() => {
-      setRemaining(getRemainingTime())
-      setNextLessonRemaining(getNextLessonRemainingTime())
-    }, 1000 * 60) // update every minutes
+      setRemaining(getRemainingTime());
+      setNextLessonRemaining(getNextLessonRemainingTime());
+    }, 1000 * 60); // update every minutes
   });
 
   onCleanup(() => {
-    if (typeof interval !== "undefined") clearInterval(interval)
+    if (typeof interval !== "undefined") clearInterval(interval);
   });
 
   return (
@@ -429,25 +429,25 @@ const OngoingWidget: Component<TopOngoingWidget> = (props) => {
         )}
       </Show>
     </div >
-  )
-}
+  );
+};
 
 const MobileView: Component<{
   // Timetable of the selected week.
-  header?: ITimetableHeader
-  lessons?: ITimetableLesson[]
+  header?: ITimetableHeader;
+  lessons?: ITimetableLesson[];
   // Timetable of the current week (from today)
-  currentWeekLessons?: ITimetableLesson[]
-  currentWeekHeader?: ITimetableHeader
+  currentWeekLessons?: ITimetableLesson[];
+  currentWeekHeader?: ITimetableHeader;
   // Timetable of the next week (+1 from current week)
-  nextWeekLessons?: ITimetableLesson[]
-  nextWeekHeader?: ITimetableHeader
+  nextWeekLessons?: ITimetableLesson[];
+  nextWeekHeader?: ITimetableHeader;
   // Week number selected, defaults to current week.
-  selectedWeekNumber: number
-  setWeekNumber: Setter<number>
+  selectedWeekNumber: number;
+  setWeekNumber: Setter<number>;
   // Other properties defined in initialization.
-  isCurrentlyInVacation: boolean
-  error: string | null
+  isCurrentlyInVacation: boolean;
+  error: string | null;
 }> = (props) => {
   // Only used for slide container.
   const [activeDayIndex, setActiveDayIndex] = createSignal(now().weekday - 1);
@@ -487,14 +487,14 @@ const MobileView: Component<{
       if (isDoneForToday) return {
         type: "DONE_FOR_TODAY",
         next_lesson: lessonsForNextDay[0]
-      }
+      };
       else {
         // Check if we're at the beginning of the day.
         const first_lesson_of_day = lessonsForCurrentDay[0];
         if (njs < new Date(first_lesson_of_day.start_date)) return {
           type: "NEXT_LESSON",
           lesson: first_lesson_of_day
-        }
+        };
         // We're currently in a lesson.
         else {
           const current_lesson_index = lessonsForCurrentDay.findIndex(
@@ -508,12 +508,12 @@ const MobileView: Component<{
             if (current_lesson_index === lessonsForCurrentDay.length - 1) return {
               type: "ONGOING",
               lesson: current_lesson
-            }
+            };
             else return {
               type: "ONGOING",
               lesson: current_lesson,
               next_lesson: lessonsForCurrentDay[current_lesson_index + 1]
-            }
+            };
           }
           // we're in a break, we should get the very next lesson
           else {
@@ -532,7 +532,7 @@ const MobileView: Component<{
             return {
               type: "NEXT_LESSON",
               lesson: next_lesson
-            }
+            };
           }
         }
       }
@@ -542,7 +542,7 @@ const MobileView: Component<{
       if (!props.nextWeekHeader || typeof props.nextWeekLessons === "undefined") return {
         type: "DONE_FOR_WEEK",
         loading: true
-      }
+      };
 
       const currentNextWeekNumber = n.plus({ weeks: 1 }).weekNumber;
 
@@ -553,14 +553,14 @@ const MobileView: Component<{
           loading: false,
           is_vacation: false,
           next_week_lesson: props.nextWeekLessons[0]
-        }
+        };
       }
       // if there's a gap, then it's vacations tbh
       else return {
         type: "DONE_FOR_WEEK",
         loading: false,
         is_vacation: true
-      }
+      };
     }
   });
 
@@ -577,7 +577,7 @@ const MobileView: Component<{
 
     setActiveDayIndex(5);
     props.setWeekNumber(curr => curr - 1);
-  }
+  };
 
   const goToNextWeek = () => {
     if (swiperInstanceRef()) {
@@ -587,18 +587,18 @@ const MobileView: Component<{
 
     setActiveDayIndex(0);
     props.setWeekNumber(curr => curr + 1);
-  }
+  };
 
   let shouldSkipToNextWeek = false;
   let shouldSkipToPreviousWeek = false;
 
   const [swipeEdgesData, setSwipeEdgesData] = createSignal<{
-    where: "left" | "right" | "none"
-    progress: number
+    where: "left" | "right" | "none";
+    progress: number;
   }>({
     where: "none",
     progress: 0
-  })
+  });
 
   const [swiperInstanceRef, setSwiperInstanceRef] = createSignal<SwiperContainer | null>(null);
   const [swiperIsBeginning, setSwiperIsBeginning] = createSignal(false);
@@ -607,7 +607,7 @@ const MobileView: Component<{
   createEffect(on(swiperInstanceRef, (ref) => {
     if (!ref) return;
 
-    const slideHandler = async (evt: Event & { detail: [instance: Swiper, progress: number] }) => {
+    const slideHandler = async (evt: Event & { detail: [instance: Swiper, progress: number]; }) => {
       const { isEnd, isBeginning } = evt.detail[0];
       const progress = evt.detail[1];
 
@@ -630,7 +630,7 @@ const MobileView: Component<{
         shouldSkipToNextWeek = false;
         shouldSkipToPreviousWeek = true;
       }
-    }
+    };
 
     const transitionStartHandler = () => {
       setSwipeEdgesData(prev => ({ where: prev.where, progress: 0 }));
@@ -646,11 +646,11 @@ const MobileView: Component<{
         shouldSkipToPreviousWeek = false;
         setTimeout(() => goToPreviousWeek(), 150);
       }
-    }
+    };
 
     const transitionEndHandler = () => {
       setSwipeEdgesData({ where: "none", progress: 0 });
-    }
+    };
 
     setSwiperIsBeginning(ref.swiper.isBeginning);
     setSwiperIsEnd(ref.swiper.isEnd);
@@ -669,7 +669,7 @@ const MobileView: Component<{
         shouldSkipToNextWeek = false;
         setSwipeEdgesData({ where: "none", progress: 0 });
       }
-    }
+    };
 
     // @ts-expect-error
     ref.addEventListener('swiperprogress', slideHandler);
@@ -679,7 +679,7 @@ const MobileView: Component<{
     ref.addEventListener('swipertoedge', edgeHandler);
     onCleanup(() => {
       // @ts-expect-error
-      ref.removeEventListener('swiperprogress', slideHandler)
+      ref.removeEventListener('swiperprogress', slideHandler);
       ref.removeEventListener('swipertransitionstart', transitionStartHandler);
       ref.removeEventListener('swipertransitionend', transitionEndHandler);
       ref.removeEventListener('swiperfromedge', edgeHandler);
@@ -727,7 +727,7 @@ const MobileView: Component<{
         <div class="relative z-50 pt-2 mx-4">
           <div class="flex justify-between gap-4">
 
-            {/* Actual widget's code. */}
+            {/** Actual widget's code. */}
             <div class="bg-[rgb(27,27,27)] rounded-lg h-full shadow-xl mx-auto w-full tablet:(mx-0 max-w-[450px])">
               <Show when={!props.isCurrentlyInVacation}
                 fallback={
@@ -774,8 +774,9 @@ const MobileView: Component<{
               </Show>
             </div>
 
+            {/** Week selector on ">= tablet" screens. */}
             <Show when={matches.tablet}>
-              <div class="bg-[rgb(27,27,27)] rounded-lg shadow-xl ">
+              <div class="bg-[rgb(27,27,27)] rounded-lg h-full shadow-xl">
                 <div class="flex flex-col items-center justify-center gap-2 px-4 py-4 laptop-sm:(flex-row justify-between gap-6 px-8) h-full">
                   <div class="flex flex-col flex-shrink-0">
                     <p class="text-lg text-[rgb(240,240,240)]">
@@ -965,7 +966,7 @@ const MobileView: Component<{
         </p>
       </footer>
     </>
-  )
+  );
 };
 
 const Page: Component = () => {
