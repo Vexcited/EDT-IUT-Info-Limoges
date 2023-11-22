@@ -569,6 +569,9 @@ const MobileView: Component<{
     : "(calcul en cours...)";
 
   const goToPreviousWeek = () => {
+    // prevent to go into negative weeks
+    if (props.selectedWeekNumber === 1) return;
+
     if (swiperInstanceRef()) {
       // Go to Saturday
       // NOTE: Check previous week and navigate to the last non-empty day.
