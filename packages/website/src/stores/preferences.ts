@@ -7,7 +7,7 @@ interface UserCustomization {
 
 export const DEFAULT_USER_CUSTOMIZATION: Required<UserCustomization> = {
   primary_color: "248, 113, 113"
-}
+};
 
 const safelyGetInLocalStorage = (key: string, default_value: string): string => {
   if (typeof window !== "undefined") {
@@ -16,7 +16,7 @@ const safelyGetInLocalStorage = (key: string, default_value: string): string => 
 
   // only happens server-side.
   return default_value;
-}
+};
 
 export const [preferences, setPreferences] = createStore({
   get year(): number {
@@ -30,14 +30,14 @@ export const [preferences, setPreferences] = createStore({
 export const setMainGroup = (main_group: number) => {
   localStorage.setItem("main_group", main_group.toString());
   setPreferences({ main_group });
-}
+};
 
 export const setSubGroup = (sub_group: 0 | 1) => {
   localStorage.setItem("sub_group", sub_group.toString());
   setPreferences({ sub_group });
-}
+};
 
 export const setUserCustomization = (customization: UserCustomization) => {
   localStorage.setItem("user_customization", JSON.stringify(customization));
   setPreferences({ customization });
-}
+};

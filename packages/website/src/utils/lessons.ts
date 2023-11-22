@@ -66,6 +66,7 @@ export const lessonsForSubGroup = (timetable: Omit<ITimetable, "last_update">, p
         }
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (previousLesson && (previousLesson.content as any).type === (lesson.content as any).type && previousLesson.type === lesson.type && previousLesson.content.room === lesson.content.room && previousLesson.content.teacher === lesson.content.teacher) {
         previousLesson.end_date = lesson.end_date;
       }
@@ -74,10 +75,10 @@ export const lessonsForSubGroup = (timetable: Omit<ITimetable, "last_update">, p
       }
 
       return acc;
-    }, [] as ITimetable["lessons"])
+    }, [] as ITimetable["lessons"]);
 
   return lessons;
-}
+};
 
 export const getLessonDescription = (lesson: ITimetable["lessons"][number]): string => (
   (

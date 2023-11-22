@@ -14,13 +14,13 @@ function decompress<TReq extends http.IncomingMessage = http.IncomingMessage>(
   let decompress;
 
   switch (contentEncoding) {
-    case 'gzip':
+    case "gzip":
       decompress = zlib.createGunzip();
       break;
-    case 'br':
+    case "br":
       decompress = zlib.createBrotliDecompress();
       break;
-    case 'deflate':
+    case "deflate":
       decompress = zlib.createInflate();
       break;
     default:
@@ -60,7 +60,7 @@ const makeRequestNativeHTTP = async (url: string) => {
 
     req.end();
   });
-}
+};
 
 export const GET = async ({ params }: APIEvent): Promise<Response> => {
   const url = "http://edt-iut-info.unilim.fr/edt/" + params.year + "/" + params.file_name;

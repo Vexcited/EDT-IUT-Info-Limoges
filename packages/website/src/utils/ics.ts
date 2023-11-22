@@ -36,13 +36,13 @@ Avec ${lesson.content.teacher} en salle ${lesson.content.room}.
   }
 
   const filename = "A" + preferences.year.toString() + "_G" + preferences.main_group.toString() + (preferences.sub_group === 0 ? "A" : "B") + "_S" + timetable.header.week_number + ".ics";
-  const file = new File([value], filename, { type: 'text/calendar' });
+  const file = new File([value], filename, { type: "text/calendar" });
 
   const url = URL.createObjectURL(file);
 
   // trying to assign the file URL to a window could cause cross-site
   // issues so this is a workaround using HTML5
-  const anchor = document.createElement('a');
+  const anchor = document.createElement("a");
   anchor.href = url;
   anchor.download = filename;
 

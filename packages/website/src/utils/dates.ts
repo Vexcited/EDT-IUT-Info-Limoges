@@ -43,7 +43,7 @@ export const getDayString = (day: Date) => {
   fullDate = fullDate[0].toUpperCase() + fullDate.slice(1);
 
   return `${relativeDate} : ${fullDate}`;
-}
+};
 
 export const getSmolDayString = (day: Date) => day.toLocaleDateString("fr-FR", {
   day: "numeric",
@@ -58,13 +58,13 @@ export const getHourString = (date: Date) => date.toLocaleString("fr", {
 
 export const getGreeting = () => {
   const hour = new Date().getHours();
-  if (hour > 5 && hour <= 7) return "Bonjour !"
-  else if (hour > 7 && hour <= 11) return "Bonne matinée !"
-  else if (hour > 11 && hour <= 13) return "Bon appétit !"
-  else if (hour > 13 && hour <= 17) return "Bon après-midi !"
-  else if (hour > 17 && hour <= 22) return "Bonsoir !"
-  else if (hour > 22 || hour <= 5) return "Bonne nuit !"
-}
+  if (hour > 5 && hour <= 7) return "Bonjour !";
+  else if (hour > 7 && hour <= 11) return "Bonne matinée !";
+  else if (hour > 11 && hour <= 13) return "Bon appétit !";
+  else if (hour > 13 && hour <= 17) return "Bon après-midi !";
+  else if (hour > 17 && hour <= 22) return "Bonsoir !";
+  else if (hour > 22 || hour <= 5) return "Bonne nuit !";
+};
 
 /**
  * @see <https://stackoverflow.com/a/6117889>

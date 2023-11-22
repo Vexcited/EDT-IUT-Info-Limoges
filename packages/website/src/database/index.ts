@@ -1,26 +1,29 @@
-import mongoose from 'mongoose';
-import { DBTimetable } from './Timetable';
+import mongoose from "mongoose";
+import { DBTimetable } from "./Timetable";
 
 import {
   type TimetableEntry,
   type YEARS,
 
   getTimetableEntries
-} from 'edt-iut-info-limoges';
+} from "edt-iut-info-limoges";
 
-import type { ITimetable } from '~/types/api';
+import type { ITimetable } from "~/types/api";
 
 declare global {
-  var mongoose: any // This must be a `var` and not a `let / const`
+  // These must be `var` and not `let / const`.
+  // eslint-disable-next-line no-var, @typescript-eslint/no-explicit-any
+  var mongoose: any;
+  // eslint-disable-next-line no-var
   var timetable_entries_cache: Record<string, {
     last_fetch: number,
     entries: TimetableEntry[]
   }>;
 }
 
-const MONGODB_URI = process.env.MONGODB_URI!
+const MONGODB_URI = process.env.MONGODB_URI!;
 if (!MONGODB_URI) throw new Error(
-  'Please define the MONGODB_URI environment variable inside .env'
+  "Please define the MONGODB_URI environment variable inside .env"
 );
 
 /**
@@ -39,7 +42,7 @@ global.timetable_entries_cache = {
 let cached = global.mongoose;
 
 if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null }
+  cached = global.mongoose = { conn: null, promise: null };
 }
 
 export async function connectDatabase() {

@@ -46,9 +46,9 @@ const DatabaseTimetableSchema = new mongoose.Schema<DatabaseTimetable>({
 });
 
 // Define the models so it gets registered in the database.
-const DBTimetableA1 = mongoose.models.A1 || mongoose.model<DatabaseTimetable>('A1', DatabaseTimetableSchema);
-const DBTimetableA2 = mongoose.models.A2 || mongoose.model<DatabaseTimetable>('A2', DatabaseTimetableSchema);
-const DBTimetableA3 = mongoose.models.A3 || mongoose.model<DatabaseTimetable>('A3', DatabaseTimetableSchema);
+const DBTimetableA1 = mongoose.models.A1 || mongoose.model<DatabaseTimetable>("A1", DatabaseTimetableSchema);
+const DBTimetableA2 = mongoose.models.A2 || mongoose.model<DatabaseTimetable>("A2", DatabaseTimetableSchema);
+const DBTimetableA3 = mongoose.models.A3 || mongoose.model<DatabaseTimetable>("A3", DatabaseTimetableSchema);
 
 /**
  * Helper function to prevent code duplication.

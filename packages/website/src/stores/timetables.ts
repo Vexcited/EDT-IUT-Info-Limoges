@@ -28,7 +28,7 @@ const getTimetableMetaStore = async (year: number, forceRefreshAll = false): Pro
 
     localStorage.setItem(key, JSON.stringify(meta));
     return meta;
-  }
+  };
 
   /** Used in case we're using `forceRefreshAll` while being offline. */
   let stored_meta: TimetableMeta | undefined;
@@ -89,7 +89,7 @@ export const getLatestWeekNumber = async (year: number): Promise<number> => {
 
   const last_timetable = metas.timetables[metas.timetables.length - 1];
   return last_timetable.week_number;
-}
+};
 
 /**
  * Get the week number of the a given day.
@@ -156,7 +156,7 @@ export const getTimetableForWeekNumber = async (year: number, week_number: numbe
 
       throw new APIError(APIErrorType.NO_CACHE);
     }
-  }
+  };
 
   const stored_timetable = await getTimetableStore(makeYearSTR(year)).getItem<ITimetable & {
     last_fetch: number
@@ -191,7 +191,7 @@ export const getTimetableForWeekNumber = async (year: number, week_number: numbe
 
 export const deleteTimetableForWeekNumber = async (year: number, week_number: number): Promise<void> => {
   await getTimetableStore(makeYearSTR(year)).removeItem(makeWeekSTR(week_number));
-}
+};
 
 export const resetAppCache = async (): Promise<void> => {
   for (const year of [1, 2, 3]) {
