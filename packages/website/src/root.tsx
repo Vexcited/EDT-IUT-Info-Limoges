@@ -31,6 +31,8 @@ import {
   preferences
 } from "./stores/preferences";
 
+import Updater from "./components/modals/Updater";
+
 import { initializeNowRefresh } from "./stores/temporary";
 import { rgbToHex } from "./utils/colors";
 
@@ -63,6 +65,8 @@ const Root: Component = () => {
         <Link rel="icon" href="/favicon.ico" />
       </Head>
       <Body class="bg-[rgb(18,18,18)]" style={{ "font-family": FONT_FAMILY }}>
+        <Updater />
+
         <Suspense>
           <ErrorBoundary>
             <Routes>

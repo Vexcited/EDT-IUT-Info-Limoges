@@ -1,6 +1,6 @@
-import unocss from 'unocss/vite'
+import unocss from "unocss/vite";
 import solid from "solid-start/vite";
-import icons from 'unplugin-icons/vite';
+import icons from "unplugin-icons/vite";
 import { VitePWA as pwa } from "vite-plugin-pwa";
 
 import { defineConfig } from "vite";
@@ -22,10 +22,11 @@ export default defineConfig({
 
     pwa({
       base: "/",
-      registerType: 'autoUpdate',
-      injectRegister: 'auto',
+      registerType: "prompt",
+      injectRegister: "auto",
 
       workbox: {
+        sourcemap: true,
         globPatterns: [
           "**/*.{js,css,html,svg,png,woff,woff2}"
         ],
