@@ -1,6 +1,6 @@
 import { type Component, type Setter, createSignal, createEffect, on, onCleanup, Show, Match, Switch, For } from "solid-js";
 import { ITimetableHeader, ITimetableLesson } from "~/types/api";
-import { createBreakpoints } from "@solid-primitives/media";
+import { createMediaQuery } from "@solid-primitives/media";
 import { DateTime } from "luxon";
 
 import MdiFileDocumentAlertOutline from "~icons/mdi/file-document-alert-outline";
@@ -38,11 +38,11 @@ import { type SwiperContainer, register as registerSwiperElements } from "swiper
 import type Swiper from "swiper";
 registerSwiperElements();
 
-const matches = createBreakpoints({
-  tablet: "768px",
-  laptop_small: "1024px",
-  laptop_large: "1440px",
-});
+/**
+ * Media query that tells us whenever
+ * the screen is larger or equal to a tablet screen.
+ */
+const isTablet = createMediaQuery("(min-width: 768px)");
 
 // Type elements from Swiper Element.
 declare module "solid-js" {
@@ -297,7 +297,7 @@ const SwiperView: Component<{
             </div>
 
             {/** Week selector on ">= tablet" screens. */}
-            <Show when={matches.tablet}>
+            <Show when={isTablet()}>
               <div class="bg-[rgb(27,27,27)] rounded-lg h-full shadow-xl">
                 <div class="flex flex-col items-center justify-center gap-2 px-4 py-4 laptop-sm:(flex-row justify-between gap-6 px-8) h-full">
                   <div class="flex flex-col flex-shrink-0">
@@ -331,7 +331,7 @@ const SwiperView: Component<{
       </div>
 
       <main class="pt-6">
-        <Show when={!matches.tablet}>
+        <Show when={!isTablet()}>
           <div class="flex items-center justify-between gap-2 mb-6 px-4">
             <div class="flex flex-col flex-shrink-0">
               <p class="text-lg text-[rgb(240,240,240)]">
