@@ -992,15 +992,21 @@ const Page: Component = () => {
    * the app is opened.
    */
   let last_now = now();
-  createEffect(on(now, now => {
+  createEffect(on(now, async (now) => {
     if (now.weekNumber === last_now.weekNumber) return;
     last_now = now;
 
     console.info("week changed.");
-    // TODO: update timetable according to this ?
+    const currentWeekNumber = await updateCurrentTimetables();
+
+    // we select current week by default, so yes copy here too.
+    setSelectedWeek(currentWeekNumber ?? 0);
   }));
 
-  onMount(async () => {
+  /**
+   * Returns the current week number.
+   */
+  const updateCurrentTimetables = async (): Promise<number | undefined> => {
     let currentWeekNumber: number | undefined;
 
     try {
@@ -1036,10 +1042,16 @@ const Page: Component = () => {
     batch(() => {
       setCurrentWeekTimetable(currentWeekTimetable);
       setNextWeekTimetable(nextWeekTimetable);
-      // we select current week by default, so yes copy here too.
-      setSelectedWeek(currentWeekNumber!);
-      setSelectedWeekTimetable(currentWeekTimetable);
     });
+
+    return currentWeekNumber
+  }
+
+  onMount(async () => {
+    const currentWeekNumber = await updateCurrentTimetables();
+
+    // we select current week by default, so yes copy here too.
+    setSelectedWeek(currentWeekNumber ?? 0);
   });
 
   const forSubGroup = (timetable: ITimetable | null) => timetable ? lessonsForSubGroup(timetable, {
@@ -1075,6 +1087,7 @@ const Page: Component = () => {
     }
   };
 
+
   // Check if both didn't changed; don't update.
   let oldYearState = preferences.year;
   createEffect(on([() => preferences.year, selectedWeek], async ([year, week]) => {
@@ -1086,7 +1099,10 @@ const Page: Component = () => {
       if (selectedWeekTimetable() && week === selectedWeekTimetable()!.header.week_number) {
         return;
       }
-    };
+    }
+    else {
+      await updateCurrentTimetables();
+    }
 
     oldYearState = year;
     await updateTimetable();
