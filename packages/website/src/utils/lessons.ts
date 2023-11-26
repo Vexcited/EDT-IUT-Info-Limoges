@@ -50,8 +50,7 @@ export const lessonsForSubGroup = (timetable: Omit<ITimetable, "last_update">, p
       return aDate.getTime() - bDate.getTime();
     })
     // Remove the lessons that are the same as the previous one
-    // (like same type, same room, same teacher, but with just a +1 index difference in the array)
-    // Also update the `end_date` of the previous lesson to the `end_date` of the current lesson.
+    // and update the `end_date` of the previous lesson to the `end_date` of the current lesson.
     .reduce((acc, lesson, index, array) => {
       const previousLesson = array[index - 1];
 
@@ -64,16 +63,27 @@ export const lessonsForSubGroup = (timetable: Omit<ITimetable, "last_update">, p
           acc.push(lesson);
           return acc;
         }
-      }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (previousLesson && (previousLesson.content as any).type === (lesson.content as any).type && previousLesson.type === lesson.type && previousLesson.content.room === lesson.content.room && previousLesson.content.teacher === lesson.content.teacher && previousLesson.end_date === lesson.start_date) {
-        previousLesson.end_date = lesson.end_date;
-      }
-      else {
-        acc.push(lesson);
-      }
+        // if lesson is not right after the previous one, we should not merge them.
+        if (previousLesson.end_date !== lesson.start_date) {
+          acc.push(lesson);
+          return acc;
+        }
 
+        const isSameContentType = getLessonType(previousLesson) === getLessonType(lesson);
+        const isSameType = previousLesson.type === lesson.type;
+        const isSameRoom = previousLesson.content.room === lesson.content.room;
+        const isSameTeacher = previousLesson.content.teacher === lesson.content.teacher;
+        
+        // Extend the previous lesson's end date to the current lesson's end date
+        // when a lesson is the same as the previous one.
+        if (isSameContentType && isSameType && isSameRoom && isSameTeacher) {
+          previousLesson.end_date = lesson.end_date;
+          return acc;
+        }
+      }
+      
+      acc.push(lesson);
       return acc;
     }, [] as ITimetable["lessons"]);
 
