@@ -61,7 +61,9 @@ const OngoingWidget: Component<IOngoingWidget> = (props) => {
           <div class="pl-4 py-3 w-full">
             <div class="flex flex-col gap-0.5">
               <div class="flex justify-between">
-                <p>{getLessonType(next_lesson())}</p>
+                <p class="text-[rgb(240,240,240)]">
+                  {getLessonType(next_lesson())}
+                </p>
                 <p class="bg-red px-2 rounded-full font-medium text-[rgb(27,27,27)]">
                   {next_lesson().content.room}
                 </p>
