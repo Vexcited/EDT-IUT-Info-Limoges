@@ -36,7 +36,10 @@ const Updater: Component = () => {
     setCommitDetails(response);
   }));
 
-  const close = () => setNeedRefresh(false);
+  const close = () => {
+    updateServiceWorker(false);
+    setNeedRefresh(false);
+  };
 
   return (
     <Dialog.Root open={needRefresh()} modal={true}>
@@ -49,7 +52,7 @@ const Updater: Component = () => {
               <Dialog.Title class="text-[20px] font-medium">
                 Mise à jour
               </Dialog.Title>
-              <Dialog.CloseButton class="flex items-center justify-center p-1">
+              <Dialog.CloseButton class="flex items-center justify-center p-1" onClick={() => close()}>
                 <MdiClose class="text-lg" />
               </Dialog.CloseButton>
             </div>
@@ -69,6 +72,9 @@ const Updater: Component = () => {
                     <p class="animate-pulse text-sm">
                       Chargement des modifications...
                     </p>
+                    <div class="py-[800px]">
+
+                    </div>
                   </div>
                 }
               >
@@ -76,7 +82,7 @@ const Updater: Component = () => {
                   <div class="bg-[rgb(40,40,40)] rounded-lg">
                     <div class="p-4">
                       <p class="text-[rgb(240,240,240)]">
-                        Il y a eu {compare().total_commits} modifications.
+                        Il y a eu {compare().total_commits} modification(s).
                       </p>
                       <a class="text-red text-sm hover:underline" href={compare().permalink_url}>
                         Voir les commits sur GitHub
