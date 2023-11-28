@@ -72,9 +72,6 @@ const Updater: Component = () => {
                     <p class="animate-pulse text-sm">
                       Chargement des modifications...
                     </p>
-                    <div class="py-[800px]">
-
-                    </div>
                   </div>
                 }
               >
