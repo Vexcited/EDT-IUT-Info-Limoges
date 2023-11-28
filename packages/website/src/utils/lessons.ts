@@ -5,7 +5,9 @@ export const lessonsForSubGroup = (timetable: Omit<ITimetable, "last_update">, p
   main_group: number
   sub_group: 0 | 1;
 }) => {
-  const lessons = timetable.lessons.filter(lesson => {
+  const copied_lessons = JSON.parse(JSON.stringify(timetable.lessons)) as ITimetable["lessons"];
+
+  const lessons = copied_lessons.filter(lesson => {
     let isForUser = false;
 
     switch (lesson.type) {
@@ -43,7 +45,7 @@ export const lessonsForSubGroup = (timetable: Omit<ITimetable, "last_update">, p
 
     return isForUser;
   })
-    .sort((a, b) => {
+    .toSorted((a, b) => {
       const aDate = new Date(a.start_date);
       const bDate = new Date(b.start_date);
 
