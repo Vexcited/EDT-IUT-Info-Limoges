@@ -1,5 +1,6 @@
 import type { ITimetableHeader } from "~/types/api";
 import { DateTime } from "luxon";
+import { now } from "~/stores/temporary";
 
 /**
  * @returns - In format "(H)H" + "h" + ("(m)m" if not 0) 
@@ -57,11 +58,14 @@ export const getHourString = (date: Date) => date.toLocaleString("fr", {
 });
 
 export const getGreeting = () => {
-  const hour = new Date().getHours();
+  const n = now();
+  const hour = n.hour;
+  const mins = n.minute;
+
   if (hour > 5 && hour <= 7) return "Bonjour !";
   else if (hour > 7 && hour <= 11) return "Bonne matinée !";
-  else if (hour > 11 && hour <= 13) return "Bon appétit !";
-  else if (hour > 13 && hour <= 17) return "Bon après-midi !";
+  else if (hour > 11 && (hour <= 13 && mins <= 30)) return "Bon appétit !";
+  else if ((hour > 13 && mins >= 30) && hour <= 17) return "Bon après-midi !";
   else if (hour > 17 && hour <= 22) return "Bonsoir !";
   else if (hour > 22 || hour <= 5) return "Bonne nuit !";
 };
