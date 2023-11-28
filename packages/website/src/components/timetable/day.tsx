@@ -19,7 +19,7 @@ const MobileDayTimetable: Component<{
     // if there's no lessons, it's always `true`.
     if (props.lessons.length === 0) return true;
 
-    const lastLesson = props.lessons.at(-1);
+    const lastLesson = props.lessons[props.lessons.length - 1];
     // if we don't find the last lesson, it means there's nothing so `true`.
     if (!lastLesson) return true;
 
