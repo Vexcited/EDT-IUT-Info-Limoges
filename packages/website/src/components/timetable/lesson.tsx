@@ -15,9 +15,15 @@ const MobileDayTimetableLesson: Component<{
 }> = (props) => {
   const start_date = () => new Date(props.lesson.start_date);
 
-  const thereIsBreakBefore = () => props.lesson_before && (
-    start_date().getHours() !== new Date(props.lesson_before!.end_date).getHours()
-  );
+  const thereIsBreakBefore = () => {
+    if (!props.lesson_before) return;
+    const end_date = new Date(props.lesson_before.end_date);
+  
+    const isNotSameHour = start_date().getHours() !== end_date.getHours();
+    const isNotSameMinutes = start_date().getMinutes() !== end_date.getMinutes();
+    
+    return isNotSameHour || isNotSameMinutes; 
+  };
 
   const Delimiter: Component<{ date: Date; }> = (props) => (
     <div class="flex items-center gap-2">
