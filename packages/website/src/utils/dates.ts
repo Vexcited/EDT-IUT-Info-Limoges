@@ -16,6 +16,13 @@ export const hoursAndMinutesBetween = (timeEnd: Date, timeStart: Date): string =
   };
 
   output.minutes = minDiff - 60 * output.hours;
+
+  // When it's only about the minutes
+  // we don't need to show the hours.
+  if (output.hours === 0) {
+    return output.minutes + " minute" + (output.minutes > 1 ? "s" : "");
+  }
+
   return output.hours + "h" + (output.minutes ? output.minutes : "");
 };
 
