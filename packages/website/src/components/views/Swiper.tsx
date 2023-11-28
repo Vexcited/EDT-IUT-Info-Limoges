@@ -1,5 +1,5 @@
 import { type Component, type Setter, createSignal, createEffect, on, onCleanup, Show, Match, Switch, For } from "solid-js";
-import { ITimetableHeader, ITimetableLesson } from "~/types/api";
+import type { ITimetableHeader, ITimetableLesson } from "~/types/api";
 import { createMediaQuery } from "@solid-primitives/media";
 import { DateTime } from "luxon";
 
@@ -12,7 +12,7 @@ import MdiHeart from "~icons/mdi/heart";
 import MdiCheck from '~icons/mdi/check';
 import MdiCog from "~icons/mdi/cog";
 
-import MobileDayTimetable from "../timetable/day";
+import MobileDayTimetable from "~/components/timetable/day";
 
 import {
   getWidgetContent,
@@ -483,7 +483,7 @@ const SwiperView: Component<{
       </main>
 
       <footer class="w-full text-center pb-8 pt-6 text-[rgb(220,220,220)]">
-        <p class="text-sm flex gap-1 justify-center items-center ">
+        <p class="text-sm flex gap-1 justify-center items-center">
           Made with <MdiHeart class="text-red" /> by <a class="font-medium hover:underline text-red" href="https://github.com/Vexcited">Vexcited</a>
         </p>
 
