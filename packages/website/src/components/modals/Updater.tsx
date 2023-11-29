@@ -36,7 +36,7 @@ const Updater: Component = () => {
     setCommitDetails(response);
   }));
 
-  const close = () => {
+  const closeNoReload = () => {
     updateServiceWorker(false);
     setNeedRefresh(false);
   };
@@ -52,7 +52,7 @@ const Updater: Component = () => {
               <Dialog.Title class="text-[20px] font-medium">
                 Mise à jour
               </Dialog.Title>
-              <Dialog.CloseButton class="flex items-center justify-center p-1" onClick={() => close()}>
+              <Dialog.CloseButton class="flex items-center justify-center p-1" onClick={() => closeNoReload()}>
                 <MdiClose class="text-lg" />
               </Dialog.CloseButton>
             </div>
@@ -117,7 +117,7 @@ const Updater: Component = () => {
             <div class="h-[1px] w-full border-b border-b-[rgb(90,90,90)]" />
 
             <div class="p-4 flex justify-end gap-6">
-              <button type="button" onClick={() => close()}
+              <button type="button" onClick={() => closeNoReload()}
                 class="px-4 py-2 rounded-lg hover:bg-[rgb(36,36,36)] active:bg-[rgb(42,42,42)] text-[rgb(220,220,220)] active:text-[rgb(230,230,230)] transition-colors duration-200"
               >
                 Plus tard
