@@ -1,4 +1,4 @@
-import { type Component, createSignal, createEffect, on, createMemo, onMount, batch } from "solid-js";
+import { type Component, createSignal, createEffect, on, createMemo, onMount } from "solid-js";
 import type { ITimetable } from "~/types/api";
 
 import { SettingsModal } from "~/components/modals/Settings";
@@ -7,112 +7,83 @@ import SwiperView from "~/components/views/Swiper";
 import { APIError, APIErrorType } from "~/utils/errors";
 import { lessonsForSubGroup } from "~/utils/lessons";
 
-import { getDayWeekNumber, getTimetableForWeekNumber, deleteTimetableForWeekNumber, getLatestWeekNumber } from "~/stores/timetables";
+import { getDayWeekNumber, refreshTimetableForWeekNumber, getLatestWeekNumber, getTemporaryTimetablesStore } from "~/stores/timetables";
 import { preferences } from "~/stores/preferences";
 import { now } from "~/stores/temporary";
 
 const [settingsOpen, setSettingsOpen] = createSignal(false);
 
 const Page: Component = () => {
-  const [selectedWeek, setSelectedWeek] = createSignal(-1);
+  // Signals for week numbers. We use `-1` as a default value, that should be handled as a loading state.
+  // Whenever an error is thrown we keep the `-1` value and set the `error()` signal.
+  const [currentWeekNumber, setCurrentWeekNumber] = createSignal(-1);
+  const [selectedWeekNumber, setSelectedWeekNumber] = createSignal(-1);
 
-  const [currentWeekTimetable, setCurrentWeekTimetable] = createSignal<ITimetable | null>(null);
-  const [selectedWeekTimetable, setSelectedWeekTimetable] = createSignal<ITimetable | null>(null);
-  // Useful for sneak peeks.
-  const [nextWeekTimetable, setNextWeekTimetable] = createSignal<ITimetable | null>(null);
-
-  const [error, setError] = createSignal<string | null>(null);
   const [isCurrentlyInVacation, setCurrentlyInVacation] = createSignal(false);
+  const [error, setError] = createSignal<string | null>(null);
+
+  const currentWeekTimetable = createMemo(() => getTemporaryTimetablesStore(preferences.year, currentWeekNumber()));
+  const selectedWeekTimetable = createMemo(() => getTemporaryTimetablesStore(preferences.year, selectedWeekNumber()));
+  // We'll get the timetable for the current next week so we can peek if needed.
+  const nextWeekTimetable = createMemo(() => getTemporaryTimetablesStore(preferences.year, currentWeekNumber() + 1));
 
   /**
-   * Check if we go into another week while
-   * the app is opened.
+   * Handles the current week number signal, and
+   * also handles vacation weeks.
+   * 
+   * @returns - Current week number or `-1` whenever an error has been thrown.
+   * In that case, an error overlay should be displayed in the UI using the `error()` signal.
    */
-  let last_now = now();
-  createEffect(on(now, async (now) => {
-    if (now.weekNumber === last_now.weekNumber) return;
-    last_now = now;
-
-    console.info("week changed.");
-    const currentWeekNumber = await updateCurrentTimetables();
-
-    // we select current week by default, so yes copy here too.
-    setSelectedWeek(currentWeekNumber ?? 0);
-  }));
-
-  /**
-   * Returns the current week number.
-   */
-  const updateCurrentTimetables = async (): Promise<number | undefined> => {
-    let currentWeekNumber: number | undefined;
-
+  const refreshCurrentWeekNumber = async (): Promise<number> => {
     try {
-      currentWeekNumber = await getDayWeekNumber(now(), preferences.year);
+      // Reset the vacation state.
+      setCurrentlyInVacation(false);
+
+      // We get the current week number using timetables meta.
+      const currentWeekNumber = await getDayWeekNumber(now(), preferences.year);
+      
+      // We don't await the refresh.
+      refreshTimetableForWeekNumber(preferences.year, currentWeekNumber);
+      refreshTimetableForWeekNumber(preferences.year, currentWeekNumber + 1); // We also refresh the next week.
+      
+      // We set the current week number signal.
+      setCurrentWeekNumber(currentWeekNumber);
+      return currentWeekNumber;
     }
     catch (error) {
       if (error instanceof APIError) {
-        // when the current week is not found
-        // => we're in vacation.
+        // Whenever we don't find the current week in the timetables meta,
+        // it means that we're in vacation.
+        // When that's the case, we'll display the latest week as the current.
         if (error.type === APIErrorType.NOT_FOUND) {
-          currentWeekNumber = await getLatestWeekNumber(preferences.year);
+          const currentWeekNumber = await getLatestWeekNumber(preferences.year);
+
+          // We don't await the refresh.
+          refreshTimetableForWeekNumber(preferences.year, currentWeekNumber);
+          refreshTimetableForWeekNumber(preferences.year, currentWeekNumber + 1); // We also refresh the next week.
+          
           setCurrentlyInVacation(true);
+          setCurrentWeekNumber(currentWeekNumber);
+          return currentWeekNumber;
         }
-        else {
-          setError(error.message);
-          return;
-        }
+
+        // Otherwise we don't have any cache so let's just let it die.
+        setCurrentWeekNumber(-1);
+        setError(error.message);
+        return -1;
       }
-      else {
-        console.error("unhandled:", error);
-        setError("Erreur inconnue(2): voir la console.");
-        return;
-      }
+      
+      setCurrentWeekNumber(-1);
+      console.error("unhandled:", error);
+      setError("Erreur inconnue(2): voir la console.");
+      return -1;
     }
-
-    const currentWeekTimetable = await getTimetableForWeekNumber(preferences.year, currentWeekNumber);
-
-    let nextWeekTimetable: ITimetable | null = null;
-    try {
-      nextWeekTimetable = await getTimetableForWeekNumber(preferences.year, currentWeekNumber + 1);
-    }
-    catch { /** No-op, we keep it `null`. */ }
-
-    batch(() => {
-      setCurrentWeekTimetable(currentWeekTimetable);
-      setNextWeekTimetable(nextWeekTimetable);
-    });
-
-    return currentWeekNumber;
   };
 
-  onMount(async () => {
-    const currentWeekNumber = await updateCurrentTimetables();
-
-    // we select current week by default, so yes copy here too.
-    setSelectedWeek(currentWeekNumber ?? 0);
-  });
-
-  const forSubGroup = (timetable: ITimetable | null) => timetable ? lessonsForSubGroup(timetable, {
-    main_group: preferences.main_group,
-    sub_group: preferences.sub_group
-  }) : undefined;
-
-  const subGroupTimetable = createMemo(() => forSubGroup(selectedWeekTimetable()));
-  const subGroupCurrentWeekTimetable = createMemo(() => forSubGroup(currentWeekTimetable()));
-  const subGroupNextWeekTimetable = createMemo(() => forSubGroup(nextWeekTimetable()));
-
-  const updateTimetable = async (force_update = false) => {
-    setSelectedWeekTimetable(null);
-    setError(null);
-
-    // delete the cache so it'll fetch it below anyway.
-    if (force_update) {
-      await deleteTimetableForWeekNumber(preferences.year, selectedWeek());
-    }
-
+  const refreshSelectedTimetable = (): void => {
     try {
-      const timetable = await getTimetableForWeekNumber(preferences.year, selectedWeek());
-      setSelectedWeekTimetable(timetable);
+      setError(null);
+      refreshTimetableForWeekNumber(preferences.year, selectedWeekNumber());
     }
     catch (error) {
       if (error instanceof APIError) {
@@ -125,26 +96,67 @@ const Page: Component = () => {
     }
   };
 
+  // Let's refresh the current week number on page load
+  // and select the current week by default.
+  onMount(async () => {
+    const currentWeekNumber = await refreshCurrentWeekNumber();
 
-  // Check if both didn't changed; don't update.
-  let oldYearState = preferences.year;
-  createEffect(on([() => preferences.year, selectedWeek], async ([year, week]) => {
-    if (week < 0) return;
+    // We select current week on page load, by default.
+    setSelectedWeekNumber(currentWeekNumber);
+  });
 
-    if (year === oldYearState) {
-      // also check if the week was already defined
-      // and if the week didn't changed.
-      if (selectedWeekTimetable() && week === selectedWeekTimetable()!.header.week_number) {
-        return;
-      }
-    }
-    else {
-      await updateCurrentTimetables();
-    }
+  // Refresh the selected timetable whenever the selected week number changes.
+  let last_selected_week_number = -1;
+  createEffect(on(selectedWeekNumber, (selectedWeekNumber) => {
+    if (selectedWeekNumber === last_selected_week_number) return;
+    last_selected_week_number = selectedWeekNumber;
 
-    oldYearState = year;
-    await updateTimetable();
+    console.info("[createEffect(on(selected))]: selected week changed, refreshing selected timetable.");
+    refreshSelectedTimetable();
   }));
+
+  /**
+   * Handle whenever the current week number changes
+   * while we are in the app.
+   * 
+   * Example: The app is opened Sunday at 23:59, and
+   * the week changes to the next one. We'll update
+   * the current week number.
+   */
+  let last_now = now();
+  createEffect(on(now, (now) => {
+    if (now.weekNumber === last_now.weekNumber) return;
+    last_now = now;
+
+    console.info("[createEffect(on(now))]: week changed, refreshing current timetable.");
+    refreshCurrentWeekNumber();
+  }));
+
+  // Refresh all the timetables whenever the year changes.
+  let last_year_state = preferences.year;
+  createEffect(on(() => preferences.year, (year) => {
+    if (year === last_year_state) return;
+    last_year_state = year;
+    
+    console.info("[createEffect(on(year))]: year preference changed, refreshing timetables.");
+    refreshCurrentWeekNumber();
+    refreshSelectedTimetable();
+  }));
+
+  /**
+   * Helper function that returns timetable lessons
+   * for the current sub-group chosen in the preferences.
+   */
+  const lessonsForUser = (timetable: ITimetable | null) => timetable ? lessonsForSubGroup(timetable, {
+    main_group: preferences.main_group,
+    sub_group: preferences.sub_group
+  }) : undefined;
+
+  // We'll create memoized signals for the current week, selected week and next week.
+  // Only the lessons from the user's main group and sub-group will be returned.
+  const currentWeekTimetableLessons = createMemo(() => lessonsForUser(currentWeekTimetable()));
+  const selectedTimetableLessons = createMemo(() => lessonsForUser(selectedWeekTimetable()));
+  const nextWeekTimetableLessons = createMemo(() => lessonsForUser(nextWeekTimetable()));
 
   return (
     <>
@@ -153,13 +165,13 @@ const Page: Component = () => {
       <SwiperView
         setSettingsOpen={setSettingsOpen}
         header={selectedWeekTimetable()?.header}
-        lessons={subGroupTimetable()}
-        currentWeekLessons={subGroupCurrentWeekTimetable()}
+        lessons={selectedTimetableLessons()}
+        currentWeekLessons={currentWeekTimetableLessons()}
         currentWeekHeader={currentWeekTimetable()?.header}
-        nextWeekLessons={subGroupNextWeekTimetable()}
+        nextWeekLessons={nextWeekTimetableLessons()}
         nextWeekHeader={nextWeekTimetable()?.header}
-        selectedWeekNumber={selectedWeek()}
-        setWeekNumber={setSelectedWeek}
+        selectedWeekNumber={selectedWeekNumber()}
+        setWeekNumber={setSelectedWeekNumber}
         isCurrentlyInVacation={isCurrentlyInVacation()}
         error={error()}
       />
