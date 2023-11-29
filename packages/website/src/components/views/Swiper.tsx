@@ -1,4 +1,4 @@
-import { type Component, type Setter, createSignal, createEffect, on, onCleanup, Show, Match, Switch, For } from "solid-js";
+import { type Component, type Setter, createSignal, createEffect, createMemo, on, onCleanup, Show, Match, Switch, For } from "solid-js";
 import type { ITimetableHeader, ITimetableLesson } from "~/types/api";
 import { createMediaQuery } from "@solid-primitives/media";
 import { DateTime } from "luxon";
@@ -77,11 +77,11 @@ const SwiperView: Component<{
   const [activeDayIndex, setActiveDayIndex] = createSignal(now().weekday - 1);
 
   // Returns `undefined` when loading.
-  const widgetContent = () => getWidgetContent({
+  const widgetContent = createMemo(() => getWidgetContent({
     currentWeekLessons: props.currentWeekLessons,
     nextWeekLessons: props.nextWeekLessons,
     nextWeekHeader: props.nextWeekHeader
-  });
+  }));
 
   const vacationRemaining = () => props.header?.start_date
     ? DateTime.fromISO(props.header.start_date).setLocale("fr").toRelative()
@@ -365,7 +365,7 @@ const SwiperView: Component<{
                 // Loading screen.
                 <div class="flex flex-col gap-4 items-center pt-10 text-[rgb(200,200,200)]">
                   <MdiLoading class="animate-spin text-4xl" />
-                  <p class="animate-pulse a">
+                  <p class="animate-pulse">
                     Chargement...
                   </p>
                 </div>
