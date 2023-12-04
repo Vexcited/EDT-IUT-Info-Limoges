@@ -242,7 +242,7 @@ const SwiperView: Component<{
       </header>
 
       {/* Next lesson widget at the top. */}
-      <div class="sticky top-0 z-50">
+      <div class="sticky tablet:relative top-0 z-50">
         {/* Color span under the widget. */}
         <span class="absolute top-0 bg-red z-40 h-[32px] w-full" />
 
