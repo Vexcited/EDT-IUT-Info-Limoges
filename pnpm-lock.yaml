@@ -59,6 +59,9 @@ importers:
       '@solid-primitives/media':
         specifier: ^2.2.5
         version: 2.2.5(solid-js@1.8.5)
+      '@solid-primitives/resize-observer':
+        specifier: ^2.0.22
+        version: 2.0.22(solid-js@1.8.5)
       '@solidjs/meta':
         specifier: ^0.29.1
         version: 0.29.1(solid-js@1.8.5)
@@ -132,6 +135,9 @@ importers:
       unocss:
         specifier: ^0.57.4
         version: 0.57.4(postcss@8.4.31)(rollup@3.29.4)(vite@4.5.0)
+      unocss-preset-primitives:
+        specifier: 0.0.1-beta.13
+        version: 0.0.1-beta.13
       unplugin-icons:
         specifier: ^0.17.4
         version: 0.17.4
@@ -2782,6 +2788,18 @@ packages:
     peerDependencies:
       solid-js: ^1.6.12
     dependencies:
+      '@solid-primitives/utils': 6.2.1(solid-js@1.8.5)
+      solid-js: 1.8.5
+    dev: false
+
+  /@solid-primitives/resize-observer@2.0.22(solid-js@1.8.5):
+    resolution: {integrity: sha512-ps8UIFiGsNxZaWBKSH0Py0Nx5PDd7NtUGHkN/04SNRYgtTvlPF768rk0ksPlDgpIwYmBLIoC9qvQmQPaHF4F5w==}
+    peerDependencies:
+      solid-js: ^1.6.12
+    dependencies:
+      '@solid-primitives/event-listener': 2.3.0(solid-js@1.8.5)
+      '@solid-primitives/rootless': 1.4.2(solid-js@1.8.5)
+      '@solid-primitives/static-store': 0.0.5(solid-js@1.8.5)
       '@solid-primitives/utils': 6.2.1(solid-js@1.8.5)
       solid-js: 1.8.5
     dev: false
@@ -8890,6 +8908,12 @@ packages:
   /universalify@2.0.1:
     resolution: {integrity: sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==}
     engines: {node: '>= 10.0.0'}
+
+  /unocss-preset-primitives@0.0.1-beta.13:
+    resolution: {integrity: sha512-YVJXidCgV1OhlAb3786elQzZsMHTUhDqoie6drv/7biiEt6I1pKRmQfbrZ7IUy5EHsNnPj4Qvdo8wB5gR9EPLg==}
+    dependencies:
+      '@unocss/core': 0.57.7
+    dev: true
 
   /unocss@0.57.4(postcss@8.4.31)(rollup@3.29.4)(vite@4.5.0):
     resolution: {integrity: sha512-rf5eiCVb8957rqzCyRxLzljeYguVMS70X322/Z1sYhosKhh8SBBMsC/TrZEf5o8LTn/MbFN9fVizEtbUKaFjUg==}

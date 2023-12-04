@@ -1,9 +1,9 @@
 import type { Component, Setter } from "solid-js";
-import { Dialog } from "@kobalte/core";
+import { Dialog, Switch } from "@kobalte/core";
 
 import MdiClose from '~icons/mdi/close'
 
-import { DEFAULT_USER_CUSTOMIZATION, preferences, setMainGroup, setSubGroup, setUserCustomization } from "~/stores/preferences";
+import { DEFAULT_USER_CUSTOMIZATION, getUserCustomizationKey, preferences, setMainGroup, setSubGroup, setUserCustomization } from "~/stores/preferences";
 import { resetAppCache } from "~/stores/timetables";
 
 const SelectionButton: Component<{
@@ -135,6 +135,47 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
                 <p class="text-[rgb(190,190,190)] text-xs mt-1.5">
                   Attention : la couleur doit être définie dans le format "r,g,b".
                 </p>
+              </section>
+
+              <section>
+                <h3 class="text-[rgb(240,240,240)] text-[18px]">
+                  Vue de l'EDT 
+                </h3>
+
+                <Switch.Root
+                  class="flex items-center justify-between mt-2"
+                  checked={getUserCustomizationKey("use_fixed_height")}
+                  onChange={value => setUserCustomization({
+                    ...preferences.customization,
+                    use_fixed_height: value
+                  })}
+                >
+                  <Switch.Label class="mr-1.5 text-[rgb(220,220,220)] select-none">
+                    Alignement sur les heures
+                  </Switch.Label>
+                  <Switch.Input />
+                  <Switch.Control class="inline-flex items-center h-6 w-11 rounded-full px-.5 bg-[rgb(48,48,48)] ui-checked:bg-red transition-colors">
+                    <Switch.Thumb class="h-5 w-5 rounded-full bg-white ui-checked:(transform translate-x-[calc(100%-1px)]) transition-transform" />
+                  </Switch.Control>
+                </Switch.Root>
+
+                <p class="text-[rgb(190,190,190)] text-xs mt-1.5">
+                  Le positionnement des cours sur l'emploi du temps sera aligné sur les heures.
+                </p>
+
+                {/* <Switch.Root class="flex items-center justify-between mt-4">
+                  <Switch.Label class="mr-1.5 text-[rgb(220,220,220)] select-none">
+                    Vue semaine (PC uniquement)
+                  </Switch.Label>
+                  <Switch.Input />
+                  <Switch.Control class="inline-flex items-center h-6 w-11 rounded-full px-.5 bg-[rgb(48,48,48)] ui-checked:bg-red transition-colors">
+                    <Switch.Thumb class="h-5 w-5 rounded-full bg-white ui-checked:(transform translate-x-[calc(100%-1px)]) transition-transform" />
+                  </Switch.Control>
+                </Switch.Root>
+
+                <p class="text-[rgb(190,190,190)] text-xs mt-1.5">
+                  Désactive la navigation en "slide" et affiche l'emploi du temps sur une semaine entière.
+                </p> */}
               </section>
             </div>
 

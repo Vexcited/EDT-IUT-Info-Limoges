@@ -3,10 +3,12 @@ import { getYearFromMainGroup } from "~/utils/groups";
 
 interface UserCustomization {
   primary_color?: string
+  use_fixed_height?: boolean
 }
 
 export const DEFAULT_USER_CUSTOMIZATION: Required<UserCustomization> = {
-  primary_color: "248, 113, 113"
+  primary_color: "248, 113, 113",
+  use_fixed_height: false
 };
 
 const safelyGetInLocalStorage = (key: string, default_value: string): string => {
@@ -40,4 +42,11 @@ export const setSubGroup = (sub_group: 0 | 1) => {
 export const setUserCustomization = (customization: UserCustomization) => {
   localStorage.setItem("user_customization", JSON.stringify(customization));
   setPreferences({ customization });
+};
+
+/**
+ * Get the current user customization, or the default one if none is set.
+ */
+export const getUserCustomizationKey = <T extends keyof UserCustomization>(key: T): NonNullable<UserCustomization[T]> => {
+  return preferences.customization[key] ?? DEFAULT_USER_CUSTOMIZATION[key];
 };

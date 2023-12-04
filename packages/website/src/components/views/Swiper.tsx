@@ -1,6 +1,7 @@
 import { type Component, type Setter, createSignal, createEffect, createMemo, on, onCleanup, Show, Match, Switch, For } from "solid-js";
 import type { ITimetableHeader, ITimetableLesson } from "~/types/api";
 import { createMediaQuery } from "@solid-primitives/media";
+import { useWindowSize } from "@solid-primitives/resize-observer";
 import { DateTime } from "luxon";
 
 import MdiFileDocumentAlertOutline from "~icons/mdi/file-document-alert-outline";
@@ -12,7 +13,8 @@ import MdiHeart from "~icons/mdi/heart";
 import MdiCheck from '~icons/mdi/check';
 import MdiCog from "~icons/mdi/cog";
 
-import MobileDayTimetable from "~/components/timetable/day";
+import MobileDayTimetable from "~/components/timetable/relative-day";
+import FixedHeightDayTimetable from "~/components/timetable/fixed-height-day"
 
 import {
   getWidgetContent,
@@ -26,7 +28,7 @@ import {
   type IOngoingWidget
 } from "~/components/widgets";
 
-import { preferences } from "~/stores/preferences";
+import { preferences, getUserCustomizationKey } from "~/stores/preferences";
 import { now } from "~/stores/temporary";
 
 import { getGreeting, getSmolDayString } from "~/utils/dates";
@@ -36,13 +38,8 @@ import { generateICS } from "~/utils/ics";
 // See <https://swiperjs.com/element>.
 import { type SwiperContainer, register as registerSwiperElements } from "swiper/element/bundle";
 import type Swiper from "swiper";
+import { TIMETABLE_HOURS } from "~/utils/hours";
 registerSwiperElements();
-
-/**
- * Media query that tells us whenever
- * the screen is larger or equal to a tablet screen.
- */
-const isTablet = createMediaQuery("(min-width: 768px)");
 
 // Type elements from Swiper Element.
 declare module "solid-js" {
@@ -73,6 +70,16 @@ const SwiperView: Component<{
   isCurrentlyInVacation: boolean;
   error: string | null;
 }> = (props) => {
+  /**
+   * Media query that tells us whenever
+   * the screen is larger or equal to a tablet screen.
+   */
+  const isTablet = createMediaQuery("(min-width: 768px)");
+  
+  // Needed for fixed height timetable feature.
+  const shouldUseFixedHeightDays = () => getUserCustomizationKey("use_fixed_height");
+  const windowSize = useWindowSize();
+
   // Only used for slide container.
   const [activeDayIndex, setActiveDayIndex] = createSignal(now().weekday - 1);
 
@@ -242,7 +249,12 @@ const SwiperView: Component<{
       </header>
 
       {/* Next lesson widget at the top. */}
-      <div class="sticky tablet:relative top-0 z-50">
+      <div class="tablet:relative top-0 z-50"
+        classList={{
+          "relative": shouldUseFixedHeightDays(),
+          "sticky": !shouldUseFixedHeightDays()
+        }}
+      >
         {/* Color span under the widget. */}
         <span class="absolute top-0 bg-red z-40 h-[32px] w-full" />
 
@@ -393,17 +405,6 @@ const SwiperView: Component<{
                   opacity: swipeEdgesData().progress * 1.5
                 }}
               />
-
-              {/* <div class="fixed inset-y-0 left-20 bg-red rounded-full p-2 h-fit my-auto z-50 flex flex-col justify-center pointer-events-none"
-                classList={{
-                  "transition-opacity": swipeEdgesData().progress === 0
-                }}
-                style={{
-                  opacity: swipeEdgesData().progress * 50
-                }}
-              >
-                <MdiChevronLeft class="text-2xl text-[rgb(200,200,200)]" />
-              </div> */}
             </Show>
 
             <Show when={swipeEdgesData().where === "right"}>
@@ -415,65 +416,68 @@ const SwiperView: Component<{
                   opacity: swipeEdgesData().progress * 1.5
                 }}
               />
-
-              {/* <div class="fixed inset-y-0 right-20 bg-red rounded-full p-2 h-fit my-auto z-50 flex flex-col justify-center pointer-events-none"
-                classList={{
-                  "transition-opacity": swipeEdgesData().progress === 0
-                }}
-                style={{
-                  opacity: swipeEdgesData().progress * 50
-                }}
-              >
-                <MdiChevronRight class="text-2xl text-[rgb(200,200,200)]" />
-              </div> */}
             </Show>
 
-            <Show when={!swiperIsBeginning()}>
-              <button type="button"
-                class="hidden tablet:block absolute top-1/2 left-4 transform -translate-y-1/2 bg-red/20 hover:bg-red active:bg-red/60 transition border border-red rounded-full p-2 z-50"
-                onClick={() => {
-                  if (!swiperInstanceRef()) return;
-                  swiperInstanceRef()!.swiper.slidePrev();
-                }}
-              >
-                <MdiChevronLeft class="text-lg text-[rgb(240,240,240)]" />
-              </button>
-            </Show>
+            <Show when={shouldUseFixedHeightDays()}>
+              <div class="z-20 absolute top-12 left-0 right-0 pointer-events-none action">
+                <For each={TIMETABLE_HOURS}>
+                  {(hour, hour_index) => (
+                    <Show when={hour_index() % 2 === 0}>
+                      <div class="absolute w-screen pr-8 tablet:pr-16 flex items-center gap-2"
+                        style={{
+                          top: (hour_index() * ((windowSize.height - 48) / TIMETABLE_HOURS.length)) + "px"
+                        }}
+                      >
+                        <p class="text-[rgb(200,200,200)] text-sm w-fit pl-4 shrink-0 leading-0">
+                          {hour}
+                        </p>
 
-            <Show when={!swiperIsEnd()}>
-              <button type="button"
-                class="hidden tablet:block absolute top-1/2 right-4 transform -translate-y-1/2 bg-red/20 hover:bg-red active:bg-red/60 transition border border-red rounded-full p-2 z-50"
-                onClick={() => {
-                  if (!swiperInstanceRef()) return;
-                  swiperInstanceRef()!.swiper.slideNext();
-                }}
-              >
-                <MdiChevronRight class="text-lg text-[rgb(240,240,240)]" />
-              </button>
+                        <div class="h-[1px] w-full bg-[rgb(80,80,80)] opacity-20" />
+                      </div>
+                    </Show>
+                  )}
+                </For>
+              </div>
             </Show>
 
             <swiper-container ref={setSwiperInstanceRef}
               class="mx-0 tablet:mx-12"
+              classList={{ "ml-12": shouldUseFixedHeightDays() }}
               grab-cursor={true}
               initial-slide={activeDayIndex()}
               slides-per-view={1}
               breakpoints={{
-                1440: { slidesPerView: 4 },
-                1024: { slidesPerView: 3 },
+                1660: { slidesPerView: 6 },
+                1550: { slidesPerView: 5 },
+                1296: { slidesPerView: 4 },
+                1092: { slidesPerView: 3 },
                 768: { slidesPerView: 2 },
               }}
             >
               <For each={Array(7).fill(null)}>
                 {(_, index) => (
                   <swiper-slide>
-                    <MobileDayTimetable
-                      header={props.header!}
-                      dayIndex={index()}
-                      isToday={index() === (now().weekday - 1) && props.currentWeekHeader?.week_number === props.selectedWeekNumber}
-                      lessons={props.lessons!.filter(
-                        lesson => new Date(lesson.start_date).getDay() === index() + 1
-                      )}
-                    />
+                    <Show when={!shouldUseFixedHeightDays()}
+                      fallback={
+                        <FixedHeightDayTimetable
+                          dayIndex={index()}
+                          isToday={index() === (now().weekday - 1) && props.currentWeekHeader?.week_number === props.selectedWeekNumber}
+                          header={props.header!}
+                          lessons={props.lessons!.filter(
+                            lesson => new Date(lesson.start_date).getDay() === index() + 1
+                          )}
+                        />
+                      }
+                    >
+                      <MobileDayTimetable
+                        header={props.header!}
+                        dayIndex={index()}
+                        isToday={index() === (now().weekday - 1) && props.currentWeekHeader?.week_number === props.selectedWeekNumber}
+                        lessons={props.lessons!.filter(
+                          lesson => new Date(lesson.start_date).getDay() === index() + 1
+                        )}
+                      />
+                    </Show>
                   </swiper-slide>
                 )}
               </For>

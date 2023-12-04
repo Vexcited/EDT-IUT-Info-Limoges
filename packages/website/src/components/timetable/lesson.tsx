@@ -11,12 +11,12 @@ const MobileDayTimetableLesson: Component<{
   /** Whether the lesson is the last of the day or no. */
   is_last_lesson: boolean;
   /** The lesson that is right before this one. */
-  lesson_before: ITimetableLesson | undefined;
+  lesson_before?: ITimetableLesson;
 }> = (props) => {
   const start_date = () => new Date(props.lesson.start_date);
 
-  const thereIsBreakBefore = () => {
-    if (!props.lesson_before) return;
+  const thereIsBreakBefore = (): boolean => {
+    if (!props.lesson_before) return false;
     const end_date = new Date(props.lesson_before.end_date);
   
     const isNotSameHour = start_date().getHours() !== end_date.getHours();

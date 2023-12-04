@@ -1,7 +1,9 @@
-import { defineConfig, presetUno, transformerVariantGroup } from 'unocss';
+import { defineConfig, presetUno, transformerVariantGroup } from "unocss";
+import { presetKobalte } from "unocss-preset-primitives";
 
 export default defineConfig({
-  presets: [presetUno()],
+  // @ts-expect-error : This is a custom property.
+  presets: [presetUno(), presetKobalte()],
   transformers: [transformerVariantGroup()],
 
   theme: {

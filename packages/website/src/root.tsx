@@ -28,6 +28,7 @@ import {
 
 import {
   DEFAULT_USER_CUSTOMIZATION,
+  getUserCustomizationKey,
   preferences
 } from "./stores/preferences";
 
@@ -40,7 +41,7 @@ const Root: Component = () => {
   // TODO: Should be configurable in the future.
   const FONT_FAMILY = "'Poppins', sans-serif";
 
-  const primaryColor = () => preferences.customization.primary_color ?? DEFAULT_USER_CUSTOMIZATION.primary_color;
+  const primaryColor = () => getUserCustomizationKey("primary_color");
   const primaryColorHEX = () => primaryColor()
     .split(",")
     .map(i => parseInt(i.trim())) as [r: number, g: number, b: number];
