@@ -81,7 +81,7 @@ const FixedHeightDayTimetableLesson: Component<{
             }} />
           </Show>
           
-          <div class="z-30 border-t border-t-red bg-[rgb(30,30,30)]" style={{
+          <div class="border-t border-t-red bg-[rgb(30,30,30)] overflow-hidden" style={{
             height: (lessonHeight() * currentDurationLength()) + "px"
           }}>
             <div class="flex justify-between px-4 pt-2 gap-4">
@@ -131,7 +131,7 @@ const FixedHeightDayTimetable: Component<{
         </div>
       </div>
 
-      <div class="bg-[rgb(21,21,21)] rounded-lg py-6 mx-4"
+      <div class="h-[calc(100vh-48px)] rounded-lg py-6 mx-4"
         classList={{
           "border-2 border-red": props.isToday
         }}

@@ -419,29 +419,39 @@ const SwiperView: Component<{
             </Show>
 
             <Show when={shouldUseFixedHeightDays()}>
-              <div class="z-20 absolute top-12 left-0 right-0 pointer-events-none action">
+              <div class="absolute top-12 left-0 right-0 action">
                 <For each={TIMETABLE_HOURS}>
                   {(hour, hour_index) => (
-                    <Show when={hour_index() % 2 === 0}>
-                      <div class="absolute w-screen pr-8 tablet:pr-16 flex items-center gap-2"
+                    // <Show when={hour_index() % 2 === 0}>
+                      <div class="absolute w-full flex items-center gap-2"
                         style={{
                           top: (hour_index() * ((windowSize.height - 48) / TIMETABLE_HOURS.length)) + "px"
                         }}
                       >
-                        <p class="text-[rgb(200,200,200)] text-sm w-fit pl-4 shrink-0 leading-0">
-                          {hour}
-                        </p>
+                          <p class="text-[rgb(200,200,200)] text-sm text-right pl-4 shrink-0 leading-0 w-[50px] shrink-0"
+                            classList={{
+                              "text-[rgb(200,200,200)]": hour_index() % 2 === 0,
+                              "text-[rgb(140,140,140)] opacity-20": hour_index() % 2 === 1
+                            }}
+                          >
+                            {hour}
+                          </p>
 
-                        <div class="h-[1px] w-full bg-[rgb(80,80,80)] opacity-20" />
+                        <div class="h-[1px] w-full mr-4 tablet:mr-6 opacity-20"
+                          classList={{
+                            "bg-[rgb(80,80,80)]": hour_index() % 2 === 0,
+                            "bg-[rgb(50,50,50)]": hour_index() % 2 === 1
+                          }}
+                        />
                       </div>
-                    </Show>
+                    // </Show>
                   )}
                 </For>
               </div>
             </Show>
 
             <swiper-container ref={setSwiperInstanceRef}
-              class="mx-0 tablet:mx-12"
+              class="mx-0 tablet:(ml-12 mr-6)"
               classList={{ "ml-12": shouldUseFixedHeightDays() }}
               grab-cursor={true}
               initial-slide={activeDayIndex()}
