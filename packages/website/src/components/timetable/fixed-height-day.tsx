@@ -86,7 +86,7 @@ const FixedHeightDayTimetableLesson: Component<{
           }}>
             <div class="flex justify-between px-4 pt-2 gap-4">
               <p class="text-sm text-[rgb(240,240,240)]">
-                {getLessonDescription(lesson())}
+                <span class="text-red font-medium">{lesson().type}</span> : {getLessonDescription(lesson())}
               </p>
               <p class="text-sm text-[rgb(21,21,21)] bg-red rounded-full font-medium px-3 py-0.5 h-fit">
                 {lesson().content.room}
@@ -131,7 +131,7 @@ const FixedHeightDayTimetable: Component<{
         </div>
       </div>
 
-      <div class="h-[calc(100vh-48px)] rounded-lg py-6 mx-4"
+      <div class="h-[calc(100vh-48px)] rounded-lg py-6 mx-2 overflow-hidden"
         classList={{
           "border-2 border-red": props.isToday
         }}
