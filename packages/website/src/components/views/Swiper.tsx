@@ -395,7 +395,7 @@ const SwiperView: Component<{
             </Show>
           }
         >
-          <div class="relative overflow-hidden">
+          <div class="relative overflow-hidden pb-3">
             <Show when={swipeEdgesData().where === "left"}>
               <div class="fixed inset-y-0 right-0 blur-lg -left-6 bg-gradient-to-r from-red to-transparent pointer-events-none"
                 classList={{
