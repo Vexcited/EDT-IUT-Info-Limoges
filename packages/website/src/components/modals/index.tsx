@@ -5,7 +5,14 @@ import MdiClose from '~icons/mdi/close'
 
 export const Modal: ParentComponent<{ title: string, open: boolean, setOpen?: Setter<boolean>, onClose?: () => unknown, modal: boolean }> = (props) => {
   return (
-    <Dialog.Root open={props.open} onOpenChange={(open) => props.setOpen?.(open)} modal={props.modal}>
+    <Dialog.Root open={props.open} onOpenChange={(open) => {
+      if (typeof props.setOpen === "undefined") {
+        if (!open) props.onClose?.()
+      }
+      else {
+        props.setOpen?.(open)
+      }
+    }} modal={props.modal}>
       <Dialog.Portal>
         <Dialog.Overlay class="animate-fade-out ui-expanded:animate-fade-in animate-duration-150 ui-expanded:animate-duration-150 fixed inset-0 z-50 bg-[rgba(21,21,21,.6)] backdrop-blur-md" />
 
