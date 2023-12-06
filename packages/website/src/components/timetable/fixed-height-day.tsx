@@ -4,7 +4,7 @@ import type { ITimetableHeader, ITimetableLesson } from "~/types/api";
 
 import { getDayFromTimetable, getDayString, getHourString } from "~/utils/dates";
 import { TIMETABLE_HOURS } from "~/utils/hours";
-import { getLessonDescription, makeLessonUniqueID } from "~/utils/lessons";
+import { getLessonDescription } from "~/utils/lessons";
 
 import MdiCheck from '~icons/mdi/check';
 import { setLessonModalData } from "../modals/Lesson";
@@ -86,10 +86,7 @@ const FixedHeightDayTimetableLesson: Component<{
             style={{
               height: (lessonHeight() * currentDurationLength()) + "px"
             }}
-            onClick={() => {
-              setLessonModalData(lesson());
-              // console.log("Clicked on lesson", makeLessonUniqueID(lesson()));
-            }}
+            onClick={() => setLessonModalData(lesson())}
           >
             <div class="flex justify-between px-4 pt-2 gap-4">
               <p class="text-[rgb(240,240,240)]"

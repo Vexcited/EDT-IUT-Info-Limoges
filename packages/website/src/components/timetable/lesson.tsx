@@ -5,6 +5,7 @@ import { getHourString, hoursAndMinutesBetween } from "~/utils/dates";
 import { getLessonDescription, getLessonContentType } from "~/utils/lessons";
 
 import MdiTimerSandFull from '~icons/mdi/timer-sand-full';
+import { setLessonModalData } from "../modals/Lesson";
 
 const MobileDayTimetableLesson: Component<{
   lesson: ITimetableLesson;
@@ -52,8 +53,10 @@ const MobileDayTimetableLesson: Component<{
 
       <Delimiter date={start_date()} />
 
-      <div class="px-4 py-3">
-        <div class="flex flex-col gap-2">
+      <div class="focusable-lesson-for-swiper select-none py-1.5"
+        onClick={() => setLessonModalData(props.lesson)}
+      >
+        <div class="flex flex-col gap-2 py-1.5 px-4 hover:bg-[rgb(28,28,28)] transition-colors">
           <div class="flex justify-between gap-2">
             <h2 class="text-lg text-[rgb(240,240,240)]">
               {getLessonContentType(props.lesson)}
