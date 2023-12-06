@@ -419,7 +419,7 @@ const SwiperView: Component<{
             </Show>
 
             <Show when={shouldUseFixedHeightDays()}>
-              <div class="absolute top-12 left-0 right-0 action">
+              <div class="absolute top-12 left-0 right-0 pointer-events-none">
                 <For each={TIMETABLE_HOURS}>
                   {(hour, hour_index) => (
                     // <Show when={hour_index() % 2 === 0}>
@@ -437,7 +437,7 @@ const SwiperView: Component<{
                             {hour}
                           </p>
 
-                        <div class="h-[1px] w-full mr-4 tablet:mr-6 opacity-20"
+                        <div class="h-[1px] w-full mr-2 tablet:mr-6 opacity-20"
                           classList={{
                             "bg-[rgb(80,80,80)]": hour_index() % 2 === 0,
                             "bg-[rgb(50,50,50)]": hour_index() % 2 === 1
@@ -451,8 +451,8 @@ const SwiperView: Component<{
             </Show>
 
             <swiper-container ref={setSwiperInstanceRef}
-              class="mx-0 tablet:(ml-12 mr-6)"
-              classList={{ "ml-12": shouldUseFixedHeightDays() }}
+              class="mx-0 tablet:(ml-16 mr-6)"
+              classList={{ "ml-16": shouldUseFixedHeightDays() }}
               grab-cursor={true}
               initial-slide={activeDayIndex()}
               slides-per-view={1}
