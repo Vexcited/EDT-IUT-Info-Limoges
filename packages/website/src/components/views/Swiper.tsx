@@ -456,6 +456,7 @@ const SwiperView: Component<{
               grab-cursor={true}
               initial-slide={activeDayIndex()}
               slides-per-view={1}
+              focusable-elements=".focusable-lesson-for-swiper"
               breakpoints={{
                 1660: { slidesPerView: 6 },
                 1550: { slidesPerView: 5 },

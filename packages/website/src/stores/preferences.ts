@@ -1,5 +1,6 @@
 import { createStore } from "solid-js/store";
 import { getYearFromMainGroup } from "~/utils/groups";
+import { safelyGetInLocalStorage } from "~/utils/localstorage";
 
 interface UserCustomization {
   primary_color?: string
@@ -9,15 +10,6 @@ interface UserCustomization {
 export const DEFAULT_USER_CUSTOMIZATION: Required<UserCustomization> = {
   primary_color: "248, 113, 113",
   use_fixed_height: false
-};
-
-const safelyGetInLocalStorage = (key: string, default_value: string): string => {
-  if (typeof window !== "undefined") {
-    return localStorage.getItem(key) ?? default_value;
-  }
-
-  // only happens server-side.
-  return default_value;
 };
 
 export const [preferences, setPreferences] = createStore({

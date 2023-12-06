@@ -5,7 +5,7 @@ import { DateTime } from "luxon";
 import MdiCheck from '~icons/mdi/check';
 import MdiLoading from '~icons/mdi/loading';
 import MdiCalendar from '~icons/mdi/calendar';
-import { getLessonDescription, getLessonType } from "~/utils/lessons";
+import { getLessonDescription, getLessonContentType } from "~/utils/lessons";
 
 // When there's no more lesson for the rest of the week.
 export type IDoneForWeekWidget = { type: "DONE_FOR_WEEK"; } & (
@@ -22,7 +22,7 @@ const DoneForWeekWidget: Component<IDoneForWeekWidget> = (props) => {
       <>
         <MdiCalendar class="text-lg text-red flex-shrink-0" />
         <p class="text-sm text-[rgb(220,220,220)]">
-          Vous reprenez <span class="text-red font-medium">{start_date().toFormat("EEEE 'à' HH'h'mm")}</span> avec {props.lesson.type} de <span class="text-red font-medium">{getLessonDescription(props.lesson)}</span> ({getLessonType(props.lesson)}) en <span class="text-red font-medium">{props.lesson.content.room}</span> avec {props.lesson.content.teacher}
+          Vous reprenez <span class="text-red font-medium">{start_date().toFormat("EEEE 'à' HH'h'mm")}</span> avec {props.lesson.type} de <span class="text-red font-medium">{getLessonDescription(props.lesson)}</span> ({getLessonContentType(props.lesson)}) en <span class="text-red font-medium">{props.lesson.content.room}</span> avec {props.lesson.content.teacher}
         </p>
       </>
     );

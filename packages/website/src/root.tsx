@@ -26,13 +26,10 @@ import {
   Title
 } from "solid-start";
 
-import {
-  DEFAULT_USER_CUSTOMIZATION,
-  getUserCustomizationKey,
-  preferences
-} from "./stores/preferences";
+import { getUserCustomizationKey } from "./stores/preferences";
 
-import Updater from "./components/modals/Updater";
+import UpdaterModal from "./components/modals/Updater";
+import LessonModal from "./components/modals/Lesson";
 
 import { initializeNowRefresh } from "./stores/temporary";
 import { rgbToHex } from "./utils/colors";
@@ -66,7 +63,8 @@ const Root: Component = () => {
         <Link rel="icon" href="/favicon.ico" />
       </Head>
       <Body class="bg-[rgb(18,18,18)]" style={{ "font-family": FONT_FAMILY }}>
-        <Updater />
+        <UpdaterModal />
+        <LessonModal />
 
         <Suspense>
           <ErrorBoundary>

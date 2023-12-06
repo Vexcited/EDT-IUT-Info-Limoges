@@ -7,7 +7,7 @@ import MdiCalendar from '~icons/mdi/calendar';
 
 import {
   getLessonDescription,
-  getLessonType
+  getLessonContentType
 } from "~/utils/lessons";
 
 // When the day is over.
@@ -39,7 +39,7 @@ const NextLessonPreview: Component<{
       <div class="my-2 h-[1px] border-b border-b-[rgb(50,50,50)]" />
 
       <p class="text-xs px-4 tablet:text-sm text-[rgb(240,240,240)]">
-        Prochain: {props.next_lesson.type} de <span class="text-red font-medium">{getLessonType(props.next_lesson)}</span> ({getLessonDescription(props.next_lesson)}) en <span class="text-red font-medium">{props.next_lesson.content.room}</span> avec {props.next_lesson.content.teacher}
+        Prochain: {props.next_lesson.type} de <span class="text-red font-medium">{getLessonContentType(props.next_lesson)}</span> ({getLessonDescription(props.next_lesson)}) en <span class="text-red font-medium">{props.next_lesson.content.room}</span> avec {props.next_lesson.content.teacher}
       </p>
     </>
   );

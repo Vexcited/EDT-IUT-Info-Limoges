@@ -3,7 +3,7 @@ import type { ITimetableLesson } from "~/types/api";
 import { DateTime } from "luxon";
 
 import {
-  getLessonType,
+  getLessonContentType,
   getLessonDescription
 } from "~/utils/lessons";
 
@@ -35,7 +35,7 @@ const NextLessonWidget: Component<INextLessonWidget> = (props) => {
       <div class="flex flex-col gap-2">
         <div class="flex justify-between gap-2">
           <h2 class="text-lg text-[rgb(240,240,240)]">
-            {getLessonType(props.lesson)}
+            {getLessonContentType(props.lesson)}
           </h2>
 
           <div class="flex gap-2.5">

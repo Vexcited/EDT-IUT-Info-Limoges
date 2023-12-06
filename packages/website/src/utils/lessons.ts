@@ -1,5 +1,5 @@
 import type { TimetableLessonCM, TimetableLessonDS, TimetableLessonOTHER, TimetableLessonSAE, TimetableLessonTD, TimetableLessonTP } from "edt-iut-info-limoges";
-import type { ITimetable } from "~/types/api";
+import type { ITimetable, ITimetableLesson } from "~/types/api";
 
 export const lessonsForSubGroup = (timetable: Omit<ITimetable, "last_update">, preferences: {
   main_group: number
@@ -72,7 +72,7 @@ export const lessonsForSubGroup = (timetable: Omit<ITimetable, "last_update">, p
           return acc;
         }
 
-        const isSameContentType = getLessonType(previousLesson) === getLessonType(lesson);
+        const isSameContentType = getLessonContentType(previousLesson) === getLessonContentType(lesson);
         const isSameType = previousLesson.type === lesson.type;
         const isSameRoom = previousLesson.content.room === lesson.content.room;
         const isSameTeacher = previousLesson.content.teacher === lesson.content.teacher;
@@ -111,7 +111,7 @@ export const getLessonDescription = (lesson: ITimetable["lessons"][number]): str
   ) || "(Inconnu)"
 );
 
-export const getLessonType = (lesson: ITimetable["lessons"][number]): string => (
+export const getLessonContentType = (lesson: ITimetable["lessons"][number]): string => (
   (lesson as (
     | TimetableLessonCM
     | TimetableLessonSAE
@@ -120,3 +120,34 @@ export const getLessonType = (lesson: ITimetable["lessons"][number]): string => 
     | TimetableLessonDS
   )).content.type ?? "??"
 );
+
+export const makeLessonUniqueID = (lesson: ITimetableLesson): string => (
+  btoa(`${lesson.start_date}-${lesson.end_date}-${lesson.content.room}-${lesson.content.teacher}`)
+);
+
+export const getFullLessonContentType = (lesson: ITimetableLesson): string => {
+  const lessonType = getLessonContentType(lesson);
+
+  switch (lesson.type) {
+    case "CM":
+      return "Cours magistral";
+
+    case "TD":
+      return "Travaux dirigés";
+
+    case "TP":
+      return "Travaux pratiques";
+
+    case "DS":
+      return "Devoir surveillé";
+
+    case "SAE":
+      return "SAE";
+
+    case "OTHER":
+      return lessonType;
+
+    default:
+      return "Inconnu";
+  }
+};

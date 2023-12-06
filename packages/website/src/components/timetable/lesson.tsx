@@ -2,7 +2,7 @@ import { type Component, Show } from "solid-js";
 import type { ITimetableLesson } from "~/types/api";
 
 import { getHourString, hoursAndMinutesBetween } from "~/utils/dates";
-import { getLessonDescription, getLessonType } from "~/utils/lessons";
+import { getLessonDescription, getLessonContentType } from "~/utils/lessons";
 
 import MdiTimerSandFull from '~icons/mdi/timer-sand-full';
 
@@ -56,7 +56,7 @@ const MobileDayTimetableLesson: Component<{
         <div class="flex flex-col gap-2">
           <div class="flex justify-between gap-2">
             <h2 class="text-lg text-[rgb(240,240,240)]">
-              {getLessonType(props.lesson)}
+              {getLessonContentType(props.lesson)}
             </h2>
             <div class="flex gap-2.5">
               <p class="text-sm border border-red text-red bg-red/10 rounded-full px-3 py-0.5 h-fit">
