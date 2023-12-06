@@ -69,7 +69,7 @@ const FixedHeightDayTimetableLesson: Component<{
     const start_index = TIMETABLE_HOURS.findIndex((hour) => hour === start_hour);
 
     return start_index - end_index;
-  }
+  };
 
   return (
     <Show when={props.lesson}>
@@ -81,14 +81,26 @@ const FixedHeightDayTimetableLesson: Component<{
             }} />
           </Show>
           
-          <div class="border-t border-t-red bg-[rgb(30,30,30)] overflow-hidden" style={{
-            height: (lessonHeight() * currentDurationLength()) + "px"
-          }}>
+          <div class="border-t border-t-red bg-[rgb(30,30,30)] overflow-hidden"
+            style={{
+              height: (lessonHeight() * currentDurationLength()) + "px"
+            }}
+          >
             <div class="flex justify-between px-4 pt-2 gap-4">
-              <p class="text-sm text-[rgb(240,240,240)]">
+              <p class="text-[rgb(240,240,240)]"
+                classList={{
+                  "text-sm": currentDurationLength() > 1,
+                  "text-xs": currentDurationLength() === 1
+                }}
+              >
                 <span class="text-red font-medium">{lesson().type}</span> : {getLessonDescription(lesson())}
               </p>
-              <p class="text-sm text-[rgb(21,21,21)] bg-red rounded-full font-medium px-3 py-0.5 h-fit">
+              <p class="text-[rgb(21,21,21)] bg-red rounded-full font-medium px-3 h-fit"
+                classList={{
+                  "text-sm py-.5": currentDurationLength() > 1,
+                  "text-xs py-0": currentDurationLength() === 1
+                }}
+              >
                 {lesson().content.room}
               </p>
             </div>
