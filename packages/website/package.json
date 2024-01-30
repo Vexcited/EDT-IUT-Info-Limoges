@@ -24,7 +24,7 @@
     "unocss": "^0.57.4",
     "unocss-preset-primitives": "0.0.1-beta.13",
     "unplugin-icons": "^0.17.4",
-    "vite": "^4.5.1",
+    "vite": "^4.5.2",
     "vite-plugin-pwa": "^0.16.7",
     "workbox-window": "^7.0.0"
   },
