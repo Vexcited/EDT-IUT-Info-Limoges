@@ -2,6 +2,8 @@
  * @see https://www.iut.unilim.fr/wp-content/uploads/sites/3/2021/06/PN-BUT-INFO.pdf
  */
 export const BUT_INFO_REF = {
+  "EE1A": "Questionnaire",
+
   // Semestre 1, commun.
   "S1.01": "Implémentation d'un besoin client",
   'S1.02': "Comparaison d'approches algorithmiques",
@@ -43,6 +45,7 @@ export const BUT_INFO_REF = {
   "R2.08": "Outils numériques pour les statistiques descriptives",
   "R2.09": "Méthodes numériques",
   "R2.10": "Introduction à la gestion des systèmes d'information",
+  "R2.10A": "Gestion projet",
   "R2.11": "Introduction au droit",
   "R2.12": "Anglais",
   "R2.13": "Communication technique",
