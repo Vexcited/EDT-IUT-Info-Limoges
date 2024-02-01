@@ -45,7 +45,7 @@ export const lessonsForSubGroup = (timetable: Omit<ITimetable, "last_update">, p
 
     return isForUser;
   })
-    .toSorted((a, b) => {
+    .sort((a, b) => {
       const aDate = new Date(a.start_date);
       const bDate = new Date(b.start_date);
 
