@@ -68,6 +68,9 @@ importers:
       '@solidjs/router':
         specifier: ^0.8.4
         version: 0.8.4(solid-js@1.8.5)
+      '@thednp/solid-color-picker':
+        specifier: ^0.0.7
+        version: 0.0.7(solid-js@1.8.5)
       '@unocss/reset':
         specifier: ^0.57.4
         version: 0.57.4
@@ -2874,6 +2877,34 @@ packages:
     dependencies:
       defer-to-connect: 2.0.1
     dev: true
+
+  /@thednp/color-picker@2.0.0-alpha10:
+    resolution: {integrity: sha512-5NhCpFaIafLXO1z0meeDug02jjaMu+ndwZTKDQqwwagEsTK4uIfzjZ/SndimnADNRDtl6NDX8MmRvFho6GZYuQ==}
+    dependencies:
+      '@thednp/color': 1.0.8
+      '@thednp/shorty': 2.0.0-alpha22
+    dev: false
+
+  /@thednp/color@1.0.8:
+    resolution: {integrity: sha512-jQBkcRtE8odj90mLZ3NsV69186fQcC0P2QSa2xyZBvXswJCiAzp2necdWU+nT6vjIU09o/dYB9Mv3rsyN/ysEA==}
+    dev: false
+
+  /@thednp/shorty@2.0.0-alpha22:
+    resolution: {integrity: sha512-BpXSRRGKJyZcP1OLBM2G7i+zcWGEA+6oHPwHs8GdaHykJDroDl+UaDEQX+PGiIxItosvY4hmF8zU2vG2JQ/qkQ==}
+    engines: {node: '>=16', pnpm: '>=8.6.0'}
+    dev: false
+
+  /@thednp/solid-color-picker@0.0.7(solid-js@1.8.5):
+    resolution: {integrity: sha512-iKHKhuBSbAu95yplVk6Z7ZyM7CW2+l+617K+Z0qrvNotm+/gM7GuRKxFfs/oBGxy9OqLfSChI2tywUq197LHHg==}
+    engines: {node: '>=16', pnpm: '>=8.6.0'}
+    peerDependencies:
+      solid-js: ^1.6.0
+    dependencies:
+      '@thednp/color': 1.0.8
+      '@thednp/color-picker': 2.0.0-alpha10
+      '@thednp/shorty': 2.0.0-alpha22
+      solid-js: 1.8.5
+    dev: false
 
   /@tootallnate/quickjs-emscripten@0.23.0:
     resolution: {integrity: sha512-C5Mc6rdnsaJDjO3UpGW/CQTHtCKaYlScZTly4JIu97Jxo/odCiH0ITnDXSJPTOrEKk/ycSZ0AOgTmkDtkOsvIA==}

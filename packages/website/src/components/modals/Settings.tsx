@@ -4,6 +4,10 @@ import { Switch } from "@kobalte/core";
 
 import { DEFAULT_USER_CUSTOMIZATION, getUserCustomizationKey, preferences, setMainGroup, setSubGroup, setUserCustomization } from "~/stores/preferences";
 import { resetAppCache } from "~/stores/timetables";
+import { DefaultColorPicker } from '@thednp/solid-color-picker'
+import '@thednp/solid-color-picker/style.css'
+
+
 
 const SelectionButton: Component<{
   active: boolean,
@@ -24,6 +28,7 @@ const SelectionButton: Component<{
 
 export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> }> = (props) => {
   const userPrimaryColor = () => preferences.customization.primary_color ?? DEFAULT_USER_CUSTOMIZATION.primary_color;
+  let pastColor: string = userPrimaryColor();
 
   return (
     <Modal title="Paramètres"
@@ -99,7 +104,7 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
             Ajustez le sous-groupe dans lequel vous êtes (ex.: G{preferences.main_group}A ou G{preferences.main_group}B)
           </p>
         </section>
-
+        
         <section>
           <div class="flex items-center gap-2 mb-2">
             <h3 class="text-[rgb(240,240,240)] text-[18px] flex">
@@ -110,25 +115,23 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
               style={{ "background-color": `rgb(${userPrimaryColor()})` }}
             ></div>
           </div>
-          <input
-            type="text"
-            class="px-3 py-1 w-full rounded-lg outline-none focus:outline-red"
-            value={userPrimaryColor()}
-            onInput={(e) => {
-              setUserCustomization({
-                ...preferences.customization,
-                primary_color: e.currentTarget.value,
-              });
-            }}
-          />
-          <p class="text-[rgb(190,190,190)] text-xs mt-1.5">
-            Attention : la couleur doit être définie dans le format "r,g,b".
-          </p>
+                   
+          <DefaultColorPicker format="rgb" value={"rgb(" + userPrimaryColor() + ")"} onChange={color => {     
+            if (color === pastColor) return;
+            
+            pastColor = color;
+            color = color.replace("rgb(", "").replace(")", "");
+            setUserCustomization({
+              ...preferences.customization,
+              primary_color: color
+            });
+          }} />
+          
         </section>
 
         <section>
           <h3 class="text-[rgb(240,240,240)] text-[18px]">
-            Vue de l'EDT 
+            Vue de l'EDT
           </h3>
 
           <Switch.Root
