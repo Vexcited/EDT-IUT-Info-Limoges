@@ -127,8 +127,7 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
             }}
           /> */}
           
-          <DefaultColorPicker value={"rgb(" + userPrimaryColor() + ")"} onChange={color => {  
-            console.log(userPrimaryColor())          
+          <DefaultColorPicker value={"rgb(" + userPrimaryColor() + ")"} onChange={color => {     
             if (color === pastColor) return;
             
             pastColor = color;
