@@ -106,7 +106,7 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
         </section>
         
         <section>
-          <div class="flex items-center gap-2 mb-2" id="JeSuisUneDivSus">
+          <div class="flex items-center gap-2 mb-2">
             <h3 class="text-[rgb(240,240,240)] text-[18px] flex">
               Couleur de l'interface
             </h3>
@@ -115,19 +115,8 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
               style={{ "background-color": `rgb(${userPrimaryColor()})` }}
             ></div>
           </div>
-          {/* <input
-            type="text"
-            class="px-3 py-1 w-full rounded-lg outline-none focus:outline-red"
-            value={userPrimaryColor()}
-            onInput={(e) => {
-              setUserCustomization({
-                ...preferences.customization,
-                primary_color: e.currentTarget.value,
-              });
-            }}
-          /> */}
-          
-          <DefaultColorPicker value={"rgb(" + userPrimaryColor() + ")"} onChange={color => {     
+                   
+          <DefaultColorPicker format="rgb" value={"rgb(" + userPrimaryColor() + ")"} onChange={color => {     
             if (color === pastColor) return;
             
             pastColor = color;
@@ -137,9 +126,7 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
               primary_color: color
             });
           }} />
-          <p class="text-[rgb(190,190,190)] text-xs mt-1.5">
-            Attention : la couleur doit être définie dans le format "r,g,b".
-          </p>
+          
         </section>
 
         <section>
