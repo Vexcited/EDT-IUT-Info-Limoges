@@ -39,6 +39,7 @@ export const BUT_INFO_REF = {
   "R2.02": "Développement d'applications avec IHM",
   "R2.03": "Qualité de développement",
   "R2.04": "Communication et fonctionnement bas niveau",
+  "R2.04B": "Réseaux",
   "R2.05": "Introduction aux services réseaux",
   "R2.06": "Exploitation d'une base de données",
   "R2.07": "Graphes",
