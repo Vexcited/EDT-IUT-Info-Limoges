@@ -47,6 +47,7 @@ export const BUT_INFO_REF = {
   "R2.09": "Méthodes numériques",
   "R2.10": "Introduction à la gestion des systèmes d'information",
   "R2.10A": "Gestion projet",
+  "R2.10B": "Comptabilité",
   "R2.11": "Introduction au droit",
   "R2.12": "Anglais",
   "R2.13": "Communication technique",
