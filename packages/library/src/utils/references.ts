@@ -37,6 +37,7 @@ export const BUT_INFO_REF = {
 
   "R2.01": "Développement orienté objets",
   "R2.02": "Développement d'applications avec IHM",
+  "R2.02B": "Développement JavaScript",
   "R2.03": "Qualité de développement",
   "R2.04": "Communication et fonctionnement bas niveau",
   "R2.04B": "Réseaux",
