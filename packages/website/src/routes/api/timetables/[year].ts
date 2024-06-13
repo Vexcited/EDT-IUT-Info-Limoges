@@ -1,5 +1,6 @@
-import { type APIEvent, json } from "solid-start/api";
+import { type APIEvent } from "solid-start/api";
 import { YEARS } from "edt-iut-info-limoges";
+import { jsonWithCors } from "~/utils/cors";
 
 import type { ApiTimetableMeta } from "~/types/api";
 
@@ -13,10 +14,10 @@ export const GET = async ({ params }: APIEvent) => {
   const year = params.year as YEARS;
 
   if (Object.values(YEARS).indexOf(year) === -1) {
-    return json({
+    return jsonWithCors({
       success: false,
       message: "Invalid year."
-    }, { status: 400 });
+    }, 400);
   }
 
   const entries = await getCachedEntries(year);
@@ -26,15 +27,15 @@ export const GET = async ({ params }: APIEvent) => {
     entry => getCachedTimetable(entry)
   ));
 
-  const metas: ApiTimetableMeta["data"] = timetables.map(
+  const metadataOfTimetables: ApiTimetableMeta["data"] = timetables.map(
     timetable => ({
       ...timetable.header,
       last_update: timetable.last_update
     })
   );
 
-  return json({
+  return jsonWithCors({
     success: true,
-    data: metas
-  });
+    data: metadataOfTimetables
+  }, 200);
 };
