@@ -7,6 +7,7 @@ import { DateTime } from "luxon";
 import MdiFileDocumentAlertOutline from "~icons/mdi/file-document-alert-outline";
 import MdiChevronRight from "~icons/mdi/chevron-right";
 import MdiChevronLeft from "~icons/mdi/chevron-left";
+import MdiFilePdfBox from '~icons/mdi/file-pdf-box'
 import MdiCalendar from "~icons/mdi/calendar";
 import MdiLoading from "~icons/mdi/loading";
 import MdiHeart from "~icons/mdi/heart";
@@ -228,6 +229,14 @@ const SwiperView: Component<{
           </p>
         </div>
         <div class="flex gap-2">
+          <Show when={props.header && typeof props.lessons !== "undefined"}>
+            <a
+              href={`https://edt-iut-info.unilim.fr/edt/A${preferences.year}/A${preferences.year}_S${props.header!.week_number}.pdf`}
+              class="flex items-center justify-center p-2"
+            >
+              <MdiFilePdfBox class="text-lg" />
+            </a>
+          </Show>
           <Show when={props.header && typeof props.lessons !== "undefined"}>
             <button type="button"
               class="flex items-center justify-center p-2"
