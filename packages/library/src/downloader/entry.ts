@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
 
-import { YEARS, FTP_ENDPOINT_URL } from "./constants";
+import { YEARS, EDT_ENDPOINT_URL } from "./constants";
 import { DATE_TIME_OPTIONS } from "../utils/date";
 import { getTimetableFromBuffer } from "../parser";
 
@@ -27,7 +27,7 @@ export class TimetableEntry {
     this.last_updated = DateTime.fromFormat(raw_date, "yyyy-MM-dd HH:mm", DATE_TIME_OPTIONS);
     this.week_number = parseInt(file_name.replace(/(A(.*)_S)|(.pdf)/g, ""));
     this.from_year = ("A" + file_name[1]) as YEARS;
-    this.link = `${FTP_ENDPOINT_URL}/${this.from_year}/${this.file_name}`;
+    this.link = `${EDT_ENDPOINT_URL}/${this.from_year}/${this.file_name}`;
   }
 
   private async retrieveResponseFields(): Promise<void> {

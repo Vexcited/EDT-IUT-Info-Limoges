@@ -1,4 +1,4 @@
-import { FTP_ENDPOINT_URL, YEARS } from "./constants";
+import { EDT_ENDPOINT_URL, YEARS } from "./constants";
 import { TimetableEntry } from "./entry";
 
 export const getTimetableEntries = async (from: YEARS): Promise<TimetableEntry[]> => {
@@ -6,7 +6,7 @@ export const getTimetableEntries = async (from: YEARS): Promise<TimetableEntry[]
     throw new Error(`"from" parameter is invalid, given year: '${from}'. Should be one of: ${Object.values(YEARS).join(", ")}`);
   }
 
-  const response = await fetch(`${FTP_ENDPOINT_URL}/${from}`);
+  const response = await fetch(`${EDT_ENDPOINT_URL}/${from}`);
   const html = await response.text();
 
   const regex = /<td><a href="(.*)">(.*)<\/a><\/td><td align="right">(.*)\s<\/td>/g;

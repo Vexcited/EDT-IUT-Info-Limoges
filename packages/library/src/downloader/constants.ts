@@ -4,4 +4,4 @@ export enum YEARS {
   A3 = "A3"
 };
 
-export const FTP_ENDPOINT_URL = "http://edt-iut-info.unilim.fr/edt";
+export const EDT_ENDPOINT_URL = "https://edt-iut-info.unilim.fr/edt";
