@@ -1,0 +1,9 @@
+/** Hide manual inputs. */
+.color-form {
+  display: none !important;
+}
+
+/** Hide alpha range picker. */
+.color-control:last-child {
+  display: none;
+}

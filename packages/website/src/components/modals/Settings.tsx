@@ -5,9 +5,8 @@ import { Switch } from "@kobalte/core";
 import { DEFAULT_USER_CUSTOMIZATION, getUserCustomizationKey, preferences, setMainGroup, setSubGroup, setUserCustomization } from "~/stores/preferences";
 import { resetAppCache } from "~/stores/timetables";
 import { DefaultColorPicker } from '@thednp/solid-color-picker'
-import '@thednp/solid-color-picker/style.css'
-
-
+import "@thednp/solid-color-picker/style.css";
+import "~/styles/overwrite-color-picker.css";
 
 const SelectionButton: Component<{
   active: boolean,
