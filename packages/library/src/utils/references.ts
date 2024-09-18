@@ -57,9 +57,10 @@ export const BUT_INFO_REF = {
   "P2.01": "Portfolio",
 
   // Semestre 3, parcours A - we only have parcours A in this IUT.
+  "S3.St": "Stage",
   "S3.01A": "Développement logiciel",
   "S3.01B": "Développement JavaScript",
-
+  
   "R3.01": "Développement web",
   "R3.01A": "Développement web / JavaScript",
   "R3.01B": "Développement web / PHP",
@@ -76,10 +77,11 @@ export const BUT_INFO_REF = {
   "R3.12": "Anglais",
   "R3.13": "Communication professionnelle",
   "R3.14": "Projet personnel et professionnel",
-
+  
   "P3.01": "Portfolio",
-
+  
   // Semestre 4, parcours A.
+  "S4.St": "Stage",
   "S4A.01": "Développement d'une application complexe",
 
   "R4.01": "Architecture logicielle",
