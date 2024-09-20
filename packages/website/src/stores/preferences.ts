@@ -9,7 +9,7 @@ interface UserCustomization {
 }
 
 export const DEFAULT_USER_CUSTOMIZATION: Required<UserCustomization> = {
-  primary_color: "248, 113, 113",
+  primary_color: "255, 66, 66",
   use_fixed_height: false
 };
 
