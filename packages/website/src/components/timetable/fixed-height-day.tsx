@@ -98,11 +98,12 @@ const FixedHeightDayTimetableLesson: Component<{
               >
                 <span class="text-red font-medium">{lesson().type}</span> : {getLessonDescription(lesson())}
               </p>
-              <p class="text-[rgb(21,21,21)] bg-red rounded-full font-medium px-3 h-fit"
+              <p class="bg-red rounded-full font-medium px-3 h-fit"
                 classList={{
                   "text-sm py-.5": currentDurationLength() > 1,
                   "text-xs py-0": currentDurationLength() === 1
                 }}
+                style={{ color: textColorOnBG() }}
               >
                 {lesson().content.room}
               </p>
