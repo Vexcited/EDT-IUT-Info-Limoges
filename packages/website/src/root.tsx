@@ -41,7 +41,7 @@ const Root: Component = () => {
   const primaryColor = () => getUserCustomizationKey("primary_color");
   const primaryColorHEX = () => primaryColor()
     .split(",")
-    .map(i => parseInt(i.trim())) as [r: number, g: number, b: number];
+    .map(i => Number(i)) as [r: number, g: number, b: number];
 
   onMount(initializeNowRefresh);
   createEffect(() => {

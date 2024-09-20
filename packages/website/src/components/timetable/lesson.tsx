@@ -6,6 +6,7 @@ import { getLessonDescription, getLessonContentType } from "~/utils/lessons";
 
 import MdiTimerSandFull from '~icons/mdi/timer-sand-full';
 import { setLessonModalData } from "../modals/Lesson";
+import { textColorOnBG } from "~/stores/preferences";
 
 const MobileDayTimetableLesson: Component<{
   lesson: ITimetableLesson;
@@ -65,7 +66,9 @@ const MobileDayTimetableLesson: Component<{
               <p class="text-sm border border-red text-red bg-red/10 rounded-full px-3 py-0.5 h-fit">
                 {props.lesson.type}
               </p>
-              <p class="text-sm text-[rgb(21,21,21)] bg-red rounded-full font-medium px-3 py-0.5 h-fit">
+              <p class="text-sm bg-red rounded-full font-medium px-3 py-0.5 h-fit"
+                style={{ color: textColorOnBG() }}
+              >
                 {props.lesson.content.room}
               </p>
             </div>

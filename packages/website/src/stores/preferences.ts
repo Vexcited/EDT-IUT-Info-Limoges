@@ -1,4 +1,5 @@
 import { createStore } from "solid-js/store";
+import { textColorOnCustomBackground } from "~/utils/colors";
 import { getYearFromMainGroup } from "~/utils/groups";
 import { safelyGetInLocalStorage } from "~/utils/localstorage";
 
@@ -42,3 +43,5 @@ export const setUserCustomization = (customization: UserCustomization) => {
 export const getUserCustomizationKey = <T extends keyof UserCustomization>(key: T): NonNullable<UserCustomization[T]> => {
   return preferences.customization[key] ?? DEFAULT_USER_CUSTOMIZATION[key];
 };
+
+export const textColorOnBG = (reversed = false) => textColorOnCustomBackground(getUserCustomizationKey("primary_color"), reversed);

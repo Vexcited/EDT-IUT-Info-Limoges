@@ -3,6 +3,7 @@ import type { ITimetableLesson } from "~/types/api";
 import { DateTime } from "luxon";
 
 import { getLessonContentType } from "~/utils/lessons";
+import { textColorOnBG } from "~/stores/preferences";
 
 // When we're actually in a lesson, we also get the content of next lesson for preview.
 export interface IOngoingWidget {
@@ -41,7 +42,9 @@ const OngoingWidget: Component<IOngoingWidget> = (props) => {
             <p class="text-[rgb(240,240,240)]">
               {getLessonContentType(props.lesson)}
             </p>
-            <p class="bg-red px-2 rounded-full font-medium text-[rgb(27,27,27)]">
+            <p class="bg-red px-2 rounded-full font-medium"
+              style={{ color: textColorOnBG() }}
+            >
               {props.lesson.content.room}
             </p>
           </div>
@@ -64,7 +67,9 @@ const OngoingWidget: Component<IOngoingWidget> = (props) => {
                 <p class="text-[rgb(240,240,240)]">
                   {getLessonContentType(next_lesson())}
                 </p>
-                <p class="bg-red px-2 rounded-full font-medium text-[rgb(27,27,27)]">
+                <p class="bg-red px-2 rounded-full font-medium"
+                  style={{ color: textColorOnBG() }}
+                >
                   {next_lesson().content.room}
                 </p>
               </div>

@@ -2,7 +2,7 @@ import type { Component, Setter } from "solid-js";
 import { Modal } from "~/components/modals";
 import { Switch } from "@kobalte/core";
 
-import { DEFAULT_USER_CUSTOMIZATION, getUserCustomizationKey, preferences, setMainGroup, setSubGroup, setUserCustomization } from "~/stores/preferences";
+import { DEFAULT_USER_CUSTOMIZATION, getUserCustomizationKey, preferences, setMainGroup, setSubGroup, setUserCustomization, textColorOnBG } from "~/stores/preferences";
 import { resetAppCache } from "~/stores/timetables";
 import { DefaultColorPicker } from '@thednp/solid-color-picker'
 import "@thednp/solid-color-picker/style.css";
@@ -18,8 +18,9 @@ const SelectionButton: Component<{
     onClick={() => props.onClick()}
     classList={{
       "text-[rgb(120,120,120)] bg-[rgb(50,50,50)]": !props.active,
-      "text-[rgb(240,240,240)] bg-red font-medium": props.active,
+      "bg-red font-medium": props.active,
     }}
+    style={props.active ? { color: textColorOnBG() } : void 0}
   >
     {props.content}
   </button>
@@ -56,7 +57,8 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
             </button>
             <p
               aria-label="Groupe principal"
-              class="w-full text-center text-[rgb(240,240,240)] bg-red px-3 py-1 font-medium text-lg"
+              class="w-full text-center bg-red px-3 py-1 font-medium text-lg"
+              style={{ color: textColorOnBG() }}
             >
               G{preferences.main_group}
             </p>

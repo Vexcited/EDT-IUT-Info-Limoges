@@ -8,6 +8,7 @@ import { getLessonDescription } from "~/utils/lessons";
 
 import MdiCheck from '~icons/mdi/check';
 import { setLessonModalData } from "../modals/Lesson";
+import { textColorOnBG } from "~/stores/preferences";
 
 const FixedHeightDayTimetableLesson: Component<{
   lessons: ITimetableLesson[]
@@ -139,7 +140,9 @@ const FixedHeightDayTimetable: Component<{
     <div class="w-full relative pt-6">
       <div class="absolute top-3 left-0 right-0">
         <div class="w-fit mx-auto bg-red px-4 py-1 rounded-full">
-          <p class="text-sm text-[rgb(18,18,18)] font-medium">
+          <p class="text-sm font-medium"
+            style={{ color: textColorOnBG() }}
+          >
             {getDayString(day())}
           </p>
         </div>

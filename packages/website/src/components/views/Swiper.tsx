@@ -29,7 +29,7 @@ import {
   type IOngoingWidget
 } from "~/components/widgets";
 
-import { preferences, getUserCustomizationKey } from "~/stores/preferences";
+import { preferences, getUserCustomizationKey, textColorOnBG } from "~/stores/preferences";
 import { now } from "~/stores/temporary";
 
 import { getGreeting, getSmolDayString } from "~/utils/dates";
@@ -40,6 +40,7 @@ import { generateICS } from "~/utils/ics";
 import { type SwiperContainer, register as registerSwiperElements } from "swiper/element/bundle";
 import type Swiper from "swiper";
 import { TIMETABLE_HOURS } from "~/utils/hours";
+import { textColorOnCustomBackground } from "~/utils/colors";
 registerSwiperElements();
 
 // Type elements from Swiper Element.
@@ -219,7 +220,9 @@ const SwiperView: Component<{
 
   return (
     <>
-      <header class="relative z-20 p-4 pb-2 bg-red flex justify-between items-center text-[rgb(245,245,245)]">
+      <header class="relative z-20 p-4 pb-2 bg-red flex justify-between items-center"
+        style={{ color: textColorOnBG() }}
+      >
         <div class="flex flex-col">
           <p class="text-xl font-medium">
             {getGreeting()}

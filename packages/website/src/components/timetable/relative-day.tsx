@@ -5,6 +5,7 @@ import MobileDayTimetableLesson from "./lesson";
 import { getDayFromTimetable, getDayString } from "~/utils/dates";
 
 import MdiCheck from '~icons/mdi/check';
+import { textColorOnBG } from "~/stores/preferences";
 
 const MobileDayTimetable: Component<{
   header: ITimetableHeader;
@@ -30,7 +31,10 @@ const MobileDayTimetable: Component<{
     <div class="w-full relative pt-6">
       <div class="absolute top-3 left-0 right-0">
         <div class="w-fit mx-auto bg-red px-4 py-1 rounded-full">
-          <p class="text-sm text-[rgb(18,18,18)] font-medium">
+          <p class="text-sm"
+            classList={{ "font-medium": textColorOnBG() === "black" }}
+            style={{ color: textColorOnBG() }}
+          >
             {getDayString(day())}
           </p>
         </div>

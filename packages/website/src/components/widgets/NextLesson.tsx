@@ -8,6 +8,7 @@ import {
 } from "~/utils/lessons";
 
 import { getHourString } from "~/utils/dates";
+import { textColorOnBG } from "~/stores/preferences";
 
 // When it's first lesson of the day.
 export interface INextLessonWidget {
@@ -42,7 +43,9 @@ const NextLessonWidget: Component<INextLessonWidget> = (props) => {
             <p class="text-sm border border-red text-red bg-red/10 rounded-full px-3 py-0.5 h-fit">
               {props.lesson.type}
             </p>
-            <p class="text-sm text-[rgb(27,27,27)] font-semibold bg-red rounded-full px-3 py-0.5 h-fit">
+            <p class="text-sm font-semibold bg-red rounded-full px-3 py-0.5 h-fit"
+              style={{ color: textColorOnBG() }}
+            >
               {props.lesson.content.room}
             </p>
           </div>
