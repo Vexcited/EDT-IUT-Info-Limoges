@@ -2,7 +2,7 @@ import { describe, test, expect } from "@jest/globals";
 
 import { YEARS } from "../src/downloader/constants";
 import { getTimetableEntries, getLatestTimetableEntry } from "../src/downloader";
-import { FTP_ENDPOINT_URL } from "../src/downloader/constants";
+import { EDT_ENDPOINT_URL } from "../src/downloader/constants";
 
 describe("downloader", () => {
   test("getTimetableEntries", async () => {
@@ -24,7 +24,7 @@ describe("downloader", () => {
     expect(entry.week_number).toBeGreaterThan(0);
     
     // Check link format.
-    expect(entry.link.startsWith(`${FTP_ENDPOINT_URL}/${YEARS.A1}/`)).toBe(true);
+    expect(entry.link.startsWith(`${EDT_ENDPOINT_URL}/${YEARS.A1}/`)).toBe(true);
     expect(entry.link.endsWith(".pdf")).toBe(true);
   });
 
