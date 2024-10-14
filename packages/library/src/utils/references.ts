@@ -59,7 +59,7 @@ export const BUT_INFO_REF = {
   // Semestre 3, parcours A - we only have parcours A in this IUT.
   "S3.St": "Stage",
   "S3.01A": "Développement logiciel",
-  "S3.01B": "Développement JavaScript",
+  "S3.01B": "Réseaux",
   
   "R3.01": "Développement web",
   "R3.01A": "Développement web / JavaScript",
