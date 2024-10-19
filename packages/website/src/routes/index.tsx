@@ -80,10 +80,10 @@ const Page: Component = () => {
     }
   };
 
-  const refreshSelectedTimetable = (): void => {
+  const refreshSelectedTimetable = async (): Promise<void> => {
     try {
       setError(null);
-      refreshTimetableForWeekNumber(preferences.year, selectedWeekNumber());
+      await refreshTimetableForWeekNumber(preferences.year, selectedWeekNumber());
     }
     catch (error) {
       if (error instanceof APIError) {
