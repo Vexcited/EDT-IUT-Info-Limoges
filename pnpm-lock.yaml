@@ -94,7 +94,7 @@ importers:
         version: 1.8.5
       solid-start:
         specifier: ^0.3.10
-        version: 0.3.10(@solidjs/meta@0.29.1(solid-js@1.8.5))(@solidjs/router@0.8.4(solid-js@1.8.5))(solid-js@1.8.5)(solid-start-node@0.3.10)(solid-start-vercel@0.3.10)(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1))
+        version: 0.3.10(@solidjs/meta@0.29.1(solid-js@1.8.5))(@solidjs/router@0.8.4(solid-js@1.8.5))(solid-js@1.8.5)(solid-start-node@0.3.10)(solid-start-vercel@0.3.10)(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1))
       swiper:
         specifier: ^11.0.4
         version: 11.0.4
@@ -128,16 +128,16 @@ importers:
         version: 0.13.0(eslint@8.54.0)(typescript@5.2.2)
       solid-start-node:
         specifier: ^0.3.10
-        version: 0.3.10(solid-start@0.3.10)(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1))
+        version: 0.3.10(solid-start@0.3.10)(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1))
       solid-start-vercel:
         specifier: ^0.3.10
-        version: 0.3.10(solid-start@0.3.10)(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1))
+        version: 0.3.10(solid-start@0.3.10)(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1))
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       unocss:
         specifier: ^0.57.4
-        version: 0.57.4(postcss@8.4.35)(rollup@3.29.4)(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1))
+        version: 0.57.4(postcss@8.4.35)(rollup@3.29.4)(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1))
       unocss-preset-primitives:
         specifier: 0.0.1-beta.13
         version: 0.0.1-beta.13
@@ -145,11 +145,11 @@ importers:
         specifier: ^0.17.4
         version: 0.17.4
       vite:
-        specifier: ^4.5.3
-        version: 4.5.3(@types/node@20.9.0)(terser@5.28.1)
+        specifier: ^4.5.5
+        version: 4.5.5(@types/node@20.9.0)(terser@5.28.1)
       vite-plugin-pwa:
         specifier: ^0.16.7
-        version: 0.16.7(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1))(workbox-build@7.0.0(@types/babel__core@7.20.5))(workbox-window@7.0.0)
+        version: 0.16.7(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1))(workbox-build@7.0.0(@types/babel__core@7.20.5))(workbox-window@7.0.0)
       workbox-window:
         specifier: ^7.0.0
         version: 7.0.0
@@ -5399,8 +5399,8 @@ packages:
       solid-js: ^1.7.2
       vite: ^3.0.0 || ^4.0.0
 
-  vite@4.5.3:
-    resolution: {integrity: sha512-kQL23kMeX92v3ph7IauVkXkikdDRsYMGTVl5KY2E9OY4ONLvkHf04MDTbnfo6NKxZiDLWzVpP5oTa8hQD8U3dg==}
+  vite@4.5.5:
+    resolution: {integrity: sha512-ifW3Lb2sMdX+WU91s3R0FyQlAyLxOzCSCP37ujw0+r5POeHPwe6udWVIElKQq8gk3t7b8rkmvqC6IHBpCff4GQ==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
@@ -8100,13 +8100,13 @@ snapshots:
 
   '@ungap/structured-clone@1.2.0': {}
 
-  '@unocss/astro@0.57.4(rollup@3.29.4)(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1))':
+  '@unocss/astro@0.57.4(rollup@3.29.4)(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1))':
     dependencies:
       '@unocss/core': 0.57.4
       '@unocss/reset': 0.57.4
-      '@unocss/vite': 0.57.4(rollup@3.29.4)(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1))
+      '@unocss/vite': 0.57.4(rollup@3.29.4)(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1))
     optionalDependencies:
-      vite: 4.5.3(@types/node@20.9.0)(terser@5.28.1)
+      vite: 4.5.5(@types/node@20.9.0)(terser@5.28.1)
     transitivePeerDependencies:
       - rollup
 
@@ -8259,7 +8259,7 @@ snapshots:
     dependencies:
       '@unocss/core': 0.57.4
 
-  '@unocss/vite@0.57.4(rollup@3.29.4)(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1))':
+  '@unocss/vite@0.57.4(rollup@3.29.4)(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1))':
     dependencies:
       '@ampproject/remapping': 2.2.1
       '@rollup/pluginutils': 5.0.5(rollup@3.29.4)
@@ -8271,7 +8271,7 @@ snapshots:
       chokidar: 3.5.3
       fast-glob: 3.3.2
       magic-string: 0.30.5
-      vite: 4.5.3(@types/node@20.9.0)(terser@5.28.1)
+      vite: 4.5.5(@types/node@20.9.0)(terser@5.28.1)
     transitivePeerDependencies:
       - rollup
 
@@ -11507,7 +11507,7 @@ snapshots:
       '@babel/types': 7.23.3
       solid-js: 1.8.5
 
-  solid-start-node@0.3.10(solid-start@0.3.10)(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1)):
+  solid-start-node@0.3.10(solid-start@0.3.10)(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1)):
     dependencies:
       '@rollup/plugin-commonjs': 24.1.0(rollup@3.29.4)
       '@rollup/plugin-json': 6.0.1(rollup@3.29.4)
@@ -11516,13 +11516,13 @@ snapshots:
       polka: 1.0.0-next.22
       rollup: 3.29.4
       sirv: 2.0.3
-      solid-start: 0.3.10(@solidjs/meta@0.29.1(solid-js@1.8.5))(@solidjs/router@0.8.4(solid-js@1.8.5))(solid-js@1.8.5)(solid-start-node@0.3.10)(solid-start-vercel@0.3.10)(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1))
+      solid-start: 0.3.10(@solidjs/meta@0.29.1(solid-js@1.8.5))(@solidjs/router@0.8.4(solid-js@1.8.5))(solid-js@1.8.5)(solid-start-node@0.3.10)(solid-start-vercel@0.3.10)(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1))
       terser: 5.28.1
-      vite: 4.5.3(@types/node@20.9.0)(terser@5.28.1)
+      vite: 4.5.5(@types/node@20.9.0)(terser@5.28.1)
     transitivePeerDependencies:
       - supports-color
 
-  solid-start-vercel@0.3.10(solid-start@0.3.10)(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1)):
+  solid-start-vercel@0.3.10(solid-start@0.3.10)(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1)):
     dependencies:
       '@rollup/plugin-commonjs': 24.1.0(rollup@3.29.4)
       '@rollup/plugin-json': 6.0.1(rollup@3.29.4)
@@ -11531,14 +11531,14 @@ snapshots:
       fast-glob: 3.2.12
       micromatch: 4.0.5
       rollup: 3.29.4
-      solid-start: 0.3.10(@solidjs/meta@0.29.1(solid-js@1.8.5))(@solidjs/router@0.8.4(solid-js@1.8.5))(solid-js@1.8.5)(solid-start-node@0.3.10)(solid-start-vercel@0.3.10)(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1))
+      solid-start: 0.3.10(@solidjs/meta@0.29.1(solid-js@1.8.5))(@solidjs/router@0.8.4(solid-js@1.8.5))(solid-js@1.8.5)(solid-start-node@0.3.10)(solid-start-vercel@0.3.10)(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1))
       terser: 5.28.1
-      vite: 4.5.3(@types/node@20.9.0)(terser@5.28.1)
+      vite: 4.5.5(@types/node@20.9.0)(terser@5.28.1)
     transitivePeerDependencies:
       - encoding
       - supports-color
 
-  solid-start@0.3.10(@solidjs/meta@0.29.1(solid-js@1.8.5))(@solidjs/router@0.8.4(solid-js@1.8.5))(solid-js@1.8.5)(solid-start-node@0.3.10)(solid-start-vercel@0.3.10)(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1)):
+  solid-start@0.3.10(@solidjs/meta@0.29.1(solid-js@1.8.5))(@solidjs/router@0.8.4(solid-js@1.8.5))(solid-js@1.8.5)(solid-start-node@0.3.10)(solid-start-vercel@0.3.10)(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1)):
     dependencies:
       '@babel/core': 7.23.3
       '@babel/generator': 7.23.3
@@ -11573,13 +11573,13 @@ snapshots:
       solid-js: 1.8.5
       terser: 5.28.1
       undici: 5.25.4
-      vite: 4.5.3(@types/node@20.9.0)(terser@5.28.1)
-      vite-plugin-inspect: 0.7.40(rollup@3.29.4)(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1))
-      vite-plugin-solid: 2.7.0(solid-js@1.8.5)(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1))
+      vite: 4.5.5(@types/node@20.9.0)(terser@5.28.1)
+      vite-plugin-inspect: 0.7.40(rollup@3.29.4)(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1))
+      vite-plugin-solid: 2.7.0(solid-js@1.8.5)(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1))
       wait-on: 6.0.1(debug@4.3.4)
     optionalDependencies:
-      solid-start-node: 0.3.10(solid-start@0.3.10)(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1))
-      solid-start-vercel: 0.3.10(solid-start@0.3.10)(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1))
+      solid-start-node: 0.3.10(solid-start@0.3.10)(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1))
+      solid-start-vercel: 0.3.10(solid-start@0.3.10)(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1))
     transitivePeerDependencies:
       - '@nuxt/kit'
       - supports-color
@@ -12022,9 +12022,9 @@ snapshots:
     dependencies:
       '@unocss/core': 0.57.7
 
-  unocss@0.57.4(postcss@8.4.35)(rollup@3.29.4)(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1)):
+  unocss@0.57.4(postcss@8.4.35)(rollup@3.29.4)(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1)):
     dependencies:
-      '@unocss/astro': 0.57.4(rollup@3.29.4)(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1))
+      '@unocss/astro': 0.57.4(rollup@3.29.4)(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1))
       '@unocss/cli': 0.57.4(rollup@3.29.4)
       '@unocss/core': 0.57.4
       '@unocss/extractor-arbitrary-variants': 0.57.4
@@ -12043,9 +12043,9 @@ snapshots:
       '@unocss/transformer-compile-class': 0.57.4
       '@unocss/transformer-directives': 0.57.4
       '@unocss/transformer-variant-group': 0.57.4
-      '@unocss/vite': 0.57.4(rollup@3.29.4)(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1))
+      '@unocss/vite': 0.57.4(rollup@3.29.4)(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1))
     optionalDependencies:
-      vite: 4.5.3(@types/node@20.9.0)(terser@5.28.1)
+      vite: 4.5.5(@types/node@20.9.0)(terser@5.28.1)
     transitivePeerDependencies:
       - postcss
       - rollup
@@ -12131,7 +12131,7 @@ snapshots:
 
   vary@1.1.2: {}
 
-  vite-plugin-inspect@0.7.40(rollup@3.29.4)(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1)):
+  vite-plugin-inspect@0.7.40(rollup@3.29.4)(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1)):
     dependencies:
       '@antfu/utils': 0.7.6
       '@rollup/pluginutils': 5.0.5(rollup@3.29.4)
@@ -12141,23 +12141,23 @@ snapshots:
       open: 9.1.0
       picocolors: 1.0.0
       sirv: 2.0.3
-      vite: 4.5.3(@types/node@20.9.0)(terser@5.28.1)
+      vite: 4.5.5(@types/node@20.9.0)(terser@5.28.1)
     transitivePeerDependencies:
       - rollup
       - supports-color
 
-  vite-plugin-pwa@0.16.7(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1))(workbox-build@7.0.0(@types/babel__core@7.20.5))(workbox-window@7.0.0):
+  vite-plugin-pwa@0.16.7(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1))(workbox-build@7.0.0(@types/babel__core@7.20.5))(workbox-window@7.0.0):
     dependencies:
       debug: 4.3.4
       fast-glob: 3.3.1
       pretty-bytes: 6.1.1
-      vite: 4.5.3(@types/node@20.9.0)(terser@5.28.1)
+      vite: 4.5.5(@types/node@20.9.0)(terser@5.28.1)
       workbox-build: 7.0.0(@types/babel__core@7.20.5)
       workbox-window: 7.0.0
     transitivePeerDependencies:
       - supports-color
 
-  vite-plugin-solid@2.7.0(solid-js@1.8.5)(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1)):
+  vite-plugin-solid@2.7.0(solid-js@1.8.5)(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1)):
     dependencies:
       '@babel/core': 7.23.3
       '@babel/preset-typescript': 7.23.0(@babel/core@7.23.3)
@@ -12166,12 +12166,12 @@ snapshots:
       merge-anything: 5.1.7
       solid-js: 1.8.5
       solid-refresh: 0.5.3(solid-js@1.8.5)
-      vite: 4.5.3(@types/node@20.9.0)(terser@5.28.1)
-      vitefu: 0.2.4(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1))
+      vite: 4.5.5(@types/node@20.9.0)(terser@5.28.1)
+      vitefu: 0.2.4(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1))
     transitivePeerDependencies:
       - supports-color
 
-  vite@4.5.3(@types/node@20.9.0)(terser@5.28.1):
+  vite@4.5.5(@types/node@20.9.0)(terser@5.28.1):
     dependencies:
       esbuild: 0.18.20
       postcss: 8.4.35
@@ -12181,9 +12181,9 @@ snapshots:
       fsevents: 2.3.3
       terser: 5.28.1
 
-  vitefu@0.2.4(vite@4.5.3(@types/node@20.9.0)(terser@5.28.1)):
+  vitefu@0.2.4(vite@4.5.5(@types/node@20.9.0)(terser@5.28.1)):
     optionalDependencies:
-      vite: 4.5.3(@types/node@20.9.0)(terser@5.28.1)
+      vite: 4.5.5(@types/node@20.9.0)(terser@5.28.1)
 
   wait-on@6.0.1(debug@4.3.4):
     dependencies:
