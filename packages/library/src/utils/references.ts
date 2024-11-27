@@ -73,6 +73,7 @@ export const BUT_INFO_REF = {
   "R3.08": "Probabilités",
   "R3.09": "Cryptographie et sécurité",
   "R3.10": "Systèmes d'information",
+  "R3.10B": "Systèmes d'information",
   "R3.11": "Droit du numérique",
   "R3.12": "Anglais",
   "R3.13": "Communication professionnelle",
