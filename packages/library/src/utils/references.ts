@@ -20,6 +20,7 @@ export const BUT_INFO_REF = {
   "R1.06": "Mathématiques discrètes",
   "R1.07": "Outils mathématiques fondamentaux",
   "R1.08": "Organisations",
+  "R1.08B": "Introduction à la gestion des Organisations",
   "R1.09": "Économie durable et numérique",
   "R1.10": "Anglais",
   "R1.11": "Communication",
