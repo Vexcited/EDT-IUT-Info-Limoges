@@ -995,34 +995,23 @@ var CanvasGraphics = (function CanvasGraphicsClosure() {
         TextRenderingMode.ADD_TO_PATH_FLAG);
 
       var addToPath;
-      if (font.disableFontFace || isAddToPathSet) {
+      if (isAddToPathSet) {
         addToPath = font.getPathGenerator(this.commonObjs, character);
       }
 
-      if (font.disableFontFace) {
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.beginPath();
-        addToPath(ctx, fontSize);
-        if (fillStrokeMode === TextRenderingMode.FILL ||
-            fillStrokeMode === TextRenderingMode.FILL_STROKE) {
-          ctx.fill();
-        }
-        if (fillStrokeMode === TextRenderingMode.STROKE ||
-            fillStrokeMode === TextRenderingMode.FILL_STROKE) {
-          ctx.stroke();
-        }
-        ctx.restore();
-      } else {
-        if (fillStrokeMode === TextRenderingMode.FILL ||
-            fillStrokeMode === TextRenderingMode.FILL_STROKE) {
-          ctx.fillText(character, x, y);
-        }
-        if (fillStrokeMode === TextRenderingMode.STROKE ||
-            fillStrokeMode === TextRenderingMode.FILL_STROKE) {
-          ctx.strokeText(character, x, y);
-        }
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.beginPath();
+      addToPath(ctx, fontSize);
+      if (fillStrokeMode === TextRenderingMode.FILL ||
+          fillStrokeMode === TextRenderingMode.FILL_STROKE) {
+        ctx.fill();
       }
+      if (fillStrokeMode === TextRenderingMode.STROKE ||
+          fillStrokeMode === TextRenderingMode.FILL_STROKE) {
+        ctx.stroke();
+      }
+      ctx.restore();
 
       if (isAddToPathSet) {
         var paths = this.pendingTextPaths || (this.pendingTextPaths = []);
@@ -1208,7 +1197,7 @@ var CanvasGraphics = (function CanvasGraphicsClosure() {
           current.x += x * textHScale;
         }
         
-        if (str && !font.disableFontFace) {
+        if (str) {
             var curFontSize = fontSize * scale * textHScale + 3;
             switch (current.textRenderingMode) {
               case TextRenderingMode.FILL:
@@ -1631,35 +1620,6 @@ var CanvasGraphics = (function CanvasGraphicsClosure() {
         this.ctx.mozImageSmoothingEnabled = false;
       }
       this.ctx.drawImage(groupCtx.canvas, 0, 0);
-      this.restore();
-    },
-
-    beginAnnotations: function CanvasGraphics_beginAnnotations() {
-      this.save();
-      this.current = new CanvasExtraState();
-    },
-
-    endAnnotations: function CanvasGraphics_endAnnotations() {
-      this.restore();
-    },
-
-    beginAnnotation: function CanvasGraphics_beginAnnotation(rect, transform,
-                                                             matrix) {
-      this.save();
-
-      if (rect && isArray(rect) && 4 == rect.length) {
-        var width = rect[2] - rect[0];
-        var height = rect[3] - rect[1];
-        this.rectangle(rect[0], rect[1], width, height);
-        this.clip();
-        this.endPath();
-      }
-
-      this.transform.apply(this, transform);
-      this.transform.apply(this, matrix);
-    },
-
-    endAnnotation: function CanvasGraphics_endAnnotation() {
       this.restore();
     },
 

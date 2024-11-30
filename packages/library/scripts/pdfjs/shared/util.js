@@ -120,10 +120,10 @@ var OPS = PDFJS.OPS = {
   paintFormXObjectEnd: 75,
   beginGroup: 76,
   endGroup: 77,
-  beginAnnotations: 78,
-  endAnnotations: 79,
-  beginAnnotation: 80,
-  endAnnotation: 81,
+  // beginAnnotations: 78,
+  // endAnnotations: 79,
+  // beginAnnotation: 80,
+  // endAnnotation: 81,
   paintJpegXObject: 82,
   paintImageMaskXObject: 83,
   paintImageMaskXObjectGroup: 84,
@@ -139,24 +139,18 @@ var NO_OPS_RANGE = PDFJS.NO_OPS_RANGE = [78, 79, 80, 81]; //range pairs, all ops
 
 // Use only for debugging purposes. This should not be used in any code that is
 // in mozilla master.
-var log = () => {}
+var log = (m) => console.log(m)
 
 // A notice for devs that will not trigger the fallback UI.  These are good
 // for things that are helpful to devs, such as warning that Workers were
 // disabled, which is important to devs but not end users.
 function info(msg) {
-  if (verbosity >= INFOS) {
-    log('Info: ' + msg);
-    PDFJS.LogManager.notify('info', msg);
-  }
+  log('Info: ' + msg);
 }
 
 // Non-fatal warnings that should trigger the fallback UI.
 function warn(msg) {
-  if (verbosity >= WARNINGS) {
-    log('Warning: ' + msg);
-    PDFJS.LogManager.notify('warn', msg);
-  }
+  log('Warning: ' + msg);
 }
 
 // Fatal errors that should trigger the fallback UI and halt execution by
@@ -195,74 +189,12 @@ function assert(cond, msg) {
     error(msg);
 }
 
-// Combines two URLs. The baseUrl shall be absolute URL. If the url is an
-// absolute URL, it will be returned as is.
-function combineUrl(baseUrl, url) {
-  if (!url)
-    return baseUrl;
-  if (url.indexOf(':') >= 0)
-    return url;
-  if (url.charAt(0) == '/') {
-    // absolute path
-    var i = baseUrl.indexOf('://');
-    i = baseUrl.indexOf('/', i + 3);
-    return baseUrl.substring(0, i) + url;
-  } else {
-    // relative path
-    var pathLength = baseUrl.length, i;
-    i = baseUrl.lastIndexOf('#');
-    pathLength = i >= 0 ? i : pathLength;
-    i = baseUrl.lastIndexOf('?', pathLength);
-    pathLength = i >= 0 ? i : pathLength;
-    var prefixLength = baseUrl.lastIndexOf('/', pathLength);
-    return baseUrl.substring(0, prefixLength + 1) + url;
-  }
-}
-
-// Validates if URL is safe and allowed, e.g. to avoid XSS.
-function isValidUrl(url, allowRelative) {
-  if (!url) {
-    return false;
-  }
-  var colon = url.indexOf(':');
-  if (colon < 0) {
-    return allowRelative;
-  }
-  var protocol = url.substring(0, colon);
-  switch (protocol) {
-    case 'http':
-    case 'https':
-    case 'ftp':
-    case 'mailto':
-      return true;
-    default:
-      return false;
-  }
-}
-PDFJS.isValidUrl = isValidUrl;
-
 // In a well-formed PDF, |cond| holds.  If it doesn't, subsequent
 // behavior is undefined.
 function assertWellFormed(cond, msg) {
   if (!cond)
     error(msg);
 }
-
-var LogManager = PDFJS.LogManager = (function LogManagerClosure() {
-  var loggers = [];
-  return {
-    addLogger: function logManager_addLogger(logger) {
-      loggers.push(logger);
-    },
-    notify: function(type, message) {
-      for (var i = 0, ii = loggers.length; i < ii; i++) {
-        var logger = loggers[i];
-        if (logger[type])
-          logger[type](message);
-      }
-    }
-  };
-})();
 
 function shadow(obj, prop, value) {
   Object.defineProperty(obj, prop, { value: value,

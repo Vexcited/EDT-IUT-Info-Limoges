@@ -20,11 +20,6 @@
 
 'use strict';
 
-//MQZ. Oct.11.2012. Add Worker's postMessage API
-var __postMessage = function WorkerTransport_postMessage(obj) {
-//  log("Inside globalScope.postMessage:" + JSON.stringify(obj));
-};
-
 var WorkerMessageHandler = PDFJS.WorkerMessageHandler = {
   setup: function wphSetup(handler) {
     var pdfManager;
@@ -70,8 +65,6 @@ var WorkerMessageHandler = PDFJS.WorkerMessageHandler = {
 
     handler.on('GetDocRequest', async (data) => {
       PDFJS.maxImageSize = data.maxImageSize === undefined ? -1 : data.maxImageSize;
-      PDFJS.disableFontFace = data.disableFontFace;
-
       getPdfManager(data); // make sure it's defined
 
       var doc = await loadDocument(false)
@@ -129,22 +122,8 @@ var WorkerMessageHandler = PDFJS.WorkerMessageHandler = {
       pdfManager.updatePassword(data);
     });
 
-    handler.on('GetAnnotationsRequest', function wphSetupGetAnnotations(data) {
-      pdfManager.getPage(data.pageIndex).then(function(page) {
-        pdfManager.ensure(page, 'getAnnotationsData', []).then(
-          function(annotationsData) {
-            handler.send('GetAnnotations', {
-              pageIndex: data.pageIndex,
-              annotations: annotationsData
-            });
-          }
-        );
-      });
-    });
-
     handler.on('RenderPageRequest', async (data) => {
       const page = await pdfManager.getPage(data.pageIndex);
-      console.log('RenderPageRequest', { pageIndex: data.pageIndex });
 
       // pre-compile the PDF page and fetch the fonts/images.
       await page.getOperatorList(handler);
@@ -152,8 +131,6 @@ var WorkerMessageHandler = PDFJS.WorkerMessageHandler = {
 
     handler.on('GetTextContent', function wphExtractText(data, promise) {
       pdfManager.getPage(data.pageIndex).then(function(page) {
-        var pageNum = data.pageIndex + 1;
-        var start = Date.now();
         page.extractTextContent().then(function(textContent) {
           promise.resolve(textContent);
         }, function (e) {
@@ -164,67 +141,13 @@ var WorkerMessageHandler = PDFJS.WorkerMessageHandler = {
     });
 
     handler.on('Cleanup', function wphCleanup(data, promise) {
-      console.log('Worker cleanup');
       pdfManager.cleanup();
       promise.resolve(true);
     });
 
     handler.on('Terminate', function wphTerminate(data, promise) {
-      console.log('Worker terminated');
       pdfManager.terminate();
       promise.resolve();
     });
   }
 };
-
-var consoleTimer = {};
-
-var workerConsole = {
-  log: function log() {
-    var args = Array.prototype.slice.call(arguments);
-    __postMessage({
-      action: 'console_log',
-      data: args
-    });
-  },
-
-  error: function error() {
-    var args = Array.prototype.slice.call(arguments);
-    __postMessage({
-      action: 'console_error',
-      data: args
-    });
-    throw 'pdf.js execution error';
-  },
-
-  time: function time(name) {
-    consoleTimer[name] = Date.now();
-  },
-
-  timeEnd: function timeEnd(name) {
-    var time = consoleTimer[name];
-    if (!time) {
-      error('Unkown timer name ' + name);
-    }
-    this.log('Timer:', name, Date.now() - time);
-  }
-};
-
-// Worker thread?
-if (typeof window === 'undefined') {
-  // globalScope.console = workerConsole;
-
-  // Add a logger so we can pass warnings on to the main thread, errors will
-  // throw an exception which will be forwarded on automatically.
-  PDFJS.LogManager.addLogger({
-    warn: function(msg) {
-      __postMessage({
-        action: '_warn',
-        data: msg
-      });
-    }
-  });
-
-  var handler = new MessageHandler('worker_processor', this);
-  WorkerMessageHandler.setup(handler);
-}

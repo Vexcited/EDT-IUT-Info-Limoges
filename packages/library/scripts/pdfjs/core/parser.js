@@ -25,119 +25,68 @@ function isEOF(v) {
   return v == EOF;
 }
 
-var Parser = (function ParserClosure() {
-  function Parser(lexer, allowStreams, xref) {
+class Parser {
+  constructor (lexer, allowStreams, xref) {
     this.lexer = lexer;
     this.allowStreams = allowStreams;
     this.xref = xref;
     this.refill();
   }
 
-  Parser.prototype = {
-    saveState: function Parser_saveState() {
-      this.state = {
-        buf1: this.buf1,
-        buf2: this.buf2,
-        streamPos: this.lexer.stream.pos
-      };
-    },
+  saveState () {
+    this.state = {
+      buf1: this.buf1,
+      buf2: this.buf2,
+      streamPos: this.lexer.stream.pos
+    };
+  }
 
-    restoreState: function Parser_restoreState() {
-      var state = this.state;
-      this.buf1 = state.buf1;
-      this.buf2 = state.buf2;
-      this.lexer.stream.pos = state.streamPos;
-    },
+  restoreState () {
+    var state = this.state;
+    this.buf1 = state.buf1;
+    this.buf2 = state.buf2;
+    this.lexer.stream.pos = state.streamPos;
+  }
 
-    refill: function Parser_refill() {
-      this.buf1 = this.lexer.getObj();
+  refill () {
+    this.buf1 = this.lexer.getObj();
+    this.buf2 = this.lexer.getObj();
+  }
+
+  shift () {
+    if (isCmd(this.buf2, 'ID')) {
+      this.buf1 = this.buf2;
+      this.buf2 = null;
+    } else {
+      this.buf1 = this.buf2;
       this.buf2 = this.lexer.getObj();
-    },
-    shift: function Parser_shift() {
-      if (isCmd(this.buf2, 'ID')) {
-        this.buf1 = this.buf2;
-        this.buf2 = null;
-      } else {
-        this.buf1 = this.buf2;
-        this.buf2 = this.lexer.getObj();
-      }
-    },
-    getObj: function Parser_getObj(cipherTransform) {
-      if (isCmd(this.buf1, 'BI')) { // inline image
-        this.shift();
-        return this.makeInlineImage(cipherTransform);
-      }
-      if (isCmd(this.buf1, '[')) { // array
-        this.shift();
-        var array = [];
-        while (!isCmd(this.buf1, ']') && !isEOF(this.buf1))
-          array.push(this.getObj(cipherTransform));
-        if (isEOF(this.buf1))
-          error('End of file inside array');
-        this.shift();
-        return array;
-      }
-      if (isCmd(this.buf1, '<<')) { // dictionary or stream
-        this.shift();
-        var dict = new Dict(this.xref);
-        while (!isCmd(this.buf1, '>>') && !isEOF(this.buf1)) {
-          if (!isName(this.buf1)) {
-            info('Malformed dictionary, key must be a name object');
-            this.shift();
-            continue;
-          }
+    }
+  }
 
-          var key = this.buf1.name;
-          this.shift();
-          if (isEOF(this.buf1))
-            break;
-          dict.set(key, this.getObj(cipherTransform));
-        }
-        if (isEOF(this.buf1))
-          error('End of file inside dictionary');
-
-        // stream objects are not allowed inside content streams or
-        // object streams
-        if (isCmd(this.buf2, 'stream')) {
-          return this.allowStreams ?
-            this.makeStream(dict, cipherTransform) : dict;
-        }
-        this.shift();
-        return dict;
-      }
-      if (isInt(this.buf1)) { // indirect reference or integer
-        var num = this.buf1;
-        this.shift();
-        if (isInt(this.buf1) && isCmd(this.buf2, 'R')) {
-          var ref = new Ref(num, this.buf1);
-          this.shift();
-          this.shift();
-          return ref;
-        }
-        return num;
-      }
-      if (isString(this.buf1)) { // string
-        var str = this.buf1;
-        this.shift();
-        if (cipherTransform)
-          str = cipherTransform.decryptString(str);
-        return str;
-      }
-
-      // simple object
-      var obj = this.buf1;
+  getObj (cipherTransform) {
+    if (isCmd(this.buf1, 'BI')) { // inline image
       this.shift();
-      return obj;
-    },
-    makeInlineImage: function Parser_makeInlineImage(cipherTransform) {
-      var lexer = this.lexer;
-      var stream = lexer.stream;
-
-      // parse dictionary
-      var dict = new Dict();
-      while (!isCmd(this.buf1, 'ID') && !isEOF(this.buf1)) {
-        if (!isName(this.buf1))
-          error('Dictionary key must be a name object');
+      return this.makeInlineImage(cipherTransform);
+    }
+    if (isCmd(this.buf1, '[')) { // array
+      this.shift();
+      var array = [];
+      while (!isCmd(this.buf1, ']') && !isEOF(this.buf1))
+        array.push(this.getObj(cipherTransform));
+      if (isEOF(this.buf1))
+        error('End of file inside array');
+      this.shift();
+      return array;
+    }
+    if (isCmd(this.buf1, '<<')) { // dictionary or stream
+      this.shift();
+      var dict = new Dict(this.xref);
+      while (!isCmd(this.buf1, '>>') && !isEOF(this.buf1)) {
+        if (!isName(this.buf1)) {
+          info('Malformed dictionary, key must be a name object');
+          this.shift();
+          continue;
+        }
 
         var key = this.buf1.name;
         this.shift();
@@ -145,203 +94,257 @@ var Parser = (function ParserClosure() {
           break;
         dict.set(key, this.getObj(cipherTransform));
       }
+      if (isEOF(this.buf1))
+        error('End of file inside dictionary');
 
-      // parse image stream
-      var startPos = stream.pos;
-
-      // searching for the /EI\s/
-      var state = 0, ch, i, ii;
-      while (state != 4 && (ch = stream.getByte()) !== -1) {
-        switch (ch | 0) {
-          case 0x20:
-          case 0x0D:
-          case 0x0A:
-            // let's check next five bytes to be ASCII... just be sure
-            var followingBytes = stream.peekBytes(5);
-            for (i = 0, ii = followingBytes.length; i < ii; i++) {
-              ch = followingBytes[i];
-              if (ch !== 0x0A && ch !== 0x0D && (ch < 0x20 || ch > 0x7F)) {
-                // not a LF, CR, SPACE or any visible ASCII character
-                state = 0;
-                break; // some binary stuff found, resetting the state
-              }
-            }
-            state = state === 3 ? 4 : 0;
-            break;
-          case 0x45:
-            state = 2;
-            break;
-          case 0x49:
-            state = state === 2 ? 3 : 0;
-            break;
-          default:
-            state = 0;
-            break;
-        }
+      // stream objects are not allowed inside content streams or
+      // object streams
+      if (isCmd(this.buf2, 'stream')) {
+        return this.allowStreams ?
+          this.makeStream(dict, cipherTransform) : dict;
       }
-
-      var length = (stream.pos - 4) - startPos;
-      var imageStream = stream.makeSubStream(startPos, length, dict);
-      if (cipherTransform)
-        imageStream = cipherTransform.createStream(imageStream);
-      imageStream = this.filter(imageStream, dict, length);
-      imageStream.dict = dict;
-
-      this.buf2 = Cmd.get('EI');
       this.shift();
-
-      return imageStream;
-    },
-    fetchIfRef: function Parser_fetchIfRef(obj) {
-      // not relying on the xref.fetchIfRef -- xref might not be set
-      return isRef(obj) ? this.xref.fetch(obj) : obj;
-    },
-    makeStream: function Parser_makeStream(dict, cipherTransform) {
-      var lexer = this.lexer;
-      var stream = lexer.stream;
-
-      // get stream start position
-      lexer.skipToNextLine();
-      var pos = stream.pos - 1;
-
-      // get length
-      var length = this.fetchIfRef(dict.get('Length'));
-      if (!isInt(length)) {
-        info('Bad ' + length + ' attribute in stream');
-        length = 0;
+      return dict;
+    }
+    if (isInt(this.buf1)) { // indirect reference or integer
+      var num = this.buf1;
+      this.shift();
+      if (isInt(this.buf1) && isCmd(this.buf2, 'R')) {
+        var ref = new Ref(num, this.buf1);
+        this.shift();
+        this.shift();
+        return ref;
       }
+      return num;
+    }
+    if (isString(this.buf1)) { // string
+      var str = this.buf1;
+      this.shift();
+      if (cipherTransform)
+        str = cipherTransform.decryptString(str);
+      return str;
+    }
 
-      // skip over the stream data
-      stream.pos = pos + length;
-      lexer.nextChar();
+    // simple object
+    var obj = this.buf1;
+    this.shift();
+    return obj;
+  }
 
-      this.shift(); // '>>'
-      this.shift(); // 'stream'
-      if (!isCmd(this.buf1, 'endstream')) {
-        // bad stream length, scanning for endstream
-        stream.pos = pos;
-        var SCAN_BLOCK_SIZE = 2048;
-        var ENDSTREAM_SIGNATURE_LENGTH = 9;
-        var ENDSTREAM_SIGNATURE = [0x65, 0x6E, 0x64, 0x73, 0x74, 0x72, 0x65,
-                                   0x61, 0x6D];
-        var skipped = 0, found = false;
-        while (stream.pos < stream.end) {
-          var scanBytes = stream.peekBytes(SCAN_BLOCK_SIZE);
-          var scanLength = scanBytes.length - ENDSTREAM_SIGNATURE_LENGTH;
-          var found = false, i, ii, j;
-          for (i = 0, j = 0; i < scanLength; i++) {
-            var b = scanBytes[i];
-            if (b !== ENDSTREAM_SIGNATURE[j]) {
-              i -= j;
-              j = 0;
-            } else {
-              j++;
-              if (j >= ENDSTREAM_SIGNATURE_LENGTH) {
-                found = true;
-                break;
-              }
+  makeInlineImage (cipherTransform) {
+    var lexer = this.lexer;
+    var stream = lexer.stream;
+
+    // parse dictionary
+    var dict = new Dict();
+    while (!isCmd(this.buf1, 'ID') && !isEOF(this.buf1)) {
+      if (!isName(this.buf1))
+        error('Dictionary key must be a name object');
+
+      var key = this.buf1.name;
+      this.shift();
+      if (isEOF(this.buf1))
+        break;
+      dict.set(key, this.getObj(cipherTransform));
+    }
+
+    // parse image stream
+    var startPos = stream.pos;
+
+    // searching for the /EI\s/
+    var state = 0, ch, i, ii;
+    while (state != 4 && (ch = stream.getByte()) !== -1) {
+      switch (ch | 0) {
+        case 0x20:
+        case 0x0D:
+        case 0x0A:
+          // let's check next five bytes to be ASCII... just be sure
+          var followingBytes = stream.peekBytes(5);
+          for (i = 0, ii = followingBytes.length; i < ii; i++) {
+            ch = followingBytes[i];
+            if (ch !== 0x0A && ch !== 0x0D && (ch < 0x20 || ch > 0x7F)) {
+              // not a LF, CR, SPACE or any visible ASCII character
+              state = 0;
+              break; // some binary stuff found, resetting the state
             }
           }
-          if (found) {
-            skipped += i - ENDSTREAM_SIGNATURE_LENGTH;
-            stream.pos += i - ENDSTREAM_SIGNATURE_LENGTH;
-            break;
-          }
-          skipped += scanLength;
-          stream.pos += scanLength;
-        }
-        if (!found) {
-          error('Missing endstream');
-        }
-        length = skipped;
-
-        lexer.nextChar();
-        this.shift();
-        this.shift();
+          state = state === 3 ? 4 : 0;
+          break;
+        case 0x45:
+          state = 2;
+          break;
+        case 0x49:
+          state = state === 2 ? 3 : 0;
+          break;
+        default:
+          state = 0;
+          break;
       }
-      this.shift(); // 'endstream'
-
-      stream = stream.makeSubStream(pos, length, dict);
-      if (cipherTransform)
-        stream = cipherTransform.createStream(stream);
-      stream = this.filter(stream, dict, length);
-      stream.dict = dict;
-      return stream;
-    },
-    filter: function Parser_filter(stream, dict, length) {
-      var filter = this.fetchIfRef(dict.get('Filter', 'F'));
-      var params = this.fetchIfRef(dict.get('DecodeParms', 'DP'));
-      if (isName(filter))
-        return this.makeFilter(stream, filter.name, length, params);
-      if (isArray(filter)) {
-        var filterArray = filter;
-        var paramsArray = params;
-        for (var i = 0, ii = filterArray.length; i < ii; ++i) {
-          filter = filterArray[i];
-          if (!isName(filter))
-            error('Bad filter name: ' + filter);
-
-          params = null;
-          if (isArray(paramsArray) && (i in paramsArray))
-            params = paramsArray[i];
-          stream = this.makeFilter(stream, filter.name, length, params);
-          // after the first stream the length variable is invalid
-          length = null;
-        }
-      }
-      return stream;
-    },
-    makeFilter: function Parser_makeFilter(stream, name, length, params) {
-      if (stream.dict.get('Length') === 0) {
-        return new NullStream(stream);
-      }
-      if (name == 'FlateDecode' || name == 'Fl') {
-        if (params) {
-          return new PredictorStream(new FlateStream(stream), params);
-        }
-        return new FlateStream(stream);
-      }
-      if (name == 'LZWDecode' || name == 'LZW') {
-        var earlyChange = 1;
-        if (params) {
-          if (params.has('EarlyChange'))
-            earlyChange = params.get('EarlyChange');
-          return new PredictorStream(
-            new LZWStream(stream, earlyChange), params);
-        }
-        return new LZWStream(stream, earlyChange);
-      }
-      if (name == 'DCTDecode' || name == 'DCT') {
-        var bytes = stream.getBytes(length);
-        return new JpegStream(bytes, stream.dict, this.xref);
-      }
-      if (name == 'JPXDecode' || name == 'JPX') {
-        var bytes = stream.getBytes(length);
-        return new JpxStream(bytes, stream.dict);
-      }
-      if (name == 'ASCII85Decode' || name == 'A85') {
-        return new Ascii85Stream(stream);
-      }
-      if (name == 'ASCIIHexDecode' || name == 'AHx') {
-        return new AsciiHexStream(stream);
-      }
-      if (name == 'CCITTFaxDecode' || name == 'CCF') {
-        return new CCITTFaxStream(stream, params);
-      }
-      if (name == 'RunLengthDecode' || name == 'RL') {
-        return new RunLengthStream(stream);
-      }
-      if (name == 'JBIG2Decode') {
-        var bytes = stream.getBytes(length);
-        return new Jbig2Stream(bytes, stream.dict);
-      }
-      warn('filter "' + name + '" not supported yet');
-      return stream;
     }
-  };
 
-  return Parser;
-})();
+    var length = (stream.pos - 4) - startPos;
+    var imageStream = stream.makeSubStream(startPos, length, dict);
+    if (cipherTransform)
+      imageStream = cipherTransform.createStream(imageStream);
+    imageStream = this.filter(imageStream, dict, length);
+    imageStream.dict = dict;
+
+    this.buf2 = Cmd.get('EI');
+    this.shift();
+
+    return imageStream;
+  }
+
+  fetchIfRef (obj) {
+    // not relying on the xref.fetchIfRef -- xref might not be set
+    return isRef(obj) ? this.xref.fetch(obj) : obj;
+  }
+
+  makeStream (dict, cipherTransform) {
+    var lexer = this.lexer;
+    var stream = lexer.stream;
+
+    // get stream start position
+    lexer.skipToNextLine();
+    var pos = stream.pos - 1;
+
+    // get length
+    var length = this.fetchIfRef(dict.get('Length'));
+    if (!isInt(length)) {
+      info('Bad ' + length + ' attribute in stream');
+      length = 0;
+    }
+
+    // skip over the stream data
+    stream.pos = pos + length;
+    lexer.nextChar();
+
+    this.shift(); // '>>'
+    this.shift(); // 'stream'
+    if (!isCmd(this.buf1, 'endstream')) {
+      // bad stream length, scanning for endstream
+      stream.pos = pos;
+      var SCAN_BLOCK_SIZE = 2048;
+      var ENDSTREAM_SIGNATURE_LENGTH = 9;
+      var ENDSTREAM_SIGNATURE = [0x65, 0x6E, 0x64, 0x73, 0x74, 0x72, 0x65,
+                                  0x61, 0x6D];
+      var skipped = 0, found = false;
+      while (stream.pos < stream.end) {
+        var scanBytes = stream.peekBytes(SCAN_BLOCK_SIZE);
+        var scanLength = scanBytes.length - ENDSTREAM_SIGNATURE_LENGTH;
+        var found = false, i, ii, j;
+        for (i = 0, j = 0; i < scanLength; i++) {
+          var b = scanBytes[i];
+          if (b !== ENDSTREAM_SIGNATURE[j]) {
+            i -= j;
+            j = 0;
+          } else {
+            j++;
+            if (j >= ENDSTREAM_SIGNATURE_LENGTH) {
+              found = true;
+              break;
+            }
+          }
+        }
+        if (found) {
+          skipped += i - ENDSTREAM_SIGNATURE_LENGTH;
+          stream.pos += i - ENDSTREAM_SIGNATURE_LENGTH;
+          break;
+        }
+        skipped += scanLength;
+        stream.pos += scanLength;
+      }
+      if (!found) {
+        error('Missing endstream');
+      }
+      length = skipped;
+
+      lexer.nextChar();
+      this.shift();
+      this.shift();
+    }
+    this.shift(); // 'endstream'
+
+    stream = stream.makeSubStream(pos, length, dict);
+    if (cipherTransform)
+      stream = cipherTransform.createStream(stream);
+    stream = this.filter(stream, dict, length);
+    stream.dict = dict;
+    return stream;
+  }
+
+  filter (stream, dict, length) {
+    var filter = this.fetchIfRef(dict.get('Filter', 'F'));
+    var params = this.fetchIfRef(dict.get('DecodeParms', 'DP'));
+    if (isName(filter))
+      return this.makeFilter(stream, filter.name, length, params);
+    if (isArray(filter)) {
+      var filterArray = filter;
+      var paramsArray = params;
+      for (var i = 0, ii = filterArray.length; i < ii; ++i) {
+        filter = filterArray[i];
+        if (!isName(filter))
+          error('Bad filter name: ' + filter);
+
+        params = null;
+        if (isArray(paramsArray) && (i in paramsArray))
+          params = paramsArray[i];
+        stream = this.makeFilter(stream, filter.name, length, params);
+        // after the first stream the length variable is invalid
+        length = null;
+      }
+    }
+    return stream;
+  }
+
+  makeFilter (stream, name, length, params) {
+    if (stream.dict.get('Length') === 0) {
+      return new NullStream(stream);
+    }
+    if (name == 'FlateDecode' || name == 'Fl') {
+      if (params) {
+        return new PredictorStream(new FlateStream(stream), params);
+      }
+      return new FlateStream(stream);
+    }
+    if (name == 'LZWDecode' || name == 'LZW') {
+      var earlyChange = 1;
+      if (params) {
+        if (params.has('EarlyChange'))
+          earlyChange = params.get('EarlyChange');
+        return new PredictorStream(
+          new LZWStream(stream, earlyChange), params);
+      }
+      return new LZWStream(stream, earlyChange);
+    }
+    if (name == 'DCTDecode' || name == 'DCT') {
+      var bytes = stream.getBytes(length);
+      return new JpegStream(bytes, stream.dict, this.xref);
+    }
+    if (name == 'JPXDecode' || name == 'JPX') {
+      var bytes = stream.getBytes(length);
+      return new JpxStream(bytes, stream.dict);
+    }
+    if (name == 'ASCII85Decode' || name == 'A85') {
+      return new Ascii85Stream(stream);
+    }
+    if (name == 'ASCIIHexDecode' || name == 'AHx') {
+      return new AsciiHexStream(stream);
+    }
+    if (name == 'CCITTFaxDecode' || name == 'CCF') {
+      return new CCITTFaxStream(stream, params);
+    }
+    if (name == 'RunLengthDecode' || name == 'RL') {
+      return new RunLengthStream(stream);
+    }
+    if (name == 'JBIG2Decode') {
+      var bytes = stream.getBytes(length);
+      return new Jbig2Stream(bytes, stream.dict);
+    }
+    warn('filter "' + name + '" not supported yet');
+    return stream;
+  }
+}
 
 var Lexer = (function LexerClosure() {
   function Lexer(stream, knownCommands) {

@@ -358,7 +358,7 @@ var PartialEvaluator = (function PartialEvaluatorClosure() {
       var glyphs = font.charsToGlyphs(chars);
       var isAddToPathSet = !!(this.state.textRenderingMode &
                               TextRenderingMode.ADD_TO_PATH_FLAG);
-      if (font.data && (isAddToPathSet || PDFJS.disableFontFace)) {
+      if (font.data && isAddToPathSet) {
         for (var i = 0; i < glyphs.length; i++) {
           if (glyphs[i] === null) {
             continue;

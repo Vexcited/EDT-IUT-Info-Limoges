@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 /* globals NotImplementedException, MissingDataException, Promise, Stream,
-           PDFDocument, ChunkedStreamManager */
+           PDFDocument,  */
 
 'use strict';
 
@@ -22,56 +22,45 @@ class BasePdfManager {
   passwordChangedPromise;
   
   constructor () {
-    console.log('BasePdfManager');
   }
 
   onLoadedStream () {
-    console.log('BasePdfManager.prototype.onLoadedStream');
     throw new NotImplementedException();
   }
 
   ensureModel (prop, args) {
-    console.log('BasePdfManager.prototype.ensureModel');
     return this.ensure(this.pdfModel, prop, args);
   }
 
   ensureXRef (prop, args) {
-    console.log('BasePdfManager.prototype.ensureXRef');
     return this.ensure(this.pdfModel.xref, prop, args);
   }
 
   ensureCatalog (prop, args) {
-    console.log('BasePdfManager.prototype.ensureCatalog');
     return this.ensure(this.pdfModel.catalog, prop, args);
   }
 
   getPage (pageIndex) {
-    console.log('BasePdfManager.prototype.getPage');
     return this.pdfModel.getPage(pageIndex);
   }
 
   cleanup () {
-    console.log("BasePdfManager.prototype.cleanup");
     return this.pdfModel.cleanup();
   }
 
   async ensure (obj, prop, args) {
-    console.log('BasePdfManager.prototype.ensure');
     return new NotImplementedException();
   }
 
   async requestRange (begin, end) {
-    console.log('BasePdfManager.prototype.requestRange');
     return new NotImplementedException();
   }
 
   async requestLoadedStream () {
-    console.log('BasePdfManager.prototype.requestLoadedStream');
     return new NotImplementedException();
   }
 
   updatePassword (password) {
-    console.log('BasePdfManager.prototype.updatePassword');
     this.pdfModel.xref.password = this.password = password;
     if (this.passwordChangedPromise) {
       this.passwordChangedPromise.resolve();
@@ -79,7 +68,6 @@ class BasePdfManager {
   }
 
   terminate () {
-    console.log('BasePdfManager.prototype.terminate');
     return new NotImplementedException();
   }
 }
@@ -89,7 +77,6 @@ class LocalPdfManager extends BasePdfManager {
 
   constructor (data, password) {
     super();
-    console.log('LocalPdfManager');
 
     const stream = new Stream(data);
     this.pdfModel = new PDFDocument(this, stream, password);
@@ -98,8 +85,6 @@ class LocalPdfManager extends BasePdfManager {
   }
 
   async ensure (obj, prop, args) {
-    console.log('LocalPdfManager.ensure', { prop, args });
-    
     let value = obj[prop];
     
     if (typeof(value) === 'function') {
@@ -110,19 +95,15 @@ class LocalPdfManager extends BasePdfManager {
   }
 
   async requestRange (begin, end) {
-    console.log('LocalPdfManager.requestRange', { begin, end });
   }
 
   requestLoadedStream () {
-    console.log('LocalPdfManager.requestLoadedStream');
   }
 
   async onLoadedStream () {
-    console.log('LocalPdfManager.onLoadedStream');
     return this.loadedStream;
   }
 
   terminate () {
-    console.log('LocalPdfManager.terminate');
   }
 }

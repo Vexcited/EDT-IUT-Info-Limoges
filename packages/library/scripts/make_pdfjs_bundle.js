@@ -5,7 +5,6 @@ const files = [
   'shared/colorspace.js',
   'shared/pattern.js',
   'shared/function.js',
-  'shared/annotation.js',
 
   'core/core.js',
   'core/obj.js',
@@ -24,7 +23,6 @@ const files = [
   'core/jbig2.js',
   'core/bidi.js',
   'core/jpg.js',
-  'core/chunked_stream.js',
   'core/pdf_manager.js',
   'core/cmap.js',
   'core/cidmaps.js',
