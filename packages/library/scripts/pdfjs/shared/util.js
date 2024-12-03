@@ -153,24 +153,6 @@ function warn(msg) {
   log('Warning: ' + msg);
 }
 
-// Fatal errors that should trigger the fallback UI and halt execution by
-// throwing an exception.
-function error(msg) {
-  // If multiple arguments were passed, pass them all to the log function.
-  if (arguments.length > 1) {
-    var logArguments = ['Error:'];
-    logArguments.push.apply(logArguments, arguments);
-    log.apply(null, logArguments);
-    // Join the arguments into a single string for the lines below.
-    msg = [].join.call(arguments, ' ');
-  } else {
-    //log('Error: ' + msg);
-  }
-  //log(backtrace());
-  //PDFJS.LogManager.notify('error', msg);
-  throw new Error(msg);
-}
-
 // Missing features that should trigger the fallback UI.
 function TODO(what) {
   warn('TODO: ' + what);
@@ -186,14 +168,14 @@ function backtrace() {
 
 function assert(cond, msg) {
   if (!cond)
-    error(msg);
+    throw new Error(msg);
 }
 
 // In a well-formed PDF, |cond| holds.  If it doesn't, subsequent
 // behavior is undefined.
 function assertWellFormed(cond, msg) {
   if (!cond)
-    error(msg);
+    throw new Error(msg);
 }
 
 function shadow(obj, prop, value) {
@@ -1061,7 +1043,7 @@ function MessageHandler(name, comObj) {
 				delete callbacks[callbackId];
 				callback(data.data);
 			} else {
-				error('Cannot resolve callback ' + callbackId);
+				throw new Error('Cannot resolve callback ' + callbackId);
 			}
 			} else if (data.action in ah) {
 			var action = ah[data.action];
@@ -1079,7 +1061,7 @@ function MessageHandler(name, comObj) {
 				action[0].call(action[1], data.data);
 			}
 			} else {
-				error('Unknown action from worker: ' + data.action);
+				throw new Error('Unknown action from worker: ' + data.action);
 			}
 		};
 	}
@@ -1089,7 +1071,7 @@ MessageHandler.prototype = {
   on: function messageHandlerOn(actionName, handler, scope) {
     var ah = this.actionHandler;
     if (ah[actionName]) {
-      error('There is already an actionName called "' + actionName + '"');
+      throw new Error('There is already an actionName called "' + actionName + '"');
     }
     ah[actionName] = [handler, scope];
   },

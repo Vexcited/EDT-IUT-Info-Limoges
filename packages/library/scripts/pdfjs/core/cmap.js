@@ -269,13 +269,13 @@ var CMapFactory = (function CMapFactoryClosure() {
 
   function expectString(obj) {
     if (!isString(obj)) {
-      error('Malformed CMap: expected string.');
+      throw new Error('Malformed CMap: expected string.');
     }
   }
 
   function expectInt(obj) {
     if (!isInt(obj)) {
-      error('Malformed CMap: expected int.');
+      throw new Error('Malformed CMap: expected int.');
     }
   }
 
@@ -328,7 +328,7 @@ var CMapFactory = (function CMapFactoryClosure() {
         break;
       }
     }
-    error('Invalid bf range.');
+    throw new Error('Invalid bf range.');
   }
 
   function parseCidChar(cMap, lexer) {
@@ -390,7 +390,7 @@ var CMapFactory = (function CMapFactoryClosure() {
       var high = strToInt(obj);
       cMap.addCodespaceRange(obj.length, low, high);
     }
-    error('Invalid codespace range.');
+    throw new Error('Invalid codespace range.');
   }
 
   function parseCmap(cMap, lexer) {
@@ -452,7 +452,7 @@ var CMapFactory = (function CMapFactoryClosure() {
         }
         return cMap;
       }
-      error('Encoding required.');
+      throw new Error('Encoding required.');
     }
   };
 })();

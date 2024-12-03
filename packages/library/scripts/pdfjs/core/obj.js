@@ -298,7 +298,7 @@ var Catalog = (function CatalogClosure() {
             if (outlineDict === null)
               continue;
             if (!outlineDict.has('Title'))
-              error('Invalid outline item');
+              throw new Error('Invalid outline item');
             var dest = outlineDict.get('A');
             if (dest)
               dest = dest.get('D');
@@ -538,7 +538,7 @@ var Catalog = (function CatalogClosure() {
             }));
           }
           if (!found) {
-            error('kid ref not found in parents kids');
+            throw new Error('kid ref not found in parents kids');
           }
           return Promise.all(kidPromises).then(function () {
             return [total, parentRef];
@@ -602,7 +602,7 @@ class XRef {
 
     // get the root dictionary (catalog) object
     if (!(this.root = trailerDict.get('Root'))) {
-      error('Invalid root reference');
+      throw new Error('Invalid root reference');
     }
   }
 
@@ -622,7 +622,7 @@ class XRef {
 
     // Sanity check
     if (!isCmd(obj, 'trailer'))
-      error('Invalid XRef table: could not find trailer dictionary');
+      throw new Error('Invalid XRef table: could not find trailer dictionary');
 
     // Read trailer dictionary, e.g.
     // trailer
@@ -635,7 +635,7 @@ class XRef {
     // a getter interface for the key-value table
     var dict = parser.getObj();
     if (!isDict(dict))
-      error('Invalid XRef table: could not parse trailer dictionary');
+      throw new Error('Invalid XRef table: could not parse trailer dictionary');
 
     delete this.tableState;
 
@@ -674,7 +674,7 @@ class XRef {
       var first = tableState.firstEntryNum;
       var count = tableState.entryCount;
       if (!isInt(first) || !isInt(count))
-        error('Invalid XRef table: wrong types in subsection header');
+        throw new Error('Invalid XRef table: wrong types in subsection header');
 
       // Inner loop is over objects themselves
       for (var i = tableState.entryNum; i < count; i++) {
@@ -698,7 +698,7 @@ class XRef {
             !(entry.free || entry.uncompressed)) {
           console.log(entry.offset, entry.gen, entry.free,
               entry.uncompressed);
-          error('Invalid entry in XRef subsection: ' + first + ', ' + count);
+          throw new Error('Invalid entry in XRef subsection: ' + first + ', ' + count);
         }
 
         if (!this.entries[i + first])
@@ -721,7 +721,7 @@ class XRef {
 
     // Sanity check: as per spec, first object must be free
     if (this.entries[0] && !this.entries[0].free)
-      error('Invalid XRef table: unexpected first object');
+      throw new Error('Invalid XRef table: unexpected first object');
 
     return obj;
   }
@@ -767,11 +767,11 @@ class XRef {
       var n = entryRanges[1];
 
       if (!isInt(first) || !isInt(n))
-        error('Invalid XRef range fields: ' + first + ', ' + n);
+        throw new Error('Invalid XRef range fields: ' + first + ', ' + n);
 
       if (!isInt(typeFieldWidth) || !isInt(offsetFieldWidth) ||
           !isInt(generationFieldWidth)) {
-        error('Invalid XRef entry fields length: ' + first + ', ' + n);
+        throw new Error('Invalid XRef entry fields length: ' + first + ', ' + n);
       }
       for (i = streamState.entryNum; i < n; ++i) {
         streamState.entryNum = i;
@@ -800,7 +800,7 @@ class XRef {
           case 2:
             break;
           default:
-            error('Invalid XRef entry type: ' + type);
+            throw new Error('Invalid XRef entry type: ' + type);
         }
         if (!this.entries[first + i])
           this.entries[first + i] = entry;
@@ -930,80 +930,68 @@ class XRef {
   readXRef (recoveryMode) {
     var stream = this.stream;
 
-    try {
-      while (this.startXRefQueue.length) {
-        var startXRef = this.startXRefQueue[0];
+    while (this.startXRefQueue.length) {
+      var startXRef = this.startXRefQueue[0];
 
-        stream.pos = startXRef;
+      stream.pos = startXRef;
 
-        var parser = new Parser(new Lexer(stream), true, null);
-        var obj = parser.getObj();
-        var dict;
+      var parser = new Parser(new Lexer(stream), true, null);
+      var obj = parser.getObj();
+      var dict;
 
-        // Get dictionary
-        if (isCmd(obj, 'xref')) {
+      // Get dictionary
+      if (isCmd(obj, 'xref')) {
 
-          // Parse end-of-file XRef
-          dict = this.processXRefTable(parser);
-          if (!this.topDict) {
-            this.topDict = dict;
-          }
-
-          // Recursively get other XRefs 'XRefStm', if any
-          obj = dict.get('XRefStm');
-          if (isInt(obj)) {
-            var pos = obj;
-            // ignore previously loaded xref streams
-            // (possible infinite recursion)
-            if (!(pos in this.xrefstms)) {
-              this.xrefstms[pos] = 1;
-              this.startXRefQueue.push(pos);
-            }
-          }
-        } else if (isInt(obj)) {
-
-          // Parse in-stream XRef
-          if (!isInt(parser.getObj()) ||
-              !isCmd(parser.getObj(), 'obj') ||
-              !isStream(obj = parser.getObj())) {
-            error('Invalid XRef stream');
-          }
-          dict = this.processXRefStream(obj);
-          if (!this.topDict) {
-            this.topDict = dict;
-          }
-
-          if (!dict)
-            error('Failed to read XRef stream');
-        } else {
-          error('Invalid XRef stream header');
+        // Parse end-of-file XRef
+        dict = this.processXRefTable(parser);
+        if (!this.topDict) {
+          this.topDict = dict;
         }
 
-        // Recursively get previous dictionary, if any
-        obj = dict.get('Prev');
+        // Recursively get other XRefs 'XRefStm', if any
+        obj = dict.get('XRefStm');
         if (isInt(obj)) {
-          this.startXRefQueue.push(obj);
-        } else if (isRef(obj)) {
-          // The spec says Prev must not be a reference, i.e. "/Prev NNN"
-          // This is a fallback for non-compliant PDFs, i.e. "/Prev NNN 0 R"
-          this.startXRefQueue.push(obj.num);
+          var pos = obj;
+          // ignore previously loaded xref streams
+          // (possible infinite recursion)
+          if (!(pos in this.xrefstms)) {
+            this.xrefstms[pos] = 1;
+            this.startXRefQueue.push(pos);
+          }
+        }
+      } else if (isInt(obj)) {
+
+        // Parse in-stream XRef
+        if (!isInt(parser.getObj()) ||
+            !isCmd(parser.getObj(), 'obj') ||
+            !isStream(obj = parser.getObj())) {
+          throw new Error('Invalid XRef stream');
+        }
+        dict = this.processXRefStream(obj);
+        if (!this.topDict) {
+          this.topDict = dict;
         }
 
-        this.startXRefQueue.shift();
+        if (!dict)
+          throw new Error('Failed to read XRef stream');
+      } else {
+        throw new Error('Invalid XRef stream header');
       }
 
-      return this.topDict;
-    } catch (e) {
-      if (e instanceof MissingDataException) {
-        throw e;
+      // Recursively get previous dictionary, if any
+      obj = dict.get('Prev');
+      if (isInt(obj)) {
+        this.startXRefQueue.push(obj);
+      } else if (isRef(obj)) {
+        // The spec says Prev must not be a reference, i.e. "/Prev NNN"
+        // This is a fallback for non-compliant PDFs, i.e. "/Prev NNN 0 R"
+        this.startXRefQueue.push(obj.num);
       }
-      log('(while reading XRef): ' + e);
-      error(e);
+
+      this.startXRefQueue.shift();
     }
 
-    if (recoveryMode)
-      return;
-    throw new XRefParseException();
+    return this.topDict;
   }
 
   getEntry (i) {
@@ -1043,7 +1031,7 @@ class XRef {
     var stream, parser;
     if (e.uncompressed) {
       if (e.gen != gen)
-        error('inconsistent generation in XRef');
+        throw new Error('inconsistent generation in XRef');
       stream = this.stream.makeSubStream(e.offset);
       parser = new Parser(new Lexer(stream), true, this);
       var obj1 = parser.getObj();
@@ -1052,7 +1040,7 @@ class XRef {
       if (!isInt(obj1) || obj1 != num ||
           !isInt(obj2) || obj2 != gen ||
           !isCmd(obj3)) {
-        error('bad XRef entry');
+        throw new Error('bad XRef entry');
       }
       if (!isCmd(obj3, 'obj')) {
         // some bad pdfs use "obj1234" and really mean 1234
@@ -1061,7 +1049,7 @@ class XRef {
           if (!isNaN(num))
             return num;
         }
-        error('bad XRef entry');
+        throw new Error('bad XRef entry');
       }
       if (this.encrypt && !suppressEncryption) {
         try {
@@ -1085,11 +1073,11 @@ class XRef {
     var tableOffset = e.offset;
     stream = this.fetch(new Ref(tableOffset, 0));
     if (!isStream(stream))
-      error('bad ObjStm stream');
+      throw new Error('bad ObjStm stream');
     var first = stream.dict.get('First');
     var n = stream.dict.get('N');
     if (!isInt(first) || !isInt(n)) {
-      error('invalid first and n parameters for ObjStm stream');
+      throw new Error('invalid first and n parameters for ObjStm stream');
     }
     parser = new Parser(new Lexer(stream), false, this);
     parser.allowStreams = true;
@@ -1098,12 +1086,12 @@ class XRef {
     for (i = 0; i < n; ++i) {
       num = parser.getObj();
       if (!isInt(num)) {
-        error('invalid object number in the ObjStm stream: ' + num);
+        throw new Error('invalid object number in the ObjStm stream: ' + num);
       }
       nums.push(num);
       var offset = parser.getObj();
       if (!isInt(offset)) {
-        error('invalid object offset in the ObjStm stream: ' + offset);
+        throw new Error('invalid object offset in the ObjStm stream: ' + offset);
       }
     }
     // read stream objects for cache
@@ -1117,7 +1105,7 @@ class XRef {
     }
     e = entries[e.gen];
     if (e === undefined) {
-      error('bad XRef entry for compressed object');
+      throw new Error('bad XRef entry for compressed object');
     }
     return e;
   }
@@ -1181,7 +1169,7 @@ class NameTree {
         for (i = 0, n = kids.length; i < n; i++) {
           var kid = kids[i];
           if (processed.has(kid))
-            error('invalid destinations');
+            throw new Error('invalid destinations');
           queue.push(kid);
           processed.put(kid);
         }

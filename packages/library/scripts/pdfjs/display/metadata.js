@@ -33,7 +33,6 @@ function fixMetadata(meta) {
 }
 
 class Metadata {
-
   constructor (meta) {
     if (typeof meta === 'string') {
       // Ghostscript produces invalid metadata
@@ -42,7 +41,7 @@ class Metadata {
       var parser = new DOMParser();
       meta = parser.parseFromString(meta, 'application/xml');
     } else if (!(meta instanceof Document)) {
-      error('Metadata: Invalid metadata object');
+      throw new Error('Metadata: Invalid metadata object');
     }
 
     this.metaDocument = meta;

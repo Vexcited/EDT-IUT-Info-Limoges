@@ -255,7 +255,7 @@ class PDFDocument {
     else if (isArrayBuffer(arg))
       init(pdfManager, new Stream(arg), password);
     else
-      error('PDFDocument: Unknown argument type');
+      throw new Error('PDFDocument: Unknown argument type');
   }
 
   /** @private */

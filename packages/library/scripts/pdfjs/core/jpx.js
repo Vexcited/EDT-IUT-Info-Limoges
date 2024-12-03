@@ -62,7 +62,7 @@ var JpxImage = (function JpxImageClosure() {
         if (lbox === 0)
           lbox = length - position + headerSize;
         if (lbox < headerSize)
-          error('JPX error: Invalid box field size');
+          throw new Error('JPX error: Invalid box field size');
         var dataLength = lbox - headerSize;
         var jumpDataLength = true;
         switch (tbox) {
@@ -320,7 +320,7 @@ var JpxImage = (function JpxImageClosure() {
         }
       } catch (e) {
         if (this.failOnCorruptedImage)
-          error('JPX error: ' + e);
+          throw new Error('JPX error: ' + e);
         else
           warn('JPX error: ' + e + '. Trying to recover');
       }

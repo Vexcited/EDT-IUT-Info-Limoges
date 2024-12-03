@@ -2267,7 +2267,7 @@ var Font = (function FontClosure() {
         break;
 
       default:
-        error('Font ' + type + ' is not supported');
+        throw new Error('Font ' + type + ' is not supported');
         break;
     }
 
@@ -2609,7 +2609,7 @@ var Font = (function FontClosure() {
         } else if (position < 123) {
           ulUnicodeRange4 |= 1 << position - 96;
         } else {
-          error('Unicode ranges Bits > 123 are reserved for internal usage');
+          throw new Error('Unicode ranges Bits > 123 are reserved for internal usage');
         }
       }
     } else {
@@ -2959,7 +2959,7 @@ var Font = (function FontClosure() {
         }
 
         if (!potentialTable) {
-          error('Could not find a cmap table');
+          throw new Error('Could not find a cmap table');
           return;
         }
 
@@ -3073,7 +3073,7 @@ var Font = (function FontClosure() {
             });
           }
         } else {
-          error('cmap table has unsupported format: ' + format);
+          throw new Error('cmap table has unsupported format: ' + format);
         }
 
         // removing duplicate entries
@@ -3720,12 +3720,12 @@ var Font = (function FontClosure() {
         delete tables['cvt '];
       } else {
         if (!tables.glyf || !tables.loca) {
-          error('Required "glyf" or "loca" tables are not found');
+          throw new Error('Required "glyf" or "loca" tables are not found');
         }
       }
 
       if (!tables.maxp) {
-        error('Required "maxp" table is not found');
+        throw new Error('Required "maxp" table is not found');
       }
 
       font.pos = (font.start || 0) + tables.maxp.offset;
@@ -3785,7 +3785,7 @@ var Font = (function FontClosure() {
       sanitizeMetrics(font, tables.hhea, tables.hmtx, numGlyphs);
 
       if (!tables.head) {
-        error('Required "head" table is not found');
+        throw new Error('Required "head" table is not found');
       }
 
       sanitizeHead(tables.head, numGlyphs, isTrueType ? tables.loca.length : 0);
@@ -3798,7 +3798,7 @@ var Font = (function FontClosure() {
       }
 
       if (!tables.hhea) {
-        error('Required "hhea" table is not found');
+        throw new Error('Required "hhea" table is not found');
       }
 
       // Sanitizer reduces the glyph advanceWidth to the maxAdvanceWidth
@@ -5914,7 +5914,7 @@ var CFFParser = (function CFFParserClosure() {
         } else if (value >= 251 && value <= 254) {
           return -((value - 251) * 256) - dict[pos++] - 108;
         } else {
-          error('255 is not a valid DICT command');
+          throw new Error('255 is not a valid DICT command');
         }
         return -1;
       }
@@ -6226,7 +6226,7 @@ var CFFParser = (function CFFParserClosure() {
           }
           break;
         default:
-          error('Unknown charset format');
+          throw new Error('Unknown charset format');
       }
       // Raw won't be needed if we actually compile the charset.
       var end = pos;
@@ -6287,7 +6287,7 @@ var CFFParser = (function CFFParserClosure() {
             break;
 
           default:
-            error('Unknow encoding format: ' + format + ' in CFF');
+            throw new Error('Unknow encoding format: ' + format + ' in CFF');
             break;
         }
         var dataEnd = pos;
@@ -6331,7 +6331,7 @@ var CFFParser = (function CFFParserClosure() {
           pos += 2;
           break;
         default:
-          error('Unknown fdselect format ' + format);
+          throw new Error('Unknown fdselect format ' + format);
           break;
       }
       var end = pos;
@@ -6447,7 +6447,7 @@ var CFFDict = (function CFFDictClosure() {
     },
     setByName: function CFFDict_setByName(name, value) {
       if (!(name in this.nameToKeyMap)) {
-        error('Invalid dictionary name "' + name + '"');
+        throw new Error('Invalid dictionary name "' + name + '"');
       }
       this.values[this.nameToKeyMap[name]] = value;
     },
@@ -6456,7 +6456,7 @@ var CFFDict = (function CFFDictClosure() {
     },
     getByName: function CFFDict_getByName(name) {
       if (!(name in this.nameToKeyMap))
-        error('Invalid dictionary name "' + name + '"');
+        throw new Error('Invalid dictionary name "' + name + '"');
       var key = this.nameToKeyMap[name];
       if (!(key in this.values))
         return this.defaults[key];
@@ -6631,7 +6631,7 @@ var CFFOffsetTracker = (function CFFOffsetTrackerClosure() {
     },
     track: function CFFOffsetTracker_track(key, location) {
       if (key in this.offsets)
-        error('Already tracking location of ' + key);
+        throw new Error('Already tracking location of ' + key);
       this.offsets[key] = location;
     },
     offset: function CFFOffsetTracker_offset(value) {
@@ -6643,7 +6643,7 @@ var CFFOffsetTracker = (function CFFOffsetTrackerClosure() {
                                                                  values,
                                                                  output) {
       if (!(key in this.offsets))
-        error('Not tracking location of ' + key);
+        throw new Error('Not tracking location of ' + key);
       var data = output.data;
       var dataOffset = this.offsets[key];
       var size = 5;
@@ -6656,7 +6656,7 @@ var CFFOffsetTracker = (function CFFOffsetTrackerClosure() {
         // It's easy to screw up offsets so perform this sanity check.
         if (data[offset0] !== 0x1d || data[offset1] !== 0 ||
             data[offset2] !== 0 || data[offset3] !== 0 || data[offset4] !== 0)
-          error('writing to an offset that is not empty');
+            throw new Error('writing to an offset that is not empty');
         var value = values[i];
         data[offset0] = 0x1d;
         data[offset1] = (value >> 24) & 0xFF;
@@ -6963,7 +6963,7 @@ var CFFCompiler = (function CFFCompilerClosure() {
                 out = out.concat(this.encodeNumber(values[k]));
               break;
             default:
-              error('Unknown data type of ' + type);
+              throw new Error('Unknown data type of ' + type);
               break;
           }
         }

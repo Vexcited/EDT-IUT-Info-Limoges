@@ -74,7 +74,7 @@ class Parser {
       while (!isCmd(this.buf1, ']') && !isEOF(this.buf1))
         array.push(this.getObj(cipherTransform));
       if (isEOF(this.buf1))
-        error('End of file inside array');
+        throw new Error('End of file inside array');
       this.shift();
       return array;
     }
@@ -95,7 +95,7 @@ class Parser {
         dict.set(key, this.getObj(cipherTransform));
       }
       if (isEOF(this.buf1))
-        error('End of file inside dictionary');
+        throw new Error('End of file inside dictionary');
 
       // stream objects are not allowed inside content streams or
       // object streams
@@ -139,7 +139,7 @@ class Parser {
     var dict = new Dict();
     while (!isCmd(this.buf1, 'ID') && !isEOF(this.buf1)) {
       if (!isName(this.buf1))
-        error('Dictionary key must be a name object');
+        throw new Error('Dictionary key must be a name object');
 
       var key = this.buf1.name;
       this.shift();
@@ -255,7 +255,7 @@ class Parser {
         stream.pos += scanLength;
       }
       if (!found) {
-        error('Missing endstream');
+        throw new Error('Missing endstream');
       }
       length = skipped;
 
@@ -284,7 +284,7 @@ class Parser {
       for (var i = 0, ii = filterArray.length; i < ii; ++i) {
         filter = filterArray[i];
         if (!isName(filter))
-          error('Bad filter name: ' + filter);
+          throw new Error('Bad filter name: ' + filter);
 
         params = null;
         if (isArray(paramsArray) && (i in paramsArray))
@@ -425,7 +425,7 @@ var Lexer = (function LexerClosure() {
       }
       var value = parseFloat(str);
       if (isNaN(value))
-        error('Invalid floating point number: ' + value);
+        throw new Error('Invalid floating point number: ' + value);
       return value;
     },
     getString: function Lexer_getString() {
@@ -525,7 +525,7 @@ var Lexer = (function LexerClosure() {
           if (x != -1) {
             var x2 = toHexDigit(this.nextChar());
             if (x2 == -1)
-              error('Illegal digit in hex char in name: ' + x2);
+              throw new Error('Illegal digit in hex char in name: ' + x2);
             str += String.fromCharCode((x << 4) | x2);
           } else {
             str += '#';
@@ -639,7 +639,7 @@ var Lexer = (function LexerClosure() {
           this.nextChar();
           return Cmd.get('}');
         case 0x29: // ')'
-          error('Illegal character: ' + ch);
+        throw new Error('Illegal character: ' + ch);
           break;
       }
 
@@ -655,7 +655,7 @@ var Lexer = (function LexerClosure() {
           break;
         }
         if (str.length == 128)
-          error('Command token too long: ' + str.length);
+          throw new Error('Command token too long: ' + str.length);
         str = possibleCommand;
         knownCommandFound = knownCommands && (str in knownCommands);
       }
@@ -713,7 +713,7 @@ var Linearization = (function LinearizationClosure() {
           obj > 0) {
         return obj;
       }
-      error('"' + name + '" field in linearization table is invalid');
+      throw new Error('"' + name + '" field in linearization table is invalid');
     },
     getHint: function Linearization_getHint(index) {
       var linDict = this.linDict;
@@ -725,7 +725,7 @@ var Linearization = (function LinearizationClosure() {
           obj2 > 0) {
         return obj2;
       }
-      error('Hints table in linearization table is invalid: ' + index);
+      throw new Error('Hints table in linearization table is invalid: ' + index);
     },
     get length() {
       if (!isDict(this.linDict))

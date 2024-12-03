@@ -876,7 +876,7 @@ var CanvasGraphics = (function CanvasGraphicsClosure() {
       var current = this.current;
 
       if (!fontObj)
-        error('Can\'t find font for ' + fontRefName);
+        throw new Error('Can\'t find font for ' + fontRefName);
 
       current.fontMatrix = fontObj.fontMatrix ? fontObj.fontMatrix :
                                                 FONT_IDENTITY_MATRIX;
@@ -1376,7 +1376,7 @@ var CanvasGraphics = (function CanvasGraphicsClosure() {
       } else if (IR[0] == 'RadialAxial' || IR[0] == 'Dummy') {
         var pattern = Pattern.shadingFromIR(IR);
       } else {
-        error('Unkown IR type ' + IR[0]);
+        throw new Error('Unkown IR type ' + IR[0]);
       }
       return pattern;
     },
@@ -1491,10 +1491,10 @@ var CanvasGraphics = (function CanvasGraphicsClosure() {
 
     // Images
     beginInlineImage: function CanvasGraphics_beginInlineImage() {
-      error('Should not call beginInlineImage');
+      throw new Error('Should not call beginInlineImage');
     },
     beginImageData: function CanvasGraphics_beginImageData() {
-      error('Should not call beginImageData');
+      throw new Error('Should not call beginImageData');
     },
 
     paintFormXObjectBegin: function CanvasGraphics_paintFormXObjectBegin(matrix,
@@ -1626,7 +1626,7 @@ var CanvasGraphics = (function CanvasGraphicsClosure() {
     paintJpegXObject: function CanvasGraphics_paintJpegXObject(objId, w, h) {
       var domImage = this.objs.get(objId);
       if (!domImage) {
-        error('Dependent image isn\'t ready yet');
+        throw new Error('Dependent image isn\'t ready yet');
       }
 
       this.save();
@@ -1727,7 +1727,7 @@ var CanvasGraphics = (function CanvasGraphicsClosure() {
     paintImageXObject: function CanvasGraphics_paintImageXObject(objId) {
       var imgData = this.objs.get(objId);
       if (!imgData)
-        error('Dependent image isn\'t ready yet');
+        throw new Error('Dependent image isn\'t ready yet');
 
       this.paintInlineImageXObject(imgData);
     },

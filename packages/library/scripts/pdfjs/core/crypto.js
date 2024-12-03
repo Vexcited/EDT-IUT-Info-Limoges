@@ -551,17 +551,17 @@ var CipherTransformFactory = (function CipherTransformFactoryClosure() {
   function CipherTransformFactory(dict, fileId, password) {
     var filter = dict.get('Filter');
     if (!isName(filter) || filter.name != 'Standard')
-      error('Error: unknown encryption method');
+      throw new Error('Error: unknown encryption method');
     this.dict = dict;
     var algorithm = dict.get('V');
     if (!isInt(algorithm) ||
       (algorithm != 1 && algorithm != 2 && algorithm != 4))
-      error('Error: unsupported encryption algorithm');
+      throw new Error('Error: unsupported encryption algorithm');
     this.algorithm = algorithm;
     var keyLength = dict.get('Length') || 40;
     if (!isInt(keyLength) ||
       keyLength < 40 || (keyLength % 8) !== 0)
-      error('Error: invalid key length');
+      throw new Error('Error: invalid key length');
     // prepare keys
     var ownerPassword = stringToBytes(dict.get('O')).subarray(0, 32);
     var userPassword = stringToBytes(dict.get('U')).subarray(0, 32);
@@ -646,7 +646,7 @@ var CipherTransformFactory = (function CipherTransformFactoryClosure() {
           buildObjectKey(num, gen, key, true));
       };
     }
-    error('Unknown crypto method');
+    throw new Error('Unknown crypto method');
   }
 
   CipherTransformFactory.prototype = {

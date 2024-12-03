@@ -72,7 +72,7 @@ var FontRendererFactory = (function FontRendererFactoryClosure() {
       }
       return ranges;
     }
-    error('not supported cmap: ' + format);
+    throw new Error('not supported cmap: ' + format);
   }
 
   function parseCff(data, start, end) {
@@ -418,7 +418,7 @@ var FontRendererFactory = (function FontRendererFactoryClosure() {
                 bezierCurveTo(xa, ya, xb, yb, x, y);
                 break;
               default:
-                error('unknown operator: 12 ' + v);
+                throw new Error('unknown operator: 12 ' + v);
             }
             break;
           case 14: // endchar
@@ -561,7 +561,7 @@ var FontRendererFactory = (function FontRendererFactoryClosure() {
             break;
           default:
             if (v < 32)
-              error('unknown operator: ' + v);
+              throw new Error('unknown operator: ' + v);
             if (v < 247)
               stack.push(v - 139);
             else if (v < 251)
@@ -617,7 +617,7 @@ var FontRendererFactory = (function FontRendererFactoryClosure() {
     },
 
     compileGlyphImpl: function () {
-      error('Children classes should implement this.');
+      throw new Error('Children classes should implement this.');
     },
 
     hasBuiltPath: function (unicode) {

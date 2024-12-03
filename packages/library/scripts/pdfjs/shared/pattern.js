@@ -26,14 +26,14 @@ var PatternType = {
 var Pattern = (function PatternClosure() {
   // Constructor should define this.getPattern
   function Pattern() {
-    error('should not call Pattern constructor');
+    throw new Error('should not call Pattern constructor');
   }
 
   Pattern.prototype = {
     // Input: current Canvas context
     // Output: the appropriate fillStyle or strokeStyle
     getPattern: function Pattern_getPattern(ctx) {
-      error('Should not call Pattern.getStyle: ' + ctx);
+      throw new Error('Should not call Pattern.getStyle: ' + ctx);
     }
   };
 
@@ -122,7 +122,7 @@ Shadings.RadialAxial = (function RadialAxialClosure() {
       for (var j = 0, jj = fnObj.length; j < jj; j++) {
         var obj = xref.fetchIfRef(fnObj[j]);
         if (!isPDFFunction(obj)) {
-          error('Invalid function');
+          throw new Error('Invalid function');
         }
         fnArray.push(PDFFunction.parse(xref, obj));
       }
@@ -135,7 +135,7 @@ Shadings.RadialAxial = (function RadialAxialClosure() {
       };
     } else {
       if (!isPDFFunction(fnObj)) {
-        error('Invalid function');
+        throw new Error('Invalid function');
       }
       fn = PDFFunction.parse(xref, fnObj);
     }
@@ -223,7 +223,7 @@ Shadings.RadialAxial = (function RadialAxialClosure() {
         var r0 = coordsArr[2];
         var r1 = coordsArr[5];
       } else {
-        error('getPattern type unknown: ' + type);
+        throw new Error('getPattern type unknown: ' + type);
       }
 
       var matrix = this.matrix;
@@ -401,7 +401,7 @@ var TilingPattern = (function TilingPatternClosure() {
           context.strokeStyle = cssColor;
           break;
         default:
-          error('Unsupported paint type: ' + paintType);
+          throw new Error('Unsupported paint type: ' + paintType);
       }
     },
 

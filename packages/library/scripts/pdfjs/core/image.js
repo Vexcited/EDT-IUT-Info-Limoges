@@ -63,7 +63,7 @@ var PDFImage = (function PDFImageClosure() {
     this.height = dict.get('Height', 'H');
 
     if (this.width < 1 || this.height < 1)
-      error('Invalid image width: ' + this.width + ' or height: ' +
+      throw new Error('Invalid image width: ' + this.width + ' or height: ' +
             this.height);
 
     this.interpolate = dict.get('Interpolate', 'I') || false;
@@ -77,7 +77,7 @@ var PDFImage = (function PDFImageClosure() {
         if (this.imageMask)
           bitsPerComponent = 1;
         else
-          error('Bits per component missing in image: ' + this.imageMask);
+          throw new Error('Bits per component missing in image: ' + this.imageMask);
       }
     }
     this.bpc = bitsPerComponent;
@@ -376,7 +376,7 @@ var PDFImage = (function PDFImageClosure() {
             buf[i] = opacity;
           }
         } else {
-          error('Unknown mask format.');
+          throw new Error('Unknown mask format.');
         }
       } else {
         buf = new Uint8Array(width * height);
@@ -455,7 +455,7 @@ var PDFImage = (function PDFImageClosure() {
     fillGrayBuffer: function PDFImage_fillGrayBuffer(buffer) {
       var numComps = this.numComps;
       if (numComps != 1)
-        error('Reading gray scale from a color image: ' + numComps);
+        throw new Error('Reading gray scale from a color image: ' + numComps);
 
       var width = this.width;
       var height = this.height;

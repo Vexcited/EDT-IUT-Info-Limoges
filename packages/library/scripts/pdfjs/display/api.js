@@ -113,12 +113,12 @@ PDFJS.getDocument = function getDocument(source,
     source = { data: source };
   }
   else if (typeof source !== 'object') {
-    error('Invalid parameter in getDocument, need either Uint8Array, ' +
+    throw new Error('Invalid parameter in getDocument, need either Uint8Array, ' +
           'string or a parameter object');
   }
 
   if (!source.data)
-    error('Invalid parameter array, need .data');
+    throw new Error('Invalid parameter array, need .data');
 
   const workerReadyPromise = new PDFJS.Promise();
   
@@ -621,7 +621,7 @@ class WorkerTransport {
           this.commonObjs.resolve(id, data[2]);
           break;
         default:
-          error('Got unknown common object type ' + type);
+          throw new Error('Got unknown common object type ' + type);
       }
     }, this);
 
@@ -650,7 +650,7 @@ class WorkerTransport {
           }
           break;
         default:
-          error('Got unknown object type ' + type);
+          throw new Error('Got unknown object type ' + type);
       }
     }, this);
 
@@ -663,14 +663,14 @@ class WorkerTransport {
       if (page.displayReadyPromise)
         page.displayReadyPromise.reject(data.error);
       else
-        error(data.error);
+        throw new Error(data.error);
     }, this);
 
     messageHandler.on('JpegDecode', function(data, promise) {
       var imageUrl = data[0];
       var components = data[1];
       if (components != 3 && components != 1)
-        error('Only 3 component or 1 component can be returned');
+        throw new Error('Only 3 component or 1 component can be returned');
 
       var img = new Image();
       img.onload = (function messageHandler_onloadClosure() {
@@ -832,7 +832,7 @@ var PDFObjects = (function PDFObjectsClosure() {
       // If there isn't an object yet or the object isn't resolved, then the
       // data isn't ready yet!
       if (!obj || !obj.resolved)
-        error('Requesting object that isn\'t resolved yet ' + objId);
+        throw new Error('Requesting object that isn\'t resolved yet ' + objId);
 
       return obj.data;
     },

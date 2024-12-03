@@ -614,7 +614,7 @@ var PartialEvaluator = (function PartialEvaluatorClosure() {
                                                       resources);
                   args = pattern.getIR();
                 } else {
-                  error('Unkown PatternType ' + typeNum);
+                  throw new Error('Unkown PatternType ' + typeNum);
                 }
               }
               break;
@@ -645,7 +645,7 @@ var PartialEvaluator = (function PartialEvaluatorClosure() {
                   args = [];
                   continue;
                 } else {
-                  error('Unhandled XObject subtype ' + type.name);
+                  throw new Error('Unhandled XObject subtype ' + type.name);
                 }
               }
               break;
@@ -701,11 +701,11 @@ var PartialEvaluator = (function PartialEvaluatorClosure() {
             case OPS.shadingFill:
               var shadingRes = resources.get('Shading');
               if (!shadingRes)
-                error('No shading resource found');
+                throw new Error('No shading resource found');
 
               var shading = shadingRes.get(args[0].name);
               if (!shading)
-                error('No shading object found');
+                throw new Error('No shading object found');
 
               var shadingFill = Pattern.parseShading(
                   shading, null, xref, resources);
@@ -1010,7 +1010,7 @@ var PartialEvaluator = (function PartialEvaluatorClosure() {
           hasEncoding = true;
           baseEncoding = Encodings[encoding.name];
         } else {
-          error('Encoding is not a Name nor a Dict');
+          throw new Error('Encoding is not a Name nor a Dict');
         }
       }
 
@@ -1027,7 +1027,7 @@ var PartialEvaluator = (function PartialEvaluatorClosure() {
       if (isName(cmapObj)) {
         var isIdentityMap = cmapObj.name.substring(0, 9) == 'Identity-';
         if (!isIdentityMap)
-          error('ToUnicode file cmap translation not implemented');
+          throw new Error('ToUnicode file cmap translation not implemented');
       } else if (isStream(cmapObj)) {
         var cmap = CMapFactory.create(cmapObj).map;
         // Convert UTF-16BE
@@ -1209,7 +1209,7 @@ var PartialEvaluator = (function PartialEvaluatorClosure() {
         //  - get the FontDescriptor from the descendant font
         var df = dict.get('DescendantFonts');
         if (!df)
-          error('Descendant fonts are not specified');
+          throw new Error('Descendant fonts are not specified');
 
         dict = isArray(df) ? xref.fetchIfRef(df[0]) : df;
 
@@ -1232,7 +1232,7 @@ var PartialEvaluator = (function PartialEvaluatorClosure() {
           // This case is here for compatibility.
           var baseFontName = dict.get('BaseFont');
           if (!isName(baseFontName))
-            error('Base font is not specified');
+            throw new Error('Base font is not specified');
 
           // Using base font name as a font name.
           baseFontName = baseFontName.name.replace(/[,_]/g, '-');
