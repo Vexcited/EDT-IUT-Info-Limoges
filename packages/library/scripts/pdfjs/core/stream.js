@@ -1,102 +1,114 @@
-/* Copyright 2012 Mozilla Foundation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-/* globals bytesToString, ColorSpace, Dict, EOF, error, info, Jbig2Image,
-           JpegImage, JpxImage, Lexer, Util, PDFJS */
-
+// @ts-check
 'use strict';
 
-var Stream = (function StreamClosure() {
-  function Stream(arrayBuffer, start, length, dict) {
-    this.bytes = arrayBuffer instanceof Uint8Array ? arrayBuffer :
-      new Uint8Array(arrayBuffer);
+class Stream {
+  /**
+   * @param {ArrayBuffer | Uint8Array} arrayBuffer 
+   * @param {number} [start] 
+   * @param {number} [length] 
+   * @param {any} [dict] 
+   */
+  constructor (arrayBuffer, start, length, dict) {
+    this.bytes = arrayBuffer instanceof Uint8Array ? arrayBuffer : new Uint8Array(arrayBuffer);
     this.start = start || 0;
     this.pos = this.start;
+
+    // @ts-expect-error : `start + length` is not always defined
     this.end = (start + length) || this.bytes.length;
+    
     this.dict = dict;
   }
 
-  // required methods for a stream. if a particular stream does not
-  // implement these, an error should be thrown
-  Stream.prototype = {
-    get length() {
-      return this.end - this.start;
-    },
-    getByte: function Stream_getByte() {
-      if (this.pos >= this.end)
-        return -1;
-      return this.bytes[this.pos++];
-    },
-    // returns subarray of original buffer
-    // should only be read
-    getBytes: function Stream_getBytes(length) {
-      var bytes = this.bytes;
-      var pos = this.pos;
-      var strEnd = this.end;
-
-      if (!length)
-        return bytes.subarray(pos, strEnd);
-
-      var end = pos + length;
-      if (end > strEnd)
-        end = strEnd;
-
-      this.pos = end;
-      return bytes.subarray(pos, end);
-    },
-    peekBytes: function Stream_peekBytes(length) {
-      var bytes = this.getBytes(length);
-      this.pos -= bytes.length;
-      return bytes;
-    },
-    skip: function Stream_skip(n) {
-      if (!n)
-        n = 1;
-      this.pos += n;
-    },
-    reset: function Stream_reset() {
-      this.pos = this.start;
-    },
-    moveStart: function Stream_moveStart() {
-      this.start = this.pos;
-    },
-    makeSubStream: function Stream_makeSubStream(start, length, dict) {
-      return new Stream(this.bytes.buffer, start, length, dict);
-    },
-    isStream: true
-  };
-
-  return Stream;
-})();
-
-var StringStream = (function StringStreamClosure() {
-  function StringStream(str) {
-    var length = str.length;
-    var bytes = new Uint8Array(length);
-    for (var n = 0; n < length; ++n)
-      bytes[n] = str.charCodeAt(n);
-    Stream.call(this, bytes);
+  /**
+   * @returns {number}
+   */
+  get length() {
+    return this.end - this.start;
   }
 
-  StringStream.prototype = Stream.prototype;
+  /**
+   * @returns {number}
+   */
+  getByte () {
+    if (this.pos >= this.end)
+      return -1;
 
-  return StringStream;
-})();
+    return this.bytes[this.pos++];
+  }
+
+  /**
+   * Returns subarray of original buffer
+   * should only be read.
+   * 
+   * @param {number} length
+   * @returns {Uint8Array}
+   */
+  getBytes (length) {
+    var bytes = this.bytes;
+    var pos = this.pos;
+    var strEnd = this.end;
+
+    if (!length)
+      return bytes.subarray(pos, strEnd);
+
+    var end = pos + length;
+    if (end > strEnd)
+      end = strEnd;
+
+    this.pos = end;
+    return bytes.subarray(pos, end);
+  }
+
+  /**
+   * @param {number} length 
+   * @returns {Uint8Array}
+   */
+  peekBytes (length) {
+    var bytes = this.getBytes(length);
+    this.pos -= bytes.length;
+    return bytes;
+  }
+
+  /**
+   * @param {number} [n]
+   * @returns {void} 
+   */
+  skip (n) {
+    if (!n) n = 1;
+    this.pos += n;
+  }
+
+  /**
+   * @returns {void}
+   */
+  reset () {
+    this.pos = this.start;
+  }
+  
+  /**
+   * @returns {void}
+   */
+  moveStart () {
+    this.start = this.pos;
+  }
+
+  /**
+   * @param {number} start 
+   * @param {number} length 
+   * @param {any} [dict] 
+   * @returns 
+   */
+  makeSubStream (start, length, dict) {
+    return new Stream(this.bytes.buffer, start, length, dict);
+  }
+
+  isStream = true
+}
 
 // super class for the decoding streams
 var DecodeStream = (function DecodeStreamClosure() {
   function DecodeStream() {
+    console.log("DecodeStream::new()");
     this.pos = 0;
     this.bufferLength = 0;
     this.eof = false;
@@ -365,13 +377,13 @@ var FlateStream = (function FlateStreamClosure() {
     var cmf = bytes[bytesPos++];
     var flg = bytes[bytesPos++];
     if (cmf == -1 || flg == -1)
-      error('Invalid header in flate stream: ' + cmf + ', ' + flg);
+      throw new Error('Invalid header in flate stream: ' + cmf + ', ' + flg);
     if ((cmf & 0x0f) != 0x08)
-      error('Unknown compression method in flate stream: ' + cmf + ', ' + flg);
+      throw new Error('Unknown compression method in flate stream: ' + cmf + ', ' + flg);
     if ((((cmf << 8) + flg) % 31) !== 0)
-      error('Bad FCHECK in flate stream: ' + cmf + ', ' + flg);
+      throw new Error('Bad FCHECK in flate stream: ' + cmf + ', ' + flg);
     if (flg & 0x20)
-      error('FDICT bit set in flate stream: ' + cmf + ', ' + flg);
+      throw new Error('FDICT bit set in flate stream: ' + cmf + ', ' + flg);
 
     this.bytes = bytes;
     this.bytesPos = bytesPos;
@@ -393,7 +405,7 @@ var FlateStream = (function FlateStreamClosure() {
     var b;
     while (codeSize < bits) {
       if (typeof (b = bytes[bytesPos++]) == 'undefined')
-        error('Bad encoding in flate stream');
+        throw new Error('Bad encoding in flate stream');
       codeBuf |= b << codeSize;
       codeSize += 8;
     }
@@ -415,7 +427,7 @@ var FlateStream = (function FlateStreamClosure() {
     while (codeSize < maxLen) {
       var b;
       if (typeof (b = bytes[bytesPos++]) == 'undefined')
-        error('Bad encoding in flate stream');
+        throw new Error('Bad encoding in flate stream');
       codeBuf |= (b << codeSize);
       codeSize += 8;
     }
@@ -423,7 +435,7 @@ var FlateStream = (function FlateStreamClosure() {
     var codeLen = code >> 16;
     var codeVal = code & 0xffff;
     if (codeSize === 0 || codeSize < codeLen || codeLen === 0)
-      error('Bad encoding in flate stream');
+      throw new Error('Bad encoding in flate stream');
     this.codeBuf = (codeBuf >> codeLen);
     this.codeSize = (codeSize - codeLen);
     this.bytesPos = bytesPos;
@@ -482,21 +494,21 @@ var FlateStream = (function FlateStreamClosure() {
       var b;
 
       if (typeof (b = bytes[bytesPos++]) == 'undefined')
-        error('Bad block header in flate stream');
+        throw new Error('Bad block header in flate stream');
       var blockLen = b;
       if (typeof (b = bytes[bytesPos++]) == 'undefined')
-        error('Bad block header in flate stream');
+        throw new Error('Bad block header in flate stream');
       blockLen |= (b << 8);
       if (typeof (b = bytes[bytesPos++]) == 'undefined')
-        error('Bad block header in flate stream');
+        throw new Error('Bad block header in flate stream');
       var check = b;
       if (typeof (b = bytes[bytesPos++]) == 'undefined')
-        error('Bad block header in flate stream');
+        throw new Error('Bad block header in flate stream');
       check |= (b << 8);
       if (check != (~blockLen & 0xffff) &&
           (blockLen !== 0 || check !== 0)) {
         // Ignoring error for bad "empty" block (see issue 1277)
-        error('Bad uncompressed block length in flate stream');
+        throw new Error('Bad uncompressed block length in flate stream');
       }
 
       this.codeBuf = 0;
@@ -562,7 +574,7 @@ var FlateStream = (function FlateStreamClosure() {
       distCodeTable =
         this.generateHuffmanTable(codeLengths.subarray(numLitCodes, codes));
     } else {
-      error('Unknown block type in flate stream');
+      throw new Error('Unknown block type in flate stream');
     }
 
     var buffer = this.buffer;
@@ -613,7 +625,7 @@ var PredictorStream = (function PredictorStreamClosure() {
     if (predictor <= 1)
       return str; // no prediction
     if (predictor !== 2 && (predictor < 10 || predictor > 15))
-      error('Unsupported predictor: ' + predictor);
+      throw new Error('Unsupported predictor: ' + predictor);
 
     if (predictor === 2)
       this.readBlock = this.readBlockTiff;
@@ -784,7 +796,7 @@ var PredictorStream = (function PredictorStreamClosure() {
         }
         break;
       default:
-        error('Unsupported predictor: ' + predictor);
+        throw new Error('Unsupported predictor: ' + predictor);
     }
     this.bufferLength += rowBytes;
   };
@@ -826,7 +838,7 @@ var JpegStream = (function JpegStreamClosure() {
       this.bufferLength = data.length;
       this.eof = true;
     } catch (e) {
-      error('JPEG error: ' + e);
+      throw new Error('JPEG error: ' + e);
     }
   };
   JpegStream.prototype.getIR = function JpegStream_getIR() {
@@ -879,7 +891,7 @@ var JpxStream = (function JpxStreamClosure() {
     var height = jpxImage.height;
     var componentsCount = jpxImage.componentsCount;
     if (componentsCount != 1 && componentsCount != 3 && componentsCount != 4)
-      error('JPX with ' + componentsCount + ' components is not supported');
+      throw new Error('JPX with ' + componentsCount + ' components is not supported');
 
     var data = new Uint8Array(width * height * componentsCount);
 
