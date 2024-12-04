@@ -1,25 +1,6 @@
-/* Copyright 2012 Mozilla Foundation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-/* globals Ascii85Stream, AsciiHexStream, CCITTFaxStream, Cmd, Dict, error,
-           FlateStream, isArray, isCmd, isDict, isInt, isName, isNum, isRef,
-           isString, Jbig2Stream, JpegStream, JpxStream, LZWStream, Name,
-           NullStream, PredictorStream, Ref, RunLengthStream, warn, info */
-
 'use strict';
 
-var EOF = {};
+const EOF = {};
 
 function isEOF(v) {
   return v == EOF;
@@ -63,16 +44,16 @@ class Parser {
     }
   }
 
-  getObj (cipherTransform) {
+  getObj () {
     if (isCmd(this.buf1, 'BI')) { // inline image
       this.shift();
-      return this.makeInlineImage(cipherTransform);
+      return this.makeInlineImage();
     }
     if (isCmd(this.buf1, '[')) { // array
       this.shift();
       var array = [];
       while (!isCmd(this.buf1, ']') && !isEOF(this.buf1))
-        array.push(this.getObj(cipherTransform));
+        array.push(this.getObj());
       if (isEOF(this.buf1))
         throw new Error('End of file inside array');
       this.shift();
@@ -83,7 +64,7 @@ class Parser {
       var dict = new Dict(this.xref);
       while (!isCmd(this.buf1, '>>') && !isEOF(this.buf1)) {
         if (!isName(this.buf1)) {
-          info('Malformed dictionary, key must be a name object');
+          console.info('Malformed dictionary, key must be a name object');
           this.shift();
           continue;
         }
@@ -92,7 +73,7 @@ class Parser {
         this.shift();
         if (isEOF(this.buf1))
           break;
-        dict.set(key, this.getObj(cipherTransform));
+        dict.set(key, this.getObj());
       }
       if (isEOF(this.buf1))
         throw new Error('End of file inside dictionary');
@@ -101,7 +82,7 @@ class Parser {
       // object streams
       if (isCmd(this.buf2, 'stream')) {
         return this.allowStreams ?
-          this.makeStream(dict, cipherTransform) : dict;
+          this.makeStream(dict) : dict;
       }
       this.shift();
       return dict;
@@ -120,8 +101,6 @@ class Parser {
     if (isString(this.buf1)) { // string
       var str = this.buf1;
       this.shift();
-      if (cipherTransform)
-        str = cipherTransform.decryptString(str);
       return str;
     }
 
@@ -131,7 +110,7 @@ class Parser {
     return obj;
   }
 
-  makeInlineImage (cipherTransform) {
+  makeInlineImage () {
     var lexer = this.lexer;
     var stream = lexer.stream;
 
@@ -145,7 +124,7 @@ class Parser {
       this.shift();
       if (isEOF(this.buf1))
         break;
-      dict.set(key, this.getObj(cipherTransform));
+      dict.set(key, this.getObj());
     }
 
     // parse image stream
@@ -184,8 +163,6 @@ class Parser {
 
     var length = (stream.pos - 4) - startPos;
     var imageStream = stream.makeSubStream(startPos, length, dict);
-    if (cipherTransform)
-      imageStream = cipherTransform.createStream(imageStream);
     imageStream = this.filter(imageStream, dict, length);
     imageStream.dict = dict;
 
@@ -200,7 +177,7 @@ class Parser {
     return isRef(obj) ? this.xref.fetch(obj) : obj;
   }
 
-  makeStream (dict, cipherTransform) {
+  makeStream (dict) {
     var lexer = this.lexer;
     var stream = lexer.stream;
 
@@ -211,7 +188,7 @@ class Parser {
     // get length
     var length = this.fetchIfRef(dict.get('Length'));
     if (!isInt(length)) {
-      info('Bad ' + length + ' attribute in stream');
+      console.info('Bad ' + length + ' attribute in stream');
       length = 0;
     }
 
@@ -266,8 +243,6 @@ class Parser {
     this.shift(); // 'endstream'
 
     stream = stream.makeSubStream(pos, length, dict);
-    if (cipherTransform)
-      stream = cipherTransform.createStream(stream);
     stream = this.filter(stream, dict, length);
     stream.dict = dict;
     return stream;
@@ -303,45 +278,12 @@ class Parser {
     }
     if (name == 'FlateDecode' || name == 'Fl') {
       if (params) {
-        return new PredictorStream(new FlateStream(stream), params);
+        // return new PredictorStream(new FlateStream(stream), params);
       }
       return new FlateStream(stream);
     }
-    if (name == 'LZWDecode' || name == 'LZW') {
-      var earlyChange = 1;
-      if (params) {
-        if (params.has('EarlyChange'))
-          earlyChange = params.get('EarlyChange');
-        return new PredictorStream(
-          new LZWStream(stream, earlyChange), params);
-      }
-      return new LZWStream(stream, earlyChange);
-    }
-    if (name == 'DCTDecode' || name == 'DCT') {
-      var bytes = stream.getBytes(length);
-      return new JpegStream(bytes, stream.dict, this.xref);
-    }
-    if (name == 'JPXDecode' || name == 'JPX') {
-      var bytes = stream.getBytes(length);
-      return new JpxStream(bytes, stream.dict);
-    }
-    if (name == 'ASCII85Decode' || name == 'A85') {
-      return new Ascii85Stream(stream);
-    }
-    if (name == 'ASCIIHexDecode' || name == 'AHx') {
-      return new AsciiHexStream(stream);
-    }
-    if (name == 'CCITTFaxDecode' || name == 'CCF') {
-      return new CCITTFaxStream(stream, params);
-    }
-    if (name == 'RunLengthDecode' || name == 'RL') {
-      return new RunLengthStream(stream);
-    }
-    if (name == 'JBIG2Decode') {
-      var bytes = stream.getBytes(length);
-      return new Jbig2Stream(bytes, stream.dict);
-    }
-    warn('filter "' + name + '" not supported yet');
+    
+    console.warn('filter "' + name + '" not supported yet');
     return stream;
   }
 }

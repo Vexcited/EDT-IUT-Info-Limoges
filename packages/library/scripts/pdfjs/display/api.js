@@ -1,23 +1,3 @@
-/* Copyright 2012 Mozilla Foundation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-/* globals CanvasGraphics, combineUrl, createScratchCanvas, error,
-           FontLoader, globalScope, info, isArrayBuffer, loadJpegStream,
-           MessageHandler, PDFJS, Promise, StatTimer, warn,
-           PasswordResponses, Util, loadScript,
-           FontFace */
-
 'use strict';
 
 /**
@@ -106,9 +86,7 @@ PDFJS.postMessageTransfers = PDFJS.postMessageTransfers === undefined ?
  *
  * @return {Promise} A promise that is resolved with {PDFDocumentProxy} object.
  */
-PDFJS.getDocument = function getDocument(source,
-                                         passwordCallback,
-) {
+PDFJS.getDocument = function getDocument(source, passwordCallback) {
   if (isArrayBuffer(source)) {
     source = { data: source };
   }
@@ -407,21 +385,7 @@ class PDFPageProxy {
 
     return renderTask;
   }
-  /**
-   * @return {Promise} That is resolved with the a {string} that is the text
-   * content from the page.
-   */
-  getTextContent () {
-    var promise = new PDFJS.Promise();
-    this.transport.messageHandler.send('GetTextContent', {
-        pageIndex: this.pageNumber - 1
-      },
-      function textContentCallback(textContent) {
-        promise.resolve(textContent);
-      }
-    );
-    return promise;
-  }
+
   /**
    * Stub for future feature.
    */
@@ -515,7 +479,7 @@ class WorkerTransport {
 
   setupFakeWorker () {
     // If we don't use a worker, just post/sendMessage to the main thread.
-    var fakeWorker = {
+    const fakeWorker = {
       postMessage: function WorkerTransport_postMessage(obj) {
         fakeWorker.onmessage({ data: obj });
       },
@@ -523,7 +487,7 @@ class WorkerTransport {
     };
 
     // defines `onmessage`
-    var messageHandler = new MessageHandler('main', fakeWorker);
+    const messageHandler = new MessageHandler('main', fakeWorker);
     this.setupMessageHandler(messageHandler);
 
     // If the main thread is our worker, setup the handling for the messages
@@ -634,10 +598,6 @@ class WorkerTransport {
         return;
 
       switch (type) {
-        case 'JpegStream':
-          var imageData = data[3];
-          loadJpegStream(id, imageData, pageProxy.objs);
-          break;
         case 'Image':
           var imageData = data[3];
           pageProxy.objs.resolve(id, imageData);

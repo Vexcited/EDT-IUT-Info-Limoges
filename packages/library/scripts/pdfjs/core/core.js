@@ -169,49 +169,12 @@ class Page {
     var opList = new OperatorList(handler, this.pageIndex);
 
     handler.send('StartRenderPage', {
-      transparency: partialEvaluator.hasBlendModes(this.resources),
+      transparency: false,
       pageIndex: this.pageIndex
     });
 
     partialEvaluator.getOperatorList(contentStream, this.resources, opList);
     opList.flush(true);
-  }
-
-  extractTextContent () {
-    var handler = {
-      on: function nullHandlerOn() {},
-      send: function nullHandlerSend() {}
-    };
-
-    var self = this;
-
-    var textContentPromise = new Promise();
-
-    var pdfManager = this.pdfManager;
-    var contentStreamPromise = pdfManager.ensure(this, 'getContentStream',
-                                                  []);
-
-    var resourcesPromise = this.loadResources([
-      'ExtGState',
-      'XObject',
-      'Font'
-    ]);
-
-    var dataPromises = Promise.all([contentStreamPromise,
-                                    resourcesPromise]);
-    dataPromises.then(function(data) {
-      var contentStream = data[0];
-      var partialEvaluator = new PartialEvaluator(
-            pdfManager, self.xref, handler,
-            self.pageIndex, 'p' + self.pageIndex + '_',
-            self.idCounters, self.fontCache);
-
-      var bidiTexts = partialEvaluator.getTextContent(contentStream,
-                                                      self.resources);
-      textContentPromise.resolve(bidiTexts);
-    });
-
-    return textContentPromise;
   }
 }
 

@@ -21,7 +21,7 @@
 'use strict';
 
 var WorkerMessageHandler = PDFJS.WorkerMessageHandler = {
-  setup: function wphSetup(handler) {
+  setup (handler) {
     var pdfManager;
 
     async function loadDocument (recoveryMode) {
@@ -128,17 +128,6 @@ var WorkerMessageHandler = PDFJS.WorkerMessageHandler = {
       // pre-compile the PDF page and fetch the fonts/images.
       await page.getOperatorList(handler);
     }, this);
-
-    handler.on('GetTextContent', function wphExtractText(data, promise) {
-      pdfManager.getPage(data.pageIndex).then(function(page) {
-        page.extractTextContent().then(function(textContent) {
-          promise.resolve(textContent);
-        }, function (e) {
-          // Skip errored pages
-          promise.reject(e);
-        });
-      });
-    });
 
     handler.on('Cleanup', function wphCleanup(data, promise) {
       pdfManager.cleanup();

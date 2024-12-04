@@ -10,6 +10,8 @@ void async function main () {
   const buffer = await fs.promises.readFile("a1.pdf");
   const timetable = await getTimetableFromBuffer(buffer);
 
+  console.log(timetable.lessons[0].content)
+
   if (timetable.header.week_number === 13 && timetable.lessons.length === 66) {
     console.info("\nSUCCESS");
   }

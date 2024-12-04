@@ -1099,15 +1099,3 @@ MessageHandler.prototype = {
     }
   }
 };
-
-function loadJpegStream(id, imageUrl, objs) {
-  var img = new Image();
-  img.onload = (function loadJpegStream_onloadClosure() {
-    objs.resolve(id, img);
-  });
-//  img.src = imageUrl;
-    //MQZ. Apr.09.2013 calls windows.btoa safely
-    img.src = 'data:image/jpeg;base64,' + img.btoa(imageUrl);
-}
-
-
