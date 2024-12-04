@@ -192,27 +192,16 @@ class PDFDocumentProxy {
     promise.resolve(outline);
     return promise;
   }
-  /**
-   * @return {Promise} A promise that is resolved with an {object} that has
-   * info and metadata properties.  Info is an {object} filled with anything
-   * available in the information dictionary and similarly metadata is a
-   * {Metadata} object with information from the metadata section of the PDF.
-   */
+  
   getMetadata () {
-    var promise = new PDFJS.Promise();
-    var info = this.pdfInfo.info;
-    var metadata = this.pdfInfo.metadata;
-    promise.resolve({
+    const info = this.pdfInfo.info;
+
+    return {
       info: info,
-      metadata: metadata ? new PDFJS.Metadata(metadata) : null
-    });
-    return promise;
+      metadata: this.pdfInfo.metadata
+    };
   }
-  isEncrypted () {
-    var promise = new PDFJS.Promise();
-    promise.resolve(this.pdfInfo.encrypted);
-    return promise;
-  }
+
   /**
    * @return {Promise} A promise that is resolved with a TypedArray that has
    * the raw data from the PDF.
@@ -571,8 +560,6 @@ class WorkerTransport {
           var font;
           if ('error' in exportedData) {
             var error = exportedData.error;
-//MQZ. Dec.03.2013 no FontLoader
-//              warn('Error during font loading: ' + error);
             this.commonObjs.resolve(id, error);
             break;
           } else {

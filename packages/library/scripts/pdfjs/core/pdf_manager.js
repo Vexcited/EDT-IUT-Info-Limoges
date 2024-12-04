@@ -20,12 +20,6 @@ class LocalPdfManager {
     return value;
   }
 
-  async requestRange (begin, end) {
-  }
-
-  requestLoadedStream () {
-  }
-
   async onLoadedStream () {
     return this.loadedStream;
   }

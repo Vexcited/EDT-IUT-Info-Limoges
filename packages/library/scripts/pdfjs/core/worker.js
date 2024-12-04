@@ -106,7 +106,6 @@ var WorkerMessageHandler = PDFJS.WorkerMessageHandler = {
     );
 
     handler.on('GetData', function wphSetupGetData(data, promise) {
-      pdfManager.requestLoadedStream();
       pdfManager.onLoadedStream().then(function(stream) {
         promise.resolve(stream.bytes);
       });

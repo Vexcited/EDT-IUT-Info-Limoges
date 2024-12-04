@@ -175,34 +175,33 @@ export default class PDFJSClass extends EventEmitter {
 
   // @ts-expect-error
   private load (pdfDocument) {
-      this.pdfDocument = pdfDocument;
+    this.pdfDocument = pdfDocument;
 
-    return this.loadMetaData().then(
-      () => this.loadPages(),
-      // @ts-expect-error
-    error => this.raiseErrorEvent("loadMetaData error: " + error)
-    );
+    this.loadMetaData();
+    return this.loadPages();
   }
 
 	private loadMetaData () {
     // @ts-expect-error
-		return this.pdfDocument.getMetadata().then(
-      // @ts-expect-error
-			data => {
-        // @ts-expect-error
-				this.documentInfo = data.info;
-        // @ts-expect-error
-				this.metadata = data.metadata?.metadata ?? {};
-				this.parseMetaData();
-			},
-      // @ts-expect-error
-			error => this.raiseErrorEvent("pdfDocument.getMetadata error: " + error)
-		);
+		const data = this.pdfDocument.getMetadata();
+    // @ts-expect-error
+    this.documentInfo = data.info;
+    // @ts-expect-error
+    this.metadata = data.metadata ?? {};
+    this.parseMetaData();
 	}
 
   private parseMetaData () {
-    // @ts-expect-error
-    const meta = {Transcoder: "pdf2json@3.0.4 [https://github.com/modesty/pdf2json]", Meta: {...this.documentInfo, Metadata: this.metadata}};
+    const meta = {
+      Transcoder: "@literate.ink/pdfinspector",
+      Meta: {
+        // @ts-expect-error
+        ...this.documentInfo,
+        // @ts-expect-error
+        Metadata: this.metadata
+      }
+    };
+    
     this.raiseReadyEvent(meta);
     this.emit("readable", meta);
   }

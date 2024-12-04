@@ -198,45 +198,6 @@ class DecodeStream {
   }
 }
 
-var FakeStream = (function FakeStreamClosure() {
-  function FakeStream(stream) {
-    this.dict = stream.dict;
-    DecodeStream.call(this);
-  }
-
-  FakeStream.prototype = Object.create(DecodeStream.prototype);
-  FakeStream.prototype.readBlock = function FakeStream_readBlock() {
-    var bufferLength = this.bufferLength;
-    bufferLength += 1024;
-    var buffer = this.ensureBuffer(bufferLength);
-    this.bufferLength = bufferLength;
-  };
-
-  FakeStream.prototype.getBytes = function FakeStream_getBytes(length) {
-    var end, pos = this.pos;
-
-    if (length) {
-      this.ensureBuffer(pos + length);
-      end = pos + length;
-
-      while (!this.eof && this.bufferLength < end)
-        this.readBlock();
-
-      var bufEnd = this.bufferLength;
-      if (end > bufEnd)
-        end = bufEnd;
-    } else {
-      this.eof = true;
-      end = this.bufferLength;
-    }
-
-    this.pos = end;
-    return this.buffer.subarray(pos, end);
-  };
-
-  return FakeStream;
-})();
-
 class StreamsSequenceStream extends DecodeStream {
   constructor (streams) {
     super();
@@ -244,29 +205,19 @@ class StreamsSequenceStream extends DecodeStream {
   }
 
   readBlock () {
-    var streams = this.streams;
+    const streams = this.streams;
     if (streams.length === 0) {
       this.eof = true;
       return;
     }
-    var stream = streams.shift();
-    var chunk = stream.getBytes();
-    var bufferLength = this.bufferLength;
-    var newLength = bufferLength + chunk.length;
-    var buffer = this.ensureBuffer(newLength);
-    buffer.set(chunk, bufferLength);
-    this.bufferLength = newLength;
-  }
 
-  getBaseStreams () {
-    var baseStreams = [];
-    for (var i = 0, ii = this.streams.length; i < ii; i++) {
-      var stream = this.streams[i];
-      if (stream.getBaseStreams) {
-        Util.concatenateToArray(baseStreams, stream.getBaseStreams());
-      }
-    }
-    return baseStreams;
+    const stream = streams.shift();
+    const chunk = stream.getBytes();
+    const bufferLength = this.bufferLength;
+    const newLength = bufferLength + chunk.length;
+    const buffer = this.ensureBuffer(newLength);
+    buffer?.set(chunk, bufferLength);
+    this.bufferLength = newLength;
   }
 }
 
@@ -362,6 +313,11 @@ class FlateStream extends DecodeStream {
     0x50001, 0x50011, 0x50009, 0x50019, 0x50005, 0x50015, 0x5000d, 0x5001d,
     0x50003, 0x50013, 0x5000b, 0x5001b, 0x50007, 0x50017, 0x5000f, 0x00000
   ]), 5];
+
+  /**
+   * @type {Dict}
+   */
+  dict;
 
   constructor (stream) {
     super()

@@ -571,25 +571,15 @@ class XRef {
   }
 
   parse (recoveryMode) {
-    var trailerDict;
+    let trailerDict;
+    
     if (!recoveryMode) {
       trailerDict = this.readXRef();
-    } else {
-      console.warn('Indexing all PDF objects');
-      trailerDict = this.indexObjects();
-    }
-    trailerDict.assignXref(this);
-    this.trailer = trailerDict;
-    var encrypt = trailerDict.get('Encrypt');
-    if (encrypt) {
-      var ids = trailerDict.get('ID');
-      var fileId = (ids && ids.length) ? ids[0] : '';
     }
 
-    // get the root dictionary (catalog) object
-    if (!(this.root = trailerDict.get('Root'))) {
-      throw new Error('Invalid root reference');
-    }
+    trailerDict.assignXref(this);
+    this.trailer = trailerDict;
+    this.root = trailerDict.get('Root')
   }
 
   processXRefTable (parser) {
@@ -624,7 +614,6 @@ class XRef {
       throw new Error('Invalid XRef table: could not parse trailer dictionary');
 
     delete this.tableState;
-
     return dict;
   }
 
@@ -798,180 +787,27 @@ class XRef {
     }
   }
 
-  indexObjects () {
-    // Simple scan through the PDF content to find objects,
-    // trailers and XRef streams.
-    function readToken(data, offset) {
-      var token = '', ch = data[offset];
-      while (ch !== 13 && ch !== 10) {
-        if (++offset >= data.length)
-          break;
-        token += String.fromCharCode(ch);
-        ch = data[offset];
-      }
-      return token;
-    }
-    function skipUntil(data, offset, what) {
-      var length = what.length, dataLength = data.length;
-      var skipped = 0;
-      // finding byte sequence
-      while (offset < dataLength) {
-        var i = 0;
-        while (i < length && data[offset + i] == what[i])
-          ++i;
-        if (i >= length)
-          break; // sequence found
-
-        offset++;
-        skipped++;
-      }
-      return skipped;
-    }
-    var trailerBytes = new Uint8Array([116, 114, 97, 105, 108, 101, 114]);
-    var startxrefBytes = new Uint8Array([115, 116, 97, 114, 116, 120, 114,
-                                        101, 102]);
-    var endobjBytes = new Uint8Array([101, 110, 100, 111, 98, 106]);
-    var xrefBytes = new Uint8Array([47, 88, 82, 101, 102]);
-
-    var stream = this.stream;
-    stream.pos = 0;
-    var buffer = stream.getBytes();
-    var position = stream.start, length = buffer.length;
-    var trailers = [], xrefStms = [];
-    var state = 0;
-    var currentToken;
-    while (position < length) {
-      var ch = buffer[position];
-      if (ch === 32 || ch === 9 || ch === 13 || ch === 10) {
-        ++position;
-        continue;
-      }
-      if (ch === 37) { // %-comment
-        do {
-          ++position;
-          if (position >= length) {
-            break;
-          }
-          ch = buffer[position];
-        } while (ch !== 13 && ch !== 10);
-        continue;
-      }
-      var token = readToken(buffer, position);
-      var m;
-      if (token === 'xref') {
-        position += skipUntil(buffer, position, trailerBytes);
-        trailers.push(position);
-        position += skipUntil(buffer, position, startxrefBytes);
-      } else if ((m = /^(\d+)\s+(\d+)\s+obj\b/.exec(token))) {
-        this.entries[m[1]] = {
-          offset: position,
-          gen: m[2] | 0,
-          uncompressed: true
-        };
-
-        var contentLength = skipUntil(buffer, position, endobjBytes) + 7;
-        var content = buffer.subarray(position, position + contentLength);
-
-        // checking XRef stream suspect
-        // (it shall have '/XRef' and next char is not a letter)
-        var xrefTagOffset = skipUntil(content, 0, xrefBytes);
-        if (xrefTagOffset < contentLength &&
-            content[xrefTagOffset + 5] < 64) {
-          xrefStms.push(position);
-          this.xrefstms[position] = 1; // don't read it recursively
-        }
-
-        position += contentLength;
-      } else
-        position += token.length + 1;
-    }
-    // reading XRef streams
-    for (var i = 0, ii = xrefStms.length; i < ii; ++i) {
-      this.startXRefQueue.push(xrefStms[i]);
-      this.readXRef(/* recoveryMode */ true);
-    }
-    // finding main trailer
-    var dict;
-    for (var i = 0, ii = trailers.length; i < ii; ++i) {
-      stream.pos = trailers[i];
-      var parser = new Parser(new Lexer(stream), true, null);
-      var obj = parser.getObj();
-      if (!isCmd(obj, 'trailer'))
-        continue;
-      // read the trailer dictionary
-      if (!isDict(dict = parser.getObj()))
-        continue;
-      // taking the first one with 'ID'
-      if (dict.has('ID'))
-        return dict;
-    }
-    // no tailer with 'ID', taking last one (if exists)
-    if (dict)
-      return dict;
-    // nothing helps
-    // calling error() would reject worker with an UnknownErrorException.
-    throw new InvalidPDFException('Invalid PDF structure');
-  }
-
-  readXRef (recoveryMode) {
+  readXRef () {
     var stream = this.stream;
 
-    while (this.startXRefQueue.length) {
+    while (this.startXRefQueue?.length) {
       var startXRef = this.startXRefQueue[0];
 
       stream.pos = startXRef;
 
       var parser = new Parser(new Lexer(stream), true, null);
-      var obj = parser.getObj();
-      var dict;
+      const obj = parser.getObj();
 
       // Get dictionary
       if (isCmd(obj, 'xref')) {
-
         // Parse end-of-file XRef
-        dict = this.processXRefTable(parser);
+        const dict = this.processXRefTable(parser);
         if (!this.topDict) {
           this.topDict = dict;
         }
-
-        // Recursively get other XRefs 'XRefStm', if any
-        obj = dict.get('XRefStm');
-        if (isInt(obj)) {
-          var pos = obj;
-          // ignore previously loaded xref streams
-          // (possible infinite recursion)
-          if (!(pos in this.xrefstms)) {
-            this.xrefstms[pos] = 1;
-            this.startXRefQueue.push(pos);
-          }
-        }
-      } else if (isInt(obj)) {
-
-        // Parse in-stream XRef
-        if (!isInt(parser.getObj()) ||
-            !isCmd(parser.getObj(), 'obj') ||
-            !isStream(obj = parser.getObj())) {
-          throw new Error('Invalid XRef stream');
-        }
-        dict = this.processXRefStream(obj);
-        if (!this.topDict) {
-          this.topDict = dict;
-        }
-
-        if (!dict)
-          throw new Error('Failed to read XRef stream');
-      } else {
-        throw new Error('Invalid XRef stream header');
       }
-
-      // Recursively get previous dictionary, if any
-      obj = dict.get('Prev');
-      if (isInt(obj)) {
-        this.startXRefQueue.push(obj);
-      } else if (isRef(obj)) {
-        // The spec says Prev must not be a reference, i.e. "/Prev NNN"
-        // This is a fallback for non-compliant PDFs, i.e. "/Prev NNN 0 R"
-        this.startXRefQueue.push(obj.num);
+      else {
+        throw new Error('Invalid XRef stream header');
       }
 
       this.startXRefQueue.shift();
@@ -980,6 +816,11 @@ class XRef {
     return this.topDict;
   }
 
+  /**
+   * 
+   * @param {number} i 
+   * @returns 
+   */
   getEntry (i) {
     var e = this.entries[i];
     if (e === null)
@@ -1017,7 +858,8 @@ class XRef {
       return (this.cache[num] = e);
 
     var gen = ref.gen;
-    var stream, parser;
+    let stream, parser;
+
     if (e.uncompressed) {
       if (e.gen != gen)
         throw new Error('inconsistent generation in XRef');
@@ -1051,43 +893,53 @@ class XRef {
     }
 
     // compressed entry
-    var tableOffset = e.offset;
+    const tableOffset = e.offset;
     stream = this.fetch(new Ref(tableOffset, 0));
-    if (!isStream(stream))
+
+    if (!isStream(stream)) {
       throw new Error('bad ObjStm stream');
-    var first = stream.dict.get('First');
-    var n = stream.dict.get('N');
+    }
+    const first = stream.dict.get('First');
+    const n = stream.dict.get('N');
+
     if (!isInt(first) || !isInt(n)) {
       throw new Error('invalid first and n parameters for ObjStm stream');
     }
+
     parser = new Parser(new Lexer(stream), false, this);
     parser.allowStreams = true;
-    var i, entries = [], nums = [];
+
+    const entries = [];
+    const nums = [];
+
     // read the object numbers to populate cache
-    for (i = 0; i < n; ++i) {
-      num = parser.getObj();
+    for (let i = 0; i < n; ++i) {
+      const num = parser.getObj();
       if (!isInt(num)) {
         throw new Error('invalid object number in the ObjStm stream: ' + num);
       }
       nums.push(num);
-      var offset = parser.getObj();
+      
+      const offset = parser.getObj();
       if (!isInt(offset)) {
         throw new Error('invalid object offset in the ObjStm stream: ' + offset);
       }
     }
     // read stream objects for cache
-    for (i = 0; i < n; ++i) {
+    for (let i = 0; i < n; ++i) {
       entries.push(parser.getObj());
-      num = nums[i];
+      const num = nums[i];
       var entry = this.entries[num];
       if (entry && entry.offset === tableOffset && entry.gen === i) {
         this.cache[num] = entries[i];
       }
     }
+
     e = entries[e.gen];
     if (e === undefined) {
       throw new Error('bad XRef entry for compressed object');
     }
+
     return e;
   }
 
@@ -1099,18 +951,8 @@ class XRef {
     return this.fetchAsync(obj);
   }
 
-  async fetchAsync (ref, suppressEncryption) {
-    try {
-      return this.fetch(ref, suppressEncryption)
-    }
-    catch (error) {
-      if (error instanceof MissingDataException) {
-        this.stream.manager.requestRange(error.begin, error.end, tryFetch);
-        return;
-      }
-
-      throw error;
-    }
+  async fetchAsync (ref) {
+    return this.fetch(ref)
   }
 
   getCatalogObj () {
@@ -1121,49 +963,11 @@ class XRef {
 /**
  * A NameTree is like a Dict but has some adventagous properties, see the spec
  * (7.9.6) for more details.
- * TODO: implement all the Dict functions and make this more efficent.
  */
 class NameTree {
   constructor (root, xref) {
     this.root = root;
     this.xref = xref;
-  }
-
-  getAll () {
-    var dict = {};
-    if (!this.root) {
-      return dict;
-    }
-    var xref = this.xref;
-    // reading name tree
-    var processed = new RefSet();
-    processed.put(this.root);
-    var queue = [this.root];
-    while (queue.length > 0) {
-      var i, n;
-      var obj = xref.fetchIfRef(queue.shift());
-      if (!isDict(obj)) {
-        continue;
-      }
-      if (obj.has('Kids')) {
-        var kids = obj.get('Kids');
-        for (i = 0, n = kids.length; i < n; i++) {
-          var kid = kids[i];
-          if (processed.has(kid))
-            throw new Error('invalid destinations');
-          queue.push(kid);
-          processed.put(kid);
-        }
-        continue;
-      }
-      var names = obj.get('Names');
-      if (names) {
-        for (i = 0, n = names.length; i < n; i += 2) {
-          dict[names[i]] = xref.fetchIfRef(names[i + 1]);
-        }
-      }
-    }
-    return dict;
   }
 }
 
@@ -1171,23 +975,30 @@ function mayHaveChildren(value) {
   return isRef(value) || isDict(value) || isArray(value) || isStream(value);
 }
 
+/**
+ * @param {Dict | FlateStream} node 
+ * @param {Array<Dict | undefined>} nodesToVisit 
+ */
 function addChildren(node, nodesToVisit) {
   if (isDict(node) || isStream(node)) {
     var map;
     if (isDict(node)) {
       map = node.map;
-    } else {
+    }
+    else {
       map = node.dict.map;
     }
-    for (var key in map) {
-      var value = map[key];
+
+    for (const key in map) {
+      const value = map[key];
       if (mayHaveChildren(value)) {
         nodesToVisit.push(value);
       }
     }
-  } else if (isArray(node)) {
-    for (var i = 0, ii = node.length; i < ii; i++) {
-      var value = node[i];
+  }
+  else if (isArray(node)) {
+    for (let i = 0, ii = node.length; i < ii; i++) {
+      const value = node[i];
       if (mayHaveChildren(value)) {
         nodesToVisit.push(value);
       }
@@ -1210,6 +1021,7 @@ class ObjectLoader {
   obj;
   keys;
   xref;
+  /** @type {RefSet | null} */
   refSet = null;
 
   constructor (obj, keys, xref) {
@@ -1224,75 +1036,41 @@ class ObjectLoader {
 
     // Setup the initial nodes to visit.
     var nodesToVisit = [];
-    for (var i = 0; i < keys.length; i++) {
+
+    for (let i = 0; i < keys.length; i++) {
       nodesToVisit.push(this.obj[keys[i]]);
     }
 
     this.walk(nodesToVisit);
   }
 
+  /**
+   * @param {Array<Dict | undefined>} nodesToVisit 
+   * @returns 
+   */
   walk (nodesToVisit) {
-    var nodesToRevisit = [];
-    var pendingRequests = [];
+    const nodesToRevisit = [];
+    const pendingRequests = [];
+
     // DFS walk of the object graph.
     while (nodesToVisit.length) {
-      var currentNode = nodesToVisit.pop();
+      let currentNode = nodesToVisit.pop();
 
       // Only references or chunked streams can cause missing data exceptions.
       if (isRef(currentNode)) {
         // Skip nodes that have already been visited.
-        if (this.refSet.has(currentNode)) {
+        if (this.refSet?.has(currentNode)) {
           continue;
         }
-        try {
-          var ref = currentNode;
-          this.refSet.put(ref);
-          currentNode = this.xref.fetch(currentNode);
-        } catch (e) {
-          if (!(e instanceof MissingDataException)) {
-            throw e;
-          }
-          nodesToRevisit.push(currentNode);
-          pendingRequests.push({ begin: e.begin, end: e.end });
-        }
-      }
-      if (currentNode && currentNode.getBaseStreams) {
-        var baseStreams = currentNode.getBaseStreams();
-        var foundMissingData = false;
-        for (var i = 0; i < baseStreams.length; i++) {
-          var stream = baseStreams[i];
-          if (stream.getMissingChunks && stream.getMissingChunks().length) {
-            foundMissingData = true;
-            pendingRequests.push({
-              begin: stream.start,
-              end: stream.end
-            });
-          }
-        }
-        if (foundMissingData) {
-          nodesToRevisit.push(currentNode);
-        }
+
+        const ref = currentNode;
+        this.refSet?.put(ref);
+        currentNode = this.xref.fetch(currentNode);
       }
 
       addChildren(currentNode, nodesToVisit);
     }
 
-    if (pendingRequests.length) {
-      this.xref.stream.manager.requestRanges(pendingRequests,
-          function pendingRequestCallback() {
-        nodesToVisit = nodesToRevisit;
-        for (var i = 0; i < nodesToRevisit.length; i++) {
-          var node = nodesToRevisit[i];
-          // Remove any reference nodes from the currrent refset so they
-          // aren't skipped when we revist them.
-          if (isRef(node)) {
-            this.refSet.remove(node);
-          }
-        }
-        this.walk(nodesToVisit);
-      }.bind(this));
-      return;
-    }
     // Everything is loaded.
     this.refSet = null;
   }

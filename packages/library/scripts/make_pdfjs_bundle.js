@@ -19,11 +19,9 @@ const files = [
   'core/bidi.js',
   'core/pdf_manager.js',
   'core/cmap.js',
-  'core/cidmaps.js',
 
   'display/canvas.js',
   'display/font_loader.js',
-  'display/metadata.js',
   'display/api.js'
 ];
 
