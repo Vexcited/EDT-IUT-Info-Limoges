@@ -37,7 +37,7 @@ class PDFParser extends EventEmitter {
 		this.emit("pdfParser_dataError", {"parserError": err});
 	}
 
-	#startParsingPDF (buffer: ArrayBuffer): void {
+	async #startParsingPDF (buffer: ArrayBuffer): Promise<void> {
 		this.#data = {};
 
 		this.#PDFJS.on("pdfjs_parseDataReady", data => this.#onPDFJSParseDataReady(data));
@@ -48,11 +48,11 @@ class PDFParser extends EventEmitter {
     this.#PDFJS.on("data", data => this.emit("data", data));
     this.#PDFJS.on("error", err => this.#onPDFJSParserDataError(err));    
 
-		this.#PDFJS.parsePDFData(buffer, this.#password);
+		await this.#PDFJS.parsePDFData(buffer);
 	}
 
-	public parseBuffer (pdfBuffer: ArrayBuffer): void {
-		this.#startParsingPDF(pdfBuffer);
+	public async parseBuffer (pdfBuffer: ArrayBuffer): Promise<void> {
+		await this.#startParsingPDF(pdfBuffer);
 	}
 
 	public destroy() {

@@ -64,7 +64,6 @@ var WorkerMessageHandler = PDFJS.WorkerMessageHandler = {
     }
 
     handler.on('GetDocRequest', async (data) => {
-      PDFJS.maxImageSize = data.maxImageSize === undefined ? -1 : data.maxImageSize;
       getPdfManager(data); // make sure it's defined
 
       var doc = await loadDocument(false)

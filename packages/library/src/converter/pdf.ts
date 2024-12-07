@@ -95,8 +95,6 @@ class PDFPageParser {
             else {
               // @ts-expect-error
                 this.ctxCanvas = ctx.canvas;
-                // @ts-expect-error
-                this.stats = this.pdfPage.stats;
 
                 callback();
             }
@@ -153,7 +151,7 @@ export default class PDFJSClass extends EventEmitter {
 
 
   // @ts-expect-error
-  public parsePDFData(arrayBuffer, password) {
+  public async parsePDFData(arrayBuffer) {
     this.pdfDocument = null;
 
     // instantiate the PDFJS object only when needed.
@@ -163,14 +161,9 @@ export default class PDFJSClass extends EventEmitter {
       PDFJSLoaded = true;
     }
 
-    const parameters = {password: password, data: arrayBuffer};
     // @ts-expect-error
-    PDFJS.getDocument(parameters).then(
-      // @ts-expect-error
-        pdfDocument => this.load(pdfDocument),
-        // @ts-expect-error
-        error => this.raiseErrorEvent(error)
-    );
+    const document = await PDFJS.getDocument(arrayBuffer);
+    this.load(document);
   };
 
   // @ts-expect-error

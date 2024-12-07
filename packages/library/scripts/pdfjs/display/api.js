@@ -1,67 +1,3 @@
-'use strict';
-
-/**
- * The maximum allowed image size in total pixels e.g. width * height. Images
- * above this value will not be drawn. Use -1 for no limit.
- * @var {Number}
- */
-PDFJS.maxImageSize = PDFJS.maxImageSize === undefined ? -1 : PDFJS.maxImageSize;
-
-/**
- * Path for image resources, mainly for annotation icons. Include trailing
- * slash.
- * @var {String}
- */
-PDFJS.imageResourcesPath = PDFJS.imageResourcesPath === undefined ?
-                           '' : PDFJS.imageResourcesPath;
-
-/**
- * Disable the web worker and run all code on the main thread. This will happen
- * automatically if the browser doesn't support workers or sending typed arrays
- * to workers.
- * @var {Boolean}
- */
-PDFJS.disableWorker = PDFJS.disableWorker === undefined ?
-                      false : PDFJS.disableWorker;
-
-/**
- * Path and filename of the worker file. Required when the worker is enabled in
- * development mode. If unspecified in the production build, the worker will be
- * loaded based on the location of the pdf.js file.
- * @var {String}
- */
-PDFJS.workerSrc = PDFJS.workerSrc === undefined ? null : PDFJS.workerSrc;
-
-/**
- * Disable range request loading of PDF files. When enabled and if the server
- * supports partial content requests then the PDF will be fetched in chunks.
- * Enabled (false) by default.
- * @var {Boolean}
- */
-PDFJS.disableRange = PDFJS.disableRange === undefined ?
-                     false : PDFJS.disableRange;
-
-/**
- * Disable pre-fetching of PDF file data. When range requests are enabled PDF.js
- * will automatically keep fetching more data even if it isn't needed to display
- * the current page. This default behavior can be disabled.
- * @var {Boolean}
- */
-PDFJS.disableAutoFetch = PDFJS.disableAutoFetch === undefined ?
-                         false : PDFJS.disableAutoFetch;
-
-/**
- * Enables special hooks for debugging PDF.js.
- * @var {Boolean}
- */
-PDFJS.pdfBug = PDFJS.pdfBug === undefined ? false : PDFJS.pdfBug;
-
-/**
- * Enables transfer usage in postMessage for ArrayBuffers.
- * @var {boolean}
- */
-PDFJS.postMessageTransfers = PDFJS.postMessageTransfers === undefined ?
-                             true : PDFJS.postMessageTransfers;
 /**
  * This is the main entry point for loading a PDF and interacting with it.
  * NOTE: If a URL is used to fetch the PDF data a standard XMLHttpRequest(XHR)
@@ -79,35 +15,14 @@ PDFJS.postMessageTransfers = PDFJS.postMessageTransfers === undefined ?
  *                  Used by the extension since some data is already loaded
  *                  before the switch to range requests. 
  *
- * @param {function} passwordCallback is optional. It is used to request a
- * password if wrong or no password was provided. The callback receives two
- * parameters: function that needs to be called with new password and reason
- * (see {PasswordResponses}).
- *
  * @return {Promise} A promise that is resolved with {PDFDocumentProxy} object.
  */
-PDFJS.getDocument = function getDocument(source, passwordCallback) {
-  if (isArrayBuffer(source)) {
-    source = { data: source };
-  }
-  else if (typeof source !== 'object') {
-    throw new Error('Invalid parameter in getDocument, need either Uint8Array, ' +
-          'string or a parameter object');
-  }
-
-  if (!source.data)
-    throw new Error('Invalid parameter array, need .data');
-
-  const workerReadyPromise = new PDFJS.Promise();
-  
-  const transport = new WorkerTransport(
-    workerReadyPromise,
-  );
-
-  transport.passwordCallback = passwordCallback;
-  transport.fetchDocument({ ...source });
-
-  return workerReadyPromise;
+PDFJS.getDocument = (buffer) => {
+  return new OPromise((resolve, reject) => {
+    const wrapper = { resolve, reject };
+    const transport = new WorkerTransport(wrapper);
+    transport.fetchDocument({ data: buffer });
+  })
 };
 
 /**
@@ -230,8 +145,6 @@ class PDFPageProxy {
   constructor (pageInfo, transport) {
     this.pageInfo = pageInfo;
     this.transport = transport;
-    this.stats = new StatTimer();
-    this.stats.enabled = false;
     this.commonObjs = transport.commonObjs;
     this.objs = new PDFObjects();
     this.receivingOperatorList  = false;
@@ -301,9 +214,6 @@ class PDFPageProxy {
    * finishes rendering (see RenderTask).
    */
   render (params) {
-    var stats = this.stats;
-    stats.time('Overall');
-
     // If there was a pending destroy cancel it so no cleanup happens during
     // this call to render.
     this.pendingDestroy = false;
@@ -319,7 +229,6 @@ class PDFPageProxy {
         lastChunk: false
       };
 
-      this.stats.time('Page Request');
       this.transport.messageHandler.send('RenderPageRequest', {
         pageIndex: this.pageNumber - 1
       });
@@ -338,7 +247,6 @@ class PDFPageProxy {
           complete();
           return;
         }
-        stats.time('Rendering');
         try {//MQZ. catch canvas drawing exceptions
           internalRenderTask.initalizeGraphics(transparency);
           internalRenderTask.operatorListChanged();
@@ -368,8 +276,6 @@ class PDFPageProxy {
       } else {
         renderTask.resolve();
       }
-      stats.timeEnd('Rendering');
-      stats.timeEnd('Overall');
     }
 
     return renderTask;
@@ -451,7 +357,6 @@ class WorkerTransport {
     this.pagePromises = [];
     this.embeddedFontsUsed = false;
 
-    this.passwordCallback = null;
     this.setupFakeWorker();
   }
 
@@ -487,31 +392,11 @@ class WorkerTransport {
   setupMessageHandler (messageHandler) {
     this.messageHandler = messageHandler;
 
-    function updatePassword (password) {
-      messageHandler.send('UpdatePassword', password);
-    }
-
     messageHandler.on('GetDoc', function transportDoc(data) {
       var pdfInfo = data.pdfInfo;
       var pdfDocument = new PDFDocumentProxy(pdfInfo, this);
       this.pdfDocument = pdfDocument;
       this.workerReadyPromise.resolve(pdfDocument);
-    }, this);
-
-    messageHandler.on('NeedPassword', function transportPassword(data) {
-      if (this.passwordCallback) {
-        return this.passwordCallback(updatePassword,
-                                      PasswordResponses.NEED_PASSWORD);
-      }
-      this.workerReadyPromise.reject(data.exception.message, data.exception);
-    }, this);
-
-    messageHandler.on('IncorrectPassword', function transportBadPass(data) {
-      if (this.passwordCallback) {
-        return this.passwordCallback(updatePassword,
-                                      PasswordResponses.INCORRECT_PASSWORD);
-      }
-      this.workerReadyPromise.reject(data.exception.message, data.exception);
     }, this);
 
     messageHandler.on('InvalidPDF', function transportInvalidPDF(data) {
@@ -536,8 +421,6 @@ class WorkerTransport {
 
     messageHandler.on('StartRenderPage', function transportRender(data) {
       var page = this.pageCache[data.pageIndex];
-
-      page.stats.timeEnd('Page Request');
       page._startRenderPage(data.transparency);
     }, this);
 
@@ -651,12 +534,12 @@ class WorkerTransport {
   }
 
   fetchDocument (source) {
-    source.disableAutoFetch = PDFJS.disableAutoFetch;
+    source.disableAutoFetch = false;
     source.chunkedViewerLoading = false //!!this.pdfDataRangeTransport;
     this.messageHandler.send('GetDocRequest', {
       source,
-      disableRange: PDFJS.disableRange,
-      maxImageSize: PDFJS.maxImageSize,
+      disableRange: false,
+      maxImageSize: -1,
     });
   }
 
