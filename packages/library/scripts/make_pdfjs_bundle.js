@@ -11,7 +11,6 @@ const files = [
   'core/crypto.js',
   'core/evaluator.js',
   'core/fonts.js',
-  'core/glyphlist.js',
   'core/metrics.js',
   'core/parser.js',
   'core/stream.js',
