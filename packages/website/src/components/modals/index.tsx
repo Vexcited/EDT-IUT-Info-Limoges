@@ -14,7 +14,7 @@ export const Modal: ParentComponent<{ title: string, open: boolean, setOpen?: Se
       }
     }} modal={props.modal}>
       <Dialog.Portal>
-        <Dialog.Overlay class="animate-fade-out ui-expanded:animate-fade-in animate-duration-150 ui-expanded:animate-duration-150 fixed inset-0 z-50 bg-[rgba(21,21,21,.6)] backdrop-blur-md" />
+        <Dialog.Overlay class="animate-fade-out ui-expanded:animate-fade-in animate-duration-150 ui-expanded:animate-duration-150 fixed inset-0 z-50 bg-[rgba(21,21,21,.6)] laptop-sm:backdrop-blur-md" />
 
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-auto">
           <Dialog.Content class="animate-scale-out ui-expanded:animate-scale-in animate-duration-200 ui-expanded:animate-duration-200 bg-[rgb(32,32,32)] rounded-lg max-w-[450px] w-full my-auto">
