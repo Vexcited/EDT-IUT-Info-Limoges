@@ -410,6 +410,9 @@ const SwiperView: Component<{
           <div class="relative overflow-hidden pb-3">
             <Show when={swipeEdgesData().where === "left"}>
               <div class="fixed inset-y-0 right-0 -left-6 bg-gradient-to-r from-red to-transparent pointer-events-none"
+                classList={{
+                  "transition-opacity": swipeEdgesData().progress === 0
+                }}
                 style={{
                   opacity: swipeEdgesData().progress * 1.5
                 }}
@@ -418,6 +421,9 @@ const SwiperView: Component<{
 
             <Show when={swipeEdgesData().where === "right"}>
               <div class="fixed inset-y-0 left-0 -right-6 bg-gradient-to-l from-red to-transparent pointer-events-none"
+                classList={{
+                  "transition-opacity": swipeEdgesData().progress === 0
+                }}
                 style={{
                   opacity: swipeEdgesData().progress * 1.5
                 }}
