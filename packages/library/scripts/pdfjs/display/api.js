@@ -328,7 +328,7 @@ class WorkerTransport {
     this.pageCache = [];
     this.embeddedFontsUsed = false;
 
-    this.customWorker = new CUSTOMWorker(this);
+    this.customWorker = new CustomWorker(this);
   }
 
   destroy () {

@@ -1,8 +1,6 @@
 'use strict';
 
-var pdfManager;
-
-class CUSTOMWorker {
+class CustomWorker {
   constructor (transport) {
     this.transport = transport;
   }
@@ -38,8 +36,6 @@ class CUSTOMWorker {
   getPdfManager (data) {
     const source = data.source;
     this.pdfManager = new LocalPdfManager(source.data);
-    // TODO: remove this
-    pdfManager = this.pdfManager;
   }
 
   // replies with GetDoc
