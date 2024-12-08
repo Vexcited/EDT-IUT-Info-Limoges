@@ -147,7 +147,7 @@ class Page {
     var contentStream = data[0];
     var opList = new OperatorList(handler, this.pageIndex);
 
-    handler.send('StartRenderPage', {
+    handler.StartRenderPage({
       transparency: false,
       pageIndex: this.pageIndex
     });

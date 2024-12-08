@@ -140,7 +140,7 @@ class PartialEvaluator {
     if (!font.sent) {
       const fontData = font.translated.exportData();
 
-      this.handler.send('commonobj', [
+      this.handler.commonobj([
         loadedName,
         'Font',
         fontData
@@ -383,7 +383,7 @@ class OperatorList {
    * @returns {void} 
    */
   flush (lastChunk) {
-    this.messageHandler.send('RenderPageChunk', {
+    this.messageHandler.RenderPageChunk({
       operatorList: {
         fnArray: this.fnArray,
         argsArray: this.argsArray,
@@ -391,7 +391,7 @@ class OperatorList {
         length: this.length
       },
       pageIndex: this.pageIndex
-    });
+    })
 
     this.dependencies = [];
     this.argsArray = [];

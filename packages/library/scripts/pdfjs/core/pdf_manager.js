@@ -43,7 +43,4 @@ class LocalPdfManager {
   cleanup () {
     return this.pdfModel.cleanup();
   }
-
-  terminate () {
-  }
 }

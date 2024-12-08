@@ -3,6 +3,10 @@
 var pdfManager;
 
 class CUSTOMWorker {
+  constructor (transport) {
+    this.transport = transport;
+  }
+
   async loadDocument (recoveryMode) {
     await this.pdfManager.ensureModel('checkHeader', [])
     await this.pdfManager.ensureModel('parseStartXRef', [])
@@ -45,104 +49,49 @@ class CUSTOMWorker {
     const pdfInfo = await this.loadDocument(false)
     return { pdfInfo };
   }
-}
 
-var WorkerMessageHandler = PDFJS.WorkerMessageHandler = {
-  setup (handler) {
+  // replies with GetPage
+  async GetPageRequest (data) {
+    const page = await this.pdfManager.getPage(data.pageIndex);
 
-    async function loadDocument (recoveryMode) {
-      await pdfManager.ensureModel('checkHeader', [])
-      await pdfManager.ensureModel('parseStartXRef', [])
-      await pdfManager.ensureModel('parse', [recoveryMode]);
-
-      const numPagesPromise = pdfManager.ensureModel('numPages');
-      const fingerprintPromise = pdfManager.ensureModel('fingerprint');
-      const outlinePromise = pdfManager.ensureCatalog('documentOutline');
-      const infoPromise = pdfManager.ensureModel('documentInfo');
-      const metadataPromise = pdfManager.ensureCatalog('metadata');
-
-      const results = await Promise.all([
-        numPagesPromise,
-        fingerprintPromise,
-        outlinePromise,
-        infoPromise,
-        metadataPromise,
-      ])
+    const results = await Promise.all([
+      this.pdfManager.ensure(page, 'rotate'),
+      this.pdfManager.ensure(page, 'ref'),
+      this.pdfManager.ensure(page, 'view')
+    ]);
       
-      return {
-        numPages: results[0],
-        fingerprint: results[1],
-        outline: results[2],
-        info: results[3],
-        metadata: results[4],
-      };
-    }
+    const pageInfo = {
+      pageIndex: data.pageIndex,
+      rotate: results[0],
+      ref: results[1],
+      view: results[2]
+    };
 
-    function getPdfManager (data) {
-      const source = data.source;
-      pdfManager = new LocalPdfManager(source.data);
-    }
-
-    handler.on('GetDocRequest', async (data) => {
-      getPdfManager(data); // make sure it's defined
-
-      var doc = await loadDocument(false)
-      handler.send('GetDoc', { pdfInfo: doc });
-    });
-
-    handler.on('GetPageRequest', async (data) => {
-      const page = await pdfManager.getPage(data.pageIndex);
-
-      const results = await Promise.all([
-        pdfManager.ensure(page, 'rotate'),
-        pdfManager.ensure(page, 'ref'),
-        pdfManager.ensure(page, 'view')
-      ]);
-        
-      const pageInfo = {
-        pageIndex: data.pageIndex,
-        rotate: results[0],
-        ref: results[1],
-        view: results[2]
-      };
-
-      handler.send('GetPage', { pageInfo });
-    });
-
-    handler.on('GetPageIndex', function wphSetupGetPageIndex(data, promise) {
-      var ref = new Ref(data.ref.num, data.ref.gen);
-      pdfManager.pdfModel.catalog.getPageIndex(ref).then(function (pageIndex) {
-        promise.resolve(pageIndex);
-      }, promise.reject.bind(promise));
-    });
-
-    handler.on('GetData', function wphSetupGetData(data, promise) {
-      pdfManager.onLoadedStream().then(function(stream) {
-        promise.resolve(stream.bytes);
-      });
-    });
-
-    handler.on('DataLoaded', function wphSetupDataLoaded(data, promise) {
-      pdfManager.onLoadedStream().then(function(stream) {
-        promise.resolve({ length: stream.bytes.byteLength });
-      });
-    });
-
-    handler.on('RenderPageRequest', async (data) => {
-      const page = await pdfManager.getPage(data.pageIndex);
-
-      // pre-compile the PDF page and fetch the fonts/images.
-      await page.getOperatorList(handler);
-    }, this);
-
-    handler.on('Cleanup', function wphCleanup(data, promise) {
-      pdfManager.cleanup();
-      promise.resolve(true);
-    });
-
-    handler.on('Terminate', function wphTerminate(data, promise) {
-      pdfManager.terminate();
-      promise.resolve();
-    });
+    return { pageInfo };
   }
-};
+
+  async GetPageIndex (data) {
+    const ref = new Ref(data.ref.num, data.ref.gen);
+    return this.pdfManager.pdfModel.catalog.getPageIndex(ref);
+  }
+
+  Cleanup () {
+    this.pdfManager.cleanup();
+  }
+
+  async GetData () {
+    const stream = await this.pdfManager.onLoadedStream();
+    return stream.bytes;
+  }
+
+  async DataLoaded () {
+    const stream = await this.pdfManager.onLoadedStream();
+    return { length: stream.bytes.byteLength };
+  }
+
+  async RenderPageRequest (data) {
+    const page = await this.pdfManager.getPage(data.pageIndex);
+    // pre-compile the PDF page and fetch the fonts/images.
+    await page.getOperatorList(this.transport);
+  }
+}
