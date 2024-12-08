@@ -61,35 +61,28 @@ class Dict {
   }
 
   // Same as get(), but returns a promise and uses fetchIfRefAsync().
-  getAsync (key1, key2, key3) {
+  async getAsync (key1, key2, key3) {
     var value;
-    var promise;
     var xref = this.xref;
     if (typeof (value = this.map[key1]) !== undefined || key1 in this.map ||
         typeof key2 === undefined) {
       if (xref) {
         return xref.fetchIfRefAsync(value);
       }
-      promise = new Promise();
-      promise.resolve(value);
-      return promise;
+      return value;
     }
     if (typeof (value = this.map[key2]) !== undefined || key2 in this.map ||
         typeof key3 === undefined) {
       if (xref) {
         return xref.fetchIfRefAsync(value);
       }
-      promise = new Promise();
-      promise.resolve(value);
-      return promise;
+      return value;
     }
     value = this.map[key3] || null;
     if (xref) {
       return xref.fetchIfRefAsync(value);
     }
-    promise = new Promise();
-    promise.resolve(value);
-    return promise;
+    return value;
   }
 
   // no dereferencing
@@ -229,7 +222,7 @@ class Catalog {
         try {
           metadata = stringToUTF8String(bytesToString(stream.getBytes()));
         } catch (e) {
-          info('Skipping invalid metadata.');
+          console.info('Skipping invalid metadata.');
         }
       }
     }
@@ -239,7 +232,7 @@ class Catalog {
 
   get toplevelPagesDict() {
     var pagesObj = this.catDict.get('Pages');
-    assertWellFormed(isDict(pagesObj), 'invalid top-level pages dictionary');
+    assert(isDict(pagesObj), 'invalid top-level pages dictionary');
     // shadow the prototype getter
     return shadow(this, 'toplevelPagesDict', pagesObj);
   }
@@ -248,10 +241,7 @@ class Catalog {
     var obj = null;
     try {
       obj = this.readDocumentOutline();
-    } catch (ex) {
-      if (ex instanceof MissingDataException) {
-        throw ex;
-      }
+    } catch {
       console.warn('Unable to read document outline');
     }
     return shadow(this, 'documentOutline', obj);
@@ -313,7 +303,7 @@ class Catalog {
 
   get numPages() {
     var obj = this.toplevelPagesDict.get('Count');
-    assertWellFormed(
+    assert(
       isInt(obj),
       'page count in top level pages object is not an integer'
     );
@@ -331,33 +321,37 @@ class Catalog {
 
   getPage (pageIndex) {
     if (!(pageIndex in this.pagePromises)) {
-      this.pagePromises[pageIndex] = this.getPageDict(pageIndex).then(
-        function (a) {
-          var dict = a[0];
-          var ref = a[1];
-          return new Page(this.pdfManager, this.xref, pageIndex, dict, ref,
-                          this.fontCache);
-        }.bind(this)
-      );
+      this.pagePromises[pageIndex] = this.getPageDict(pageIndex).then((a) => {
+        const dict = a[0];
+        const ref = a[1];
+
+        return new Page(this.pdfManager, this.xref, pageIndex, dict, ref,
+                        this.fontCache);
+      });
     }
+
     return this.pagePromises[pageIndex];
   }
 
+  /**
+   * @param {number} pageIndex 
+   */
   getPageDict (pageIndex) {
-    var promise = new Promise();
-    var nodesToVisit = [this.catDict.getRaw('Pages')];
-    var currentPageIndex = 0;
-    var xref = this.xref;
+    return new Promise((resolve, reject) => {
+      var nodesToVisit = [this.catDict.getRaw('Pages')];
+      var currentPageIndex = 0;
+      var xref = this.xref;
+  
+      async function next() {
+        while (nodesToVisit.length) {
+          var currentNode = nodesToVisit.pop();
+  
+          if (isRef(currentNode)) {
+            const obj = await xref.fetchAsync(currentNode).catch(reject);
 
-    function next() {
-      while (nodesToVisit.length) {
-        var currentNode = nodesToVisit.pop();
-
-        if (isRef(currentNode)) {
-          xref.fetchAsync(currentNode).then(function (obj) {
             if ((isDict(obj, 'Page') || (isDict(obj) && !obj.has('Kids')))) {
               if (pageIndex === currentPageIndex) {
-                promise.resolve([obj, currentNode]);
+                resolve([obj, currentNode]);
               } else {
                 currentPageIndex++;
                 next();
@@ -366,45 +360,46 @@ class Catalog {
             }
             nodesToVisit.push(obj);
             next();
-          }.bind(this), promise.reject.bind(promise));
-          return;
-        }
-
-        // must be a child page dictionary
-        assert(
-          isDict(currentNode),
-          'page dictionary kid reference points to wrong type of object'
-        );
-        var count = currentNode.get('Count');
-        // Skip nodes where the page can't be.
-        if (currentPageIndex + count <= pageIndex) {
-          currentPageIndex += count;
-          continue;
-        }
-
-        var kids = currentNode.get('Kids');
-        assert(isArray(kids), 'page dictionary kids object is not an array');
-        if (count === kids.length) {
-          // Nodes that don't have the page have been skipped and this is the
-          // bottom of the tree which means the page requested must be a
-          // descendant of this pages node. Ideally we would just resolve the
-          // promise with the page ref here, but there is the case where more
-          // pages nodes could link to single a page (see issue 3666 pdf). To
-          // handle this push it back on the queue so if it is a pages node it
-          // will be descended into.
-          nodesToVisit = [kids[pageIndex - currentPageIndex]];
-          currentPageIndex = pageIndex;
-          continue;
-        } else {
-          for (var last = kids.length - 1; last >= 0; last--) {
-            nodesToVisit.push(kids[last]);
+            return;
+          }
+  
+          // must be a child page dictionary
+          assert(
+            isDict(currentNode),
+            'page dictionary kid reference points to wrong type of object'
+          );
+          const count = currentNode.get('Count');
+          // Skip nodes where the page can't be.
+          if (currentPageIndex + count <= pageIndex) {
+            currentPageIndex += count;
+            continue;
+          }
+  
+          const kids = currentNode.get('Kids');
+          assert(isArray(kids), 'page dictionary kids object is not an array');
+          if (count === kids.length) {
+            // Nodes that don't have the page have been skipped and this is the
+            // bottom of the tree which means the page requested must be a
+            // descendant of this pages node. Ideally we would just resolve the
+            // promise with the page ref here, but there is the case where more
+            // pages nodes could link to single a page (see issue 3666 pdf). To
+            // handle this push it back on the queue so if it is a pages node it
+            // will be descended into.
+            nodesToVisit = [kids[pageIndex - currentPageIndex]];
+            currentPageIndex = pageIndex;
+            continue;
+          } else {
+            for (var last = kids.length - 1; last >= 0; last--) {
+              nodesToVisit.push(kids[last]);
+            }
           }
         }
+
+        reject('Page index ' + pageIndex + ' not found.');
       }
-      promise.reject('Page index ' + pageIndex + ' not found.');
-    }
-    next();
-    return promise;
+
+      next();
+    })
   }
 
   getPageIndex (ref) {
@@ -475,13 +470,12 @@ class Catalog {
 }
 
 class XRef {
-  constructor (stream, password) {
+  constructor (stream) {
     this.stream = stream;
     this.entries = [];
     this.xrefstms = {};
     // prepare the XRef cache
     this.cache = [];
-    this.password = password;
   }
 
   setStartXRef (startXRef) {

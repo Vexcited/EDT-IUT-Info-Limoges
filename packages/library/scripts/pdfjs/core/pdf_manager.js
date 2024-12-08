@@ -1,13 +1,10 @@
+// @ts-check
 'use strict';
 
 class LocalPdfManager {
-  loadedStream;
-
-  constructor (data, password) {
-    const stream = new Stream(data);
-    this.pdfModel = new PDFDocument(this, stream, password);
-    this.loadedStream = new Promise();
-    this.loadedStream.resolve(stream);
+  constructor (data) {
+    this.stream = new Stream(data);
+    this.pdfModel = new PDFDocument(this, this.stream);
   }
 
   async ensure (obj, prop, args) {
@@ -21,7 +18,7 @@ class LocalPdfManager {
   }
 
   async onLoadedStream () {
-    return this.loadedStream;
+    return this.stream;
   }
 
   ensureModel (prop, args) {

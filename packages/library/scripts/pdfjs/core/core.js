@@ -148,7 +148,6 @@ class Page {
     var opList = new OperatorList(handler, this.pageIndex);
 
     handler.StartRenderPage({
-      transparency: false,
       pageIndex: this.pageIndex
     });
 
@@ -183,19 +182,19 @@ const DocumentInfoValidators = {
  * `PDFDocument` objects on the main thread created.
  */
 class PDFDocument {
-  constructor (pdfManager, arg, password) {
-    const init = (pdfManager, stream, password) => {
-      assertWellFormed(stream.length > 0, 'stream must have data');
+  constructor (pdfManager, arg) {
+    const init = (pdfManager, stream) => {
+      assert(stream.length > 0, 'stream must have data');
       this.pdfManager = pdfManager;
       this.stream = stream;
-      var xref = new XRef(this.stream, password, pdfManager);
+      var xref = new XRef(this.stream);
       this.xref = xref;
     };
 
     if (isStream(arg))
-      init(pdfManager, arg, password);
+      init(pdfManager, arg);
     else if (isArrayBuffer(arg))
-      init(pdfManager, new Stream(arg), password);
+      init(pdfManager, new Stream(arg));
     else
       throw new Error('PDFDocument: Unknown argument type');
   }
@@ -232,7 +231,7 @@ class PDFDocument {
         }
       }
     } catch (ex) {
-      info('Something wrong with AcroForm entry');
+      console.info('Something wrong with AcroForm entry');
       this.acroForm = null;
     }
   }
@@ -246,12 +245,9 @@ class PDFDocument {
         if (linearization.length != length) {
           linearization = false;
         }
-      } catch (err) {
-        if (err instanceof MissingDataException) {
-          throw err;
-        }
-
-        info('The linearization data is not available ' +
+      }
+      catch {
+        console.warn('The linearization data is not available ' +
               'or unreadable PDF data is found');
         linearization = false;
       }
@@ -360,7 +356,7 @@ class PDFDocument {
     try {
       infoDict = this.xref.trailer.get('Info');
     } catch (err) {
-      info('The document information dictionary is invalid.');
+      console.info('The document information dictionary is invalid.');
     }
     if (infoDict) {
       var validEntries = DocumentInfoValidators.entries;
@@ -373,7 +369,7 @@ class PDFDocument {
             docInfo[key] = typeof value !== 'string' ? value :
               stringToPDFString(value);
           } else {
-            info('Bad value in document info for "' + key + '"');
+            console.info('Bad value in document info for "' + key + '"');
           }
         }
       }

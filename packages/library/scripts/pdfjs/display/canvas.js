@@ -1,3 +1,4 @@
+// @ts-check
 'use strict';
 
 // <canvas> contexts store most of the state we need natively.
@@ -212,6 +213,14 @@ var CanvasGraphics = (function CanvasGraphicsClosure() {
   // before it stops and shedules a continue of execution.
   var EXECUTION_TIME = 15;
 
+  /**
+   * 
+   * @param {*} canvasCtx 
+   * @param {PDFObjects} commonObjs 
+   * @param {PDFObjects} objs 
+   * @param {*} textLayer 
+   * @param {*} imageLayer 
+   */
   function CanvasGraphics(canvasCtx, commonObjs, objs, textLayer, imageLayer) {
     this.ctx = canvasCtx;
     this.current = new CanvasExtraState();
@@ -238,46 +247,6 @@ var CanvasGraphics = (function CanvasGraphicsClosure() {
 
     if (canvasCtx) {
       addContextCurrentTransform(canvasCtx);
-    }
-  }
-
-  function putBinaryImageData(ctx, imgData) {
-    if (typeof ImageData !== 'undefined' && imgData instanceof ImageData) {
-      ctx.putImageData(imgData, 0, 0);
-      return;
-    }
-
-    var tmpImgData = ctx.createImageData(imgData.width, imgData.height);
-
-    var data = imgData.data;
-    var tmpImgDataPixels = tmpImgData.data;
-    if ('set' in tmpImgDataPixels)
-      tmpImgDataPixels.set(data);
-    else {
-      // Copy over the imageData pixel by pixel.
-      for (var i = 0, ii = tmpImgDataPixels.length; i < ii; i++)
-        tmpImgDataPixels[i] = data[i];
-    }
-
-    ctx.putImageData(tmpImgData, 0, 0);
-  }
-
-  function copyCtxState(sourceCtx, destCtx) {
-    var properties = ['strokeStyle', 'fillStyle', 'fillRule', 'globalAlpha',
-                      'lineWidth', 'lineCap', 'lineJoin', 'miterLimit',
-                      'globalCompositeOperation', 'font'];
-    for (var i = 0, ii = properties.length; i < ii; i++) {
-      var property = properties[i];
-      if (property in sourceCtx) {
-        destCtx[property] = sourceCtx[property];
-      }
-    }
-    if ('setLineDash' in sourceCtx) {
-      destCtx.setLineDash(sourceCtx.getLineDash());
-      destCtx.lineDashOffset =  sourceCtx.lineDashOffset;
-    } else if ('mozDash' in sourceCtx) {
-      destCtx.mozDash = sourceCtx.mozDash;
-      destCtx.mozDashOffset = sourceCtx.mozDashOffset;
     }
   }
 
@@ -319,10 +288,7 @@ var CanvasGraphics = (function CanvasGraphicsClosure() {
       }
     },
 
-    executeOperatorList (
-                                    operatorList,
-                                    executionStartIdx, continueCallback,
-                                    stepper) {
+    executeOperatorList (operatorList, executionStartIdx) {
       var argsArray = operatorList.argsArray;
       var fnArray = operatorList.fnArray;
       var i = executionStartIdx || 0;
@@ -344,21 +310,15 @@ var CanvasGraphics = (function CanvasGraphicsClosure() {
       var noOpIdx = -1;
 
       while (true) {
-        if (stepper && i === stepper.nextBreakPoint) {
-          stepper.breakIt(i, continueCallback);
-          return i;
-        }
-
         fnId = fnArray[i];
 
         if (fnId !== OPS.dependency) {
-//MQZ.Mar.22 Disabled Operators within specified ranages
           noOpIdx = NO_OPS_RANGE.indexOf(fnId);
           if (this.opMode) {
              if (noOpIdx >= 0) {
                this.opMode = false;
                this.noOpStartIdx = noOpIdx;
-               info("NO_OP Begin: " + this[fnId].name + " - " + i);
+               console.info("NO_OP Begin: " + this[fnId].name + " - " + i);
              }
              else if (NO_OPS.indexOf(fnId) < 0) {
                this[fnId].apply(this, argsArray[i]);
@@ -368,25 +328,8 @@ var CanvasGraphics = (function CanvasGraphicsClosure() {
              if (noOpIdx >= 0 && noOpIdx === (this.noOpStartIdx+1)) {
                this.opMode = true;
                this.noOpStartIdx = -1;
-               info("NO_OP End: " + this[fnId].name + " - " + i);
+               console.info("NO_OP End: " + this[fnId].name + " - " + i);
              }
-          }
-        } else {
-          var deps = argsArray[i];
-          for (var n = 0, nn = deps.length; n < nn; n++) {
-            var depObjId = deps[n];
-            var common = depObjId.substring(0, 2) == 'g_';
-
-            // If the promise isn't resolved yet, add the continueCallback
-            // to the promise and bail out.
-            if (!common && !objs.isResolved(depObjId)) {
-              objs.get(depObjId, continueCallback);
-              return i;
-            }
-            if (common && !commonObjs.isResolved(depObjId)) {
-              commonObjs.get(depObjId, continueCallback);
-              return i;
-            }
           }
         }
 
@@ -396,17 +339,6 @@ var CanvasGraphics = (function CanvasGraphicsClosure() {
         if (i == argsArrayLen) {
           return i;
         }
-
-        // If the execution took longer then a certain amount of time, schedule
-        // to continue exeution after a short delay.
-        // However, this is only possible if a 'continueCallback' is passed in.
-        if (continueCallback && Date.now() > endTime) {
-          setTimeout(continueCallback, 0);
-          return i;
-        }
-
-        // If the operatorList isn't executed completely yet OR the execution
-        // time was short enough, do another execution round.
       }
     },
 

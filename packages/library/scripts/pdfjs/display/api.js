@@ -1,3 +1,5 @@
+// @ts-check
+
 /**
  * This is the main entry point for loading a PDF and interacting with it.
  * NOTE: If a URL is used to fetch the PDF data a standard XMLHttpRequest(XHR)
@@ -84,11 +86,8 @@ class PDFDocumentProxy {
    *  ...
    * ].
    */
-  getOutline () {
-    var promise = new PDFJS.Promise();
-    var outline = this.pdfInfo.outline;
-    promise.resolve(outline);
-    return promise;
+  async getOutline () {
+    return this.pdfInfo.outline;
   }
   
   getMetadata () {
@@ -133,7 +132,6 @@ class PDFPageProxy {
     this.receivingOperatorList  = false;
     this.cleanupAfterRender = false;
     this.pendingDestroy = false;
-    this.renderTasks = [];
   }
 
   /**
@@ -176,8 +174,10 @@ class PDFPageProxy {
   getViewport (scale, rotate) {
     if (arguments.length < 2)
       rotate = this.rotate;
-    return new PDFJS.PageViewport(this.view, scale, rotate, 0, 0);
+    return new PageViewport(this.view, scale, rotate, 0, 0);
   }
+
+  internalRenderTask;
 
   /**
    * Begins the process of rendering a page to the desired context.
@@ -195,73 +195,25 @@ class PDFPageProxy {
    * }.
    * @return {Promise}
    */
-  render (params) {
-    // If there was a pending destroy cancel it so no cleanup happens during
-    // this call to render.
+  async render (params) {
     this.pendingDestroy = false;
 
-    // If there is no displayReadyPromise yet, then the operatorList was never
-    // requested before. Make the request and create the promise.
-    if (!this.displayReadyPromise) {
-      this.receivingOperatorList = true;
-      this.displayReadyPromise = new Promise();
-      this.operatorList = {
-        fnArray: [],
-        argsArray: [],
-        lastChunk: false
-      };
+    this.receivingOperatorList = true;
+    this.operatorList = {
+      fnArray: [],
+      argsArray: [],
+      lastChunk: false
+    };
 
-      this.transport.customWorker.RenderPageRequest({
-        pageIndex: this.pageNumber - 1
-      });
-    }
-    return new OPromise((resolve, reject) => {
-      const complete = (error) => {
-        let i = this.renderTasks.indexOf(internalRenderTask);
-        
-        if (i >= 0) {
-          this.renderTasks.splice(i, 1);
-        }
-  
-        if (this.cleanupAfterRender) {
-          this.pendingDestroy = true;
-        }
-        this._tryDestroy();
-  
-        if (error) {
-          reject(error);
-        }
-        else {
-          resolve();
-        }
-      };
+    this.internalRenderTask = new InternalRenderTask(
+      params,
+      this.objs, this.commonObjs,
+      this.operatorList, this.pageNumber
+    );
 
-      const internalRenderTask = new InternalRenderTask(
-        complete, params,
-        this.objs, this.commonObjs,
-        this.operatorList, this.pageNumber
-      );
-
-      this.renderTasks.push(internalRenderTask);
-
-      this.displayReadyPromise.then((transparency) => {
-          if (this.pendingDestroy) {
-            complete();
-            return;
-          }
-          try {//MQZ. catch canvas drawing exceptions
-            internalRenderTask.initalizeGraphics(transparency);
-            internalRenderTask.operatorListChanged();
-          }
-          catch(err) {
-            complete(err); 
-          }
-        },
-        (reason) => {
-          complete(reason);
-        }
-      );
-    })
+    await this.transport.customWorker.RenderPageRequest({
+      pageIndex: this.pageNumber - 1
+    });
   }
 
   /**
@@ -278,22 +230,20 @@ class PDFPageProxy {
    * @private
    */
   _tryDestroy () {
-    if (!this.pendingDestroy ||
-        this.renderTasks.length !== 0 ||
-        this.receivingOperatorList) {
+    if (!this.pendingDestroy || this.receivingOperatorList) {
       return;
     }
 
     delete this.operatorList;
-    delete this.displayReadyPromise;
     this.objs.clear();
     this.pendingDestroy = false;
   }
   /**
    * For internal use only.
    */
-  _startRenderPage (transparency) {
-    this.displayReadyPromise.resolve(transparency);
+  _startRenderPage () {
+    this.internalRenderTask.initalizeGraphics(false);
+    this.internalRenderTask.operatorListChanged();
   }
   /**
    * For internal use only.
@@ -307,9 +257,7 @@ class PDFPageProxy {
     this.operatorList.lastChunk = operatorListChunk.lastChunk;
 
     // Notify all the rendering tasks there are more operators to be consumed.
-    for (let i = 0; i < this.renderTasks.length; i++) {
-      this.renderTasks[i].operatorListChanged();
-    }
+    this.internalRenderTask.operatorListChanged();
 
     if (operatorListChunk.lastChunk) {
       this.receivingOperatorList = false;
@@ -394,7 +342,7 @@ class WorkerTransport {
 
   StartRenderPage(data) {
     const page = this.pageCache[data.pageIndex];
-    page._startRenderPage(data.transparency);
+    page._startRenderPage();
   }
 
   commonobj (data) {
@@ -433,106 +381,78 @@ class WorkerTransport {
  * inside of a worker. The `PDFObjects` implements some basic functions to
  * manage these objects.
  */
-var PDFObjects = (function PDFObjectsClosure() {
-  function PDFObjects() {
+class PDFObjects {
+  constructor () {
     this.objs = {};
   }
 
-  PDFObjects.prototype = {
-    /**
-     * Internal function.
-     * Ensures there is an object defined for `objId`.
-     */
-    ensureObj: function PDFObjects_ensureObj(objId) {
-      if (this.objs[objId])
-        return this.objs[objId];
+  /**
+   * Internal function.
+   * Ensures there is an object defined for `objId`.
+   */
+  ensureObj (objId) {
+    if (this.objs[objId])
+      return this.objs[objId];
 
-      var obj = {
-        promise: new Promise(objId),
-        data: null,
-        resolved: false
-      };
-      this.objs[objId] = obj;
+    const obj = {
+      data: null,
+    };
 
-      return obj;
-    },
+    this.objs[objId] = obj;
+    return obj;
+  }
 
-    /**
-     * If called *without* callback, this returns the data of `objId` but the
-     * object needs to be resolved. If it isn't, this function throws.
-     *
-     * If called *with* a callback, the callback is called with the data of the
-     * object once the object is resolved. That means, if you call this
-     * function and the object is already resolved, the callback gets called
-     * right away.
-     */
-    get: function PDFObjects_get(objId, callback) {
-      // If there is a callback, then the get can be async and the object is
-      // not required to be resolved right now
-      if (callback) {
-        this.ensureObj(objId).promise.then(callback);
-        return null;
-      }
+  /**
+   * If called *without* callback, this returns the data of `objId` but the
+   * object needs to be resolved. If it isn't, this function throws.
+   *
+   * If called *with* a callback, the callback is called with the data of the
+   * object once the object is resolved. That means, if you call this
+   * function and the object is already resolved, the callback gets called
+   * right away.
+   */
+  get (objId) {
+    const obj = this.objs[objId];
+    return obj.data;
+  }
 
-      // If there isn't a callback, the user expects to get the resolved data
-      // directly.
-      var obj = this.objs[objId];
+  /**
+   * Resolves the object `objId` with optional `data`.
+   */
+  resolve (objId, data) {
+    const obj = this.ensureObj(objId);
+    obj.data = data;
+  }
 
-      // If there isn't an object yet or the object isn't resolved, then the
-      // data isn't ready yet!
-      if (!obj || !obj.resolved)
-        throw new Error('Requesting object that isn\'t resolved yet ' + objId);
-
-      return obj.data;
-    },
-
-    /**
-     * Resolves the object `objId` with optional `data`.
-     */
-    resolve: function PDFObjects_resolve(objId, data) {
-      var obj = this.ensureObj(objId);
-
-      obj.resolved = true;
-      obj.data = data;
-      obj.promise.resolve(data);
-    },
-
-    isResolved: function PDFObjects_isResolved(objId) {
-      var objs = this.objs;
-
-      if (!objs[objId]) {
-        return false;
-      } else {
-        return objs[objId].resolved;
-      }
-    },
-
-    hasData: function PDFObjects_hasData(objId) {
-      return this.isResolved(objId);
-    },
-
-    /**
-     * Returns the data of `objId` if object exists, null otherwise.
-     */
-    getData: function PDFObjects_getData(objId) {
-      var objs = this.objs;
-      if (!objs[objId] || !objs[objId].resolved) {
-        return null;
-      } else {
-        return objs[objId].data;
-      }
-    },
-
-    clear: function PDFObjects_clear() {
-      this.objs = {};
+  isResolved (objId) {
+    if (!this.objs[objId]) {
+      return false;
     }
-  };
-  return PDFObjects;
-})();
+  }
+
+  hasData (objId) {
+    return this.isResolved(objId);
+  }
+
+  /**
+   * Returns the data of `objId` if object exists, null otherwise.
+   */
+  getData (objId) {
+    const objs = this.objs;
+    if (!objs[objId]) {
+      return null;
+    } else {
+      return objs[objId].data;
+    }
+  }
+
+  clear () {
+    this.objs = {};
+  }
+}
 
 class InternalRenderTask {
-  constructor (callback, params, objs, commonObjs, operatorList, pageNumber) {
-    this.callback = callback;
+  constructor (params, objs, commonObjs, operatorList, pageNumber) {
     this.params = params;
     this.objs = objs;
     this.commonObjs = commonObjs;
@@ -566,7 +486,6 @@ class InternalRenderTask {
   cancel () {
     this.running = false;
     this.cancelled = true;
-    this.callback('cancelled');
   }
 
   operatorListChanged () {
@@ -575,10 +494,6 @@ class InternalRenderTask {
         this.graphicsReadyCallback = () => this._continue();
       }
       return;
-    }
-
-    if (this.stepper) {
-      this.stepper.updateOperatorList(this.operatorList);
     }
 
     if (this.running) {
@@ -604,12 +519,12 @@ class InternalRenderTask {
     if (this.cancelled) {
       return;
     }
-    this.operatorListIdx = this.gfx.executeOperatorList(this.operatorList, this.operatorListIdx, () => this._continue(), this.stepper);
+    this.operatorListIdx = this.gfx.executeOperatorList(this.operatorList, this.operatorListIdx);
     if (this.operatorListIdx === this.operatorList.argsArray.length) {
       this.running = false;
       if (this.operatorList.lastChunk) {
         this.gfx.endDrawing();
-        this.callback();
+        return;
       }
     }
   }
