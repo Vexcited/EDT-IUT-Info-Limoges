@@ -35,7 +35,6 @@ var WorkerMessageHandler = PDFJS.WorkerMessageHandler = {
       const infoPromise = pdfManager.ensureModel('documentInfo');
       const metadataPromise = pdfManager.ensureCatalog('metadata');
       const encryptedPromise = pdfManager.ensureXRef('encrypt');
-      const javaScriptPromise = pdfManager.ensureCatalog('javaScript');
 
       const results = await Promise.all([
         numPagesPromise,
@@ -44,7 +43,6 @@ var WorkerMessageHandler = PDFJS.WorkerMessageHandler = {
         infoPromise,
         metadataPromise,
         encryptedPromise,
-        javaScriptPromise
       ])
       
       return {
@@ -54,7 +52,6 @@ var WorkerMessageHandler = PDFJS.WorkerMessageHandler = {
         info: results[3],
         metadata: results[4],
         encrypted: !!results[5],
-        javaScript: results[6]
       };
     }
 
@@ -95,14 +92,6 @@ var WorkerMessageHandler = PDFJS.WorkerMessageHandler = {
         promise.resolve(pageIndex);
       }, promise.reject.bind(promise));
     });
-
-    handler.on('GetDestinations',
-      function wphSetupGetDestinations(data, promise) {
-        pdfManager.ensureCatalog('destinations').then(function(destinations) {
-          promise.resolve(destinations);
-        });
-      }
-    );
 
     handler.on('GetData', function wphSetupGetData(data, promise) {
       pdfManager.onLoadedStream().then(function(stream) {

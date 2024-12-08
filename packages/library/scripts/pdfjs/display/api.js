@@ -71,21 +71,7 @@ class PDFDocumentProxy {
   getPageIndex (ref) {
     return this.transport.getPageIndex(ref);
   }
-  /**
-   * @return {Promise} A promise that is resolved with a lookup table for
-   * mapping named destinations to reference numbers.
-   */
-  getDestinations () {
-    return this.transport.getDestinations();
-  }
-  /**
-   * @return {Promise} A promise that is resolved with an array of all the
-   * JavaScript strings in the name tree.
-   */
-  async getJavaScript () {
-    var js = this.pdfInfo.javaScript;
-    return js;
-  }
+
   /**
    * @return {Promise} A promise that is resolved with an {array} that is a
    * tree outline (if it has one) of the PDF. The tree is in the format of:
@@ -210,8 +196,7 @@ class PDFPageProxy {
    *                               rendering call the function that is the
    *                               first argument to the callback.
    * }.
-   * @return {RenderTask} An extended promise that is resolved when the page
-   * finishes rendering (see RenderTask).
+   * @return {Promise}
    */
   render (params) {
     // If there was a pending destroy cancel it so no cleanup happens during
@@ -233,66 +218,55 @@ class PDFPageProxy {
         pageIndex: this.pageNumber - 1
       });
     }
-
-    var internalRenderTask = new InternalRenderTask(complete, params,
-                                      this.objs, this.commonObjs,
-                                      this.operatorList, this.pageNumber);
-    this.renderTasks.push(internalRenderTask);
-    var renderTask = new RenderTask(internalRenderTask);
-
-    var self = this;
-    this.displayReadyPromise.then(
-      function pageDisplayReadyPromise(transparency) {
-        if (self.pendingDestroy) {
-          complete();
-          return;
+    return new OPromise((resolve, reject) => {
+      const complete = (error) => {
+        let i = this.renderTasks.indexOf(internalRenderTask);
+        
+        if (i >= 0) {
+          this.renderTasks.splice(i, 1);
         }
-        try {//MQZ. catch canvas drawing exceptions
-          internalRenderTask.initalizeGraphics(transparency);
-          internalRenderTask.operatorListChanged();
+  
+        if (this.cleanupAfterRender) {
+          this.pendingDestroy = true;
         }
-        catch(err) {
-          complete(err); 
+        this._tryDestroy();
+  
+        if (error) {
+          reject(error);
         }
-      },
-      function pageDisplayReadPromiseError(reason) {
-        complete(reason);
-      }
-    );
+        else {
+          resolve();
+        }
+      };
 
-    function complete(error) {
-      var i = self.renderTasks.indexOf(internalRenderTask);
-      if (i >= 0) {
-        self.renderTasks.splice(i, 1);
-      }
+      const internalRenderTask = new InternalRenderTask(
+        complete, params,
+        this.objs, this.commonObjs,
+        this.operatorList, this.pageNumber
+      );
 
-      if (self.cleanupAfterRender) {
-        self.pendingDestroy = true;
-      }
-      self._tryDestroy();
+      this.renderTasks.push(internalRenderTask);
 
-      if (error) {
-        renderTask.reject(error);
-      } else {
-        renderTask.resolve();
-      }
-    }
-
-    return renderTask;
+      this.displayReadyPromise.then((transparency) => {
+          if (this.pendingDestroy) {
+            complete();
+            return;
+          }
+          try {//MQZ. catch canvas drawing exceptions
+            internalRenderTask.initalizeGraphics(transparency);
+            internalRenderTask.operatorListChanged();
+          }
+          catch(err) {
+            complete(err); 
+          }
+        },
+        (reason) => {
+          complete(reason);
+        }
+      );
+    })
   }
 
-  /**
-   * Stub for future feature.
-   */
-  getOperationList () {
-    var promise = new PDFJS.Promise();
-    var operationList = { // not implemented
-      dependencyFontsID: null,
-      operatorList: null
-    };
-    promise.resolve(operationList);
-    return promise;
-  }
   /**
    * Destroys resources allocated by the page.
    */
@@ -300,9 +274,11 @@ class PDFPageProxy {
     this.pendingDestroy = true;
     this._tryDestroy();
   }
+
   /**
    * For internal use only. Attempts to clean up if rendering is in a state
    * where that's possible.
+   * @private
    */
   _tryDestroy () {
     if (!this.pendingDestroy ||
@@ -327,14 +303,14 @@ class PDFPageProxy {
    */
   _renderPageChunk (operatorListChunk) {
     // Add the new chunk to the current operator list.
-    for (var i = 0, ii = operatorListChunk.length; i < ii; i++) {
+    for (let i = 0, ii = operatorListChunk.length; i < ii; i++) {
       this.operatorList.fnArray.push(operatorListChunk.fnArray[i]);
       this.operatorList.argsArray.push(operatorListChunk.argsArray[i]);
     }
     this.operatorList.lastChunk = operatorListChunk.lastChunk;
 
     // Notify all the rendering tasks there are more operators to be consumed.
-    for (var i = 0; i < this.renderTasks.length; i++) {
+    for (let i = 0; i < this.renderTasks.length; i++) {
       this.renderTasks[i].operatorListChanged();
     }
 
@@ -363,10 +339,9 @@ class WorkerTransport {
   destroy () {
     this.pageCache = [];
     this.pagePromises = [];
-    var self = this;
-    this.messageHandler.send('Terminate', null, function () {
-      if (self.worker) {
-        self.worker.terminate();
+    this.messageHandler.send('Terminate', null, () => {
+      if (this.worker) {
+        this.worker.terminate();
       }
     });
   }
@@ -582,15 +557,6 @@ class WorkerTransport {
       { pageIndex: pageIndex });
   }
 
-  getDestinations () {
-    var promise = new PDFJS.Promise();
-    this.messageHandler.send('GetDestinations', null,
-      function transportDestinations(destinations) {
-        promise.resolve(destinations);
-      }
-    );
-    return promise;
-  }
   startCleanup () {
     this.messageHandler.send('Cleanup', null,
       function endCleanup() {
@@ -710,33 +676,9 @@ var PDFObjects = (function PDFObjectsClosure() {
   };
   return PDFObjects;
 })();
-/*
- * RenderTask is basically a promise but adds a cancel function to terminate it.
- */
-var RenderTask = (function RenderTaskClosure() {
-  function RenderTask(internalRenderTask) {
-    this.internalRenderTask = internalRenderTask;
-    Promise.call(this);
-  }
 
-  RenderTask.prototype = Object.create(Promise.prototype);
-
-  /**
-   * Cancel the rendering task. If the task is curently rendering it will not be
-   * cancelled until graphics pauses with a timeout. The promise that this
-   * object extends will resolved when cancelled.
-   */
-  RenderTask.prototype.cancel = function RenderTask_cancel() {
-    this.internalRenderTask.cancel();
-  };
-
-  return RenderTask;
-})();
-
-var InternalRenderTask = (function InternalRenderTaskClosure() {
-
-  function InternalRenderTask(callback, params, objs, commonObjs, operatorList,
-                              pageNumber) {
+class InternalRenderTask {
+  constructor (callback, params, objs, commonObjs, operatorList, pageNumber) {
     this.callback = callback;
     this.params = params;
     this.objs = objs;
@@ -750,82 +692,72 @@ var InternalRenderTask = (function InternalRenderTaskClosure() {
     this.cancelled = false;
   }
 
-  InternalRenderTask.prototype = {
-
-    initalizeGraphics:
-        function InternalRenderTask_initalizeGraphics(transparency) {
-
-      if (this.cancelled) {
-        return;
-      }
-
-      var params = this.params;
-      this.gfx = new CanvasGraphics(params.canvasContext, this.commonObjs,
-                                    this.objs, params.textLayer,
-                                    params.imageLayer);
-
-      this.gfx.beginDrawing(params.viewport, transparency);
-      this.operatorListIdx = 0;
-      this.graphicsReady = true;
-      if (this.graphicsReadyCallback) {
-        this.graphicsReadyCallback();
-      }
-    },
-
-    cancel: function InternalRenderTask_cancel() {
-      this.running = false;
-      this.cancelled = true;
-      this.callback('cancelled');
-    },
-
-    operatorListChanged: function InternalRenderTask_operatorListChanged() {
-      if (!this.graphicsReady) {
-        if (!this.graphicsReadyCallback) {
-          this.graphicsReadyCallback = this._continue.bind(this);
-        }
-        return;
-      }
-
-      if (this.stepper) {
-        this.stepper.updateOperatorList(this.operatorList);
-      }
-
-      if (this.running) {
-        return;
-      }
-      this._continue();
-    },
-
-    _continue: function InternalRenderTask__continue() {
-      this.running = true;
-      if (this.cancelled) {
-        return;
-      }
-      if (this.params.continueCallback) {
-        this.params.continueCallback(this._next.bind(this));
-      } else {
-        this._next();
-      }
-    },
-
-    _next: function InternalRenderTask__next() {
-      if (this.cancelled) {
-        return;
-      }
-      this.operatorListIdx = this.gfx.executeOperatorList(this.operatorList,
-                                        this.operatorListIdx,
-                                        this._continue.bind(this),
-                                        this.stepper);
-      if (this.operatorListIdx === this.operatorList.argsArray.length) {
-        this.running = false;
-        if (this.operatorList.lastChunk) {
-          this.gfx.endDrawing();
-          this.callback();
-        }
-      }
+  initalizeGraphics (transparency) {
+    if (this.cancelled) {
+      return;
     }
 
-  };
+    var params = this.params;
+    this.gfx = new CanvasGraphics(params.canvasContext, this.commonObjs,
+                                  this.objs, params.textLayer,
+                                  params.imageLayer);
 
-  return InternalRenderTask;
-})();
+    this.gfx.beginDrawing(params.viewport, transparency);
+    this.operatorListIdx = 0;
+    this.graphicsReady = true;
+    if (this.graphicsReadyCallback) {
+      this.graphicsReadyCallback();
+    }
+  }
+
+  cancel () {
+    this.running = false;
+    this.cancelled = true;
+    this.callback('cancelled');
+  }
+
+  operatorListChanged () {
+    if (!this.graphicsReady) {
+      if (!this.graphicsReadyCallback) {
+        this.graphicsReadyCallback = () => this._continue();
+      }
+      return;
+    }
+
+    if (this.stepper) {
+      this.stepper.updateOperatorList(this.operatorList);
+    }
+
+    if (this.running) {
+      return;
+    }
+
+    this._continue();
+  }
+
+  _continue () {
+    this.running = true;
+    if (this.cancelled) {
+      return;
+    }
+    if (this.params.continueCallback) {
+      this.params.continueCallback(() => this._next());
+    } else {
+      this._next();
+    }
+  }
+
+  _next () {
+    if (this.cancelled) {
+      return;
+    }
+    this.operatorListIdx = this.gfx.executeOperatorList(this.operatorList, this.operatorListIdx, () => this._continue(), this.stepper);
+    if (this.operatorListIdx === this.operatorList.argsArray.length) {
+      this.running = false;
+      if (this.operatorList.lastChunk) {
+        this.gfx.endDrawing();
+        this.callback();
+      }
+    }
+  }
+}

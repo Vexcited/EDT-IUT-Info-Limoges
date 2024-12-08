@@ -90,8 +90,6 @@ var OPS = PDFJS.OPS = {
   showSpacedText: 45,
   nextLineShowText: 46,
   nextLineSetSpacingShowText: 47,
-  setCharWidth: 48,
-  setCharWidthAndBounds: 49,
   setStrokeColorSpace: 50,
   setFillColorSpace: 51,
   setStrokeColor: 52,
@@ -99,12 +97,8 @@ var OPS = PDFJS.OPS = {
   setFillColor: 54,
   setFillColorN: 55,
   setStrokeGray: 56,
-  setFillGray: 57,
   setStrokeRGBColor: 58,
   setFillRGBColor: 59,
-  setStrokeCMYKColor: 60,
-  setFillCMYKColor: 61,
-  shadingFill: 62,
   beginInlineImage: 63,
   beginImageData: 64,
   endInlineImage: 65,
@@ -114,22 +108,10 @@ var OPS = PDFJS.OPS = {
   beginMarkedContent: 69,
   beginMarkedContentProps: 70,
   endMarkedContent: 71,
-  beginCompat: 72,
-  endCompat: 73,
   paintFormXObjectBegin: 74,
   paintFormXObjectEnd: 75,
   beginGroup: 76,
   endGroup: 77,
-  // beginAnnotations: 78,
-  // endAnnotations: 79,
-  // beginAnnotation: 80,
-  // endAnnotation: 81,
-  paintJpegXObject: 82,
-  paintImageMaskXObject: 83,
-  paintImageMaskXObjectGroup: 84,
-  paintImageXObject: 85,
-  paintInlineImageXObject: 86,
-  paintInlineImageXObjectGroup: 87
 };
 
 //MQZ.Mar.22 Disabled Operators (to prevent image painting & annotation default appearance)
@@ -148,14 +130,9 @@ function info(msg) {
   log('Info: ' + msg);
 }
 
-// Non-fatal warnings that should trigger the fallback UI.
-function warn(msg) {
-  log('Warning: ' + msg);
-}
-
 // Missing features that should trigger the fallback UI.
 function TODO(what) {
-  warn('TODO: ' + what);
+  console.warn('TODO: ' + what);
 }
 
 function backtrace() {
@@ -291,8 +268,10 @@ function bytesToString(bytes) {
 function stringToBytes(str) {
   var length = str.length;
   var bytes = new Uint8Array(length);
-  for (var n = 0; n < length; ++n)
+  for (var n = 0; n < length; ++n) {
     bytes[n] = str.charCodeAt(n) & 0xFF;
+  }
+
   return bytes;
 }
 
@@ -303,11 +282,6 @@ var Util = PDFJS.Util = (function UtilClosure() {
 
   Util.makeCssRgb = function Util_makeCssRgb(rgb) {
     return 'rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')';
-  };
-
-  Util.makeCssCmyk = function Util_makeCssCmyk(cmyk) {
-    var rgb = ColorSpace.singletons.cmyk.getRgb(cmyk, 0);
-    return Util.makeCssRgb(rgb);
   };
 
   // Concatenates two transformation matrices together and returns the result.
@@ -804,7 +778,7 @@ globalThis.Promise = PDFJS.Promise = (function PromiseClosure() {
             if (unhandled.stack) {
               msg += '\n' + unhandled.stack;
             }
-            warn(msg);
+            console.warn(msg);
             this.unhandledRejections.splice(i);
             i--;
           }
@@ -979,7 +953,7 @@ function MessageHandler(name, comObj) {
     log.apply(null, data);
   }];
   ah['_warn'] = [function ah_Warn(data) {
-    warn(data);
+    console.warn(data);
   }];
 
   if (typeof comObj === 'object') {

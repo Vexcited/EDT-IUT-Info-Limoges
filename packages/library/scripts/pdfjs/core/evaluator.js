@@ -76,10 +76,6 @@ class PartialEvaluator {
     '"': { id: OPS.nextLineSetSpacingShowText, numArgs: 3,
       variableArgs: false },
 
-    // Type3 fonts
-    d0: { id: OPS.setCharWidth, numArgs: 2, variableArgs: false },
-    d1: { id: OPS.setCharWidthAndBounds, numArgs: 6, variableArgs: false },
-
     // Color
     CS: { id: OPS.setStrokeColorSpace, numArgs: 1, variableArgs: false },
     cs: { id: OPS.setFillColorSpace, numArgs: 1, variableArgs: false },
@@ -88,19 +84,8 @@ class PartialEvaluator {
     sc: { id: OPS.setFillColor, numArgs: 4, variableArgs: true },
     scn: { id: OPS.setFillColorN, numArgs: 33, variableArgs: true },
     G: { id: OPS.setStrokeGray, numArgs: 1, variableArgs: false },
-    g: { id: OPS.setFillGray, numArgs: 1, variableArgs: false },
     RG: { id: OPS.setStrokeRGBColor, numArgs: 3, variableArgs: false },
     rg: { id: OPS.setFillRGBColor, numArgs: 3, variableArgs: false },
-    K: { id: OPS.setStrokeCMYKColor, numArgs: 4, variableArgs: false },
-    k: { id: OPS.setFillCMYKColor, numArgs: 4, variableArgs: false },
-
-    // Shading
-    sh: { id: OPS.shadingFill, numArgs: 1, variableArgs: false },
-
-    // Images
-    BI: { id: OPS.beginInlineImage, numArgs: 0, variableArgs: false },
-    ID: { id: OPS.beginImageData, numArgs: 0, variableArgs: false },
-    EI: { id: OPS.endInlineImage, numArgs: 1, variableArgs: false },
 
     // XObjects
     Do: { id: OPS.paintXObject, numArgs: 1, variableArgs: false },
@@ -110,10 +95,6 @@ class PartialEvaluator {
     BDC: { id: OPS.beginMarkedContentProps, numArgs: 2,
       variableArgs: false },
     EMC: { id: OPS.endMarkedContent, numArgs: 0, variableArgs: false },
-
-    // Compatibility
-    BX: { id: OPS.beginCompat, numArgs: 0, variableArgs: false },
-    EX: { id: OPS.endCompat, numArgs: 0, variableArgs: false },
 
     // (reserved partial commands for the lexer)
     BM: null,

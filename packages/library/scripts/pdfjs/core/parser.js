@@ -277,9 +277,6 @@ class Parser {
       return new NullStream(stream);
     }
     if (name == 'FlateDecode' || name == 'Fl') {
-      if (params) {
-        // return new PredictorStream(new FlateStream(stream), params);
-      }
       return new FlateStream(stream);
     }
     
@@ -359,7 +356,7 @@ class Lexer {
       } else if (ch === 0x2D) { // '-'
         // ignore minus signs in the middle of numbers to match
         // Adobe's behavior
-        warn('Badly formated number');
+        console.warn('Badly formated number');
       } else if (ch >= 0x30 && ch <= 0x39) { // '0'-'9'
         str += String.fromCharCode(ch);
       } else if (ch === 0x45 || ch === 0x65) { // 'E', 'e'
@@ -385,7 +382,7 @@ class Lexer {
       var charBuffered = false;
       switch (ch | 0) {
         case -1:
-          warn('Unterminated string');
+          console.warn('Unterminated string');
           done = true;
           break;
         case 0x28: // '('
@@ -404,7 +401,7 @@ class Lexer {
           ch = this.nextChar();
           switch (ch) {
             case -1:
-              warn('Unterminated string');
+              console.warn('Unterminated string');
               done = true;
               break;
             case 0x6E: // 'n'

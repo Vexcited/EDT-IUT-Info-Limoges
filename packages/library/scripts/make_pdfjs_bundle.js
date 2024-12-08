@@ -3,21 +3,16 @@ const fs = require("node:fs");
 const files = [
   'shared/util.js',
   'shared/colorspace.js',
-  'shared/pattern.js',
-  'shared/function.js',
 
   'core/core.js',
   'core/obj.js',
   'core/crypto.js',
   'core/evaluator.js',
   'core/fonts.js',
-  'core/metrics.js',
   'core/parser.js',
   'core/stream.js',
   'core/worker.js',
-  'core/bidi.js',
   'core/pdf_manager.js',
-  'core/cmap.js',
 
   'display/canvas.js',
   'display/font_loader.js',
