@@ -1,28 +1,54 @@
-/* Copyright 2012 Mozilla Foundation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-/* globals error, globalScope, InvalidPDFException, log,
-           MissingPDFException, PasswordException, PDFJS, Promise,
-           UnknownErrorException, NetworkManager, LocalPdfManager,
-           , XRefParseException,
-           isInt, PasswordResponses, MessageHandler, Ref */
-
 'use strict';
+
+var pdfManager;
+
+class CUSTOMWorker {
+  async loadDocument (recoveryMode) {
+    await this.pdfManager.ensureModel('checkHeader', [])
+    await this.pdfManager.ensureModel('parseStartXRef', [])
+    await this.pdfManager.ensureModel('parse', [recoveryMode]);
+
+    const numPagesPromise = this.pdfManager.ensureModel('numPages');
+    const fingerprintPromise = this.pdfManager.ensureModel('fingerprint');
+    const outlinePromise = this.pdfManager.ensureCatalog('documentOutline');
+    const infoPromise = this.pdfManager.ensureModel('documentInfo');
+    const metadataPromise = this.pdfManager.ensureCatalog('metadata');
+
+    const results = await Promise.all([
+      numPagesPromise,
+      fingerprintPromise,
+      outlinePromise,
+      infoPromise,
+      metadataPromise,
+    ])
+    
+    return {
+      numPages: results[0],
+      fingerprint: results[1],
+      outline: results[2],
+      info: results[3],
+      metadata: results[4],
+    };
+  }
+
+  getPdfManager (data) {
+    const source = data.source;
+    this.pdfManager = new LocalPdfManager(source.data);
+    // TODO: remove this
+    pdfManager = this.pdfManager;
+  }
+
+  // replies with GetDoc
+  async GetDocRequest (data) {
+    this.getPdfManager(data); // make sure it's defined
+
+    const pdfInfo = await this.loadDocument(false)
+    return { pdfInfo };
+  }
+}
 
 var WorkerMessageHandler = PDFJS.WorkerMessageHandler = {
   setup (handler) {
-    var pdfManager;
 
     async function loadDocument (recoveryMode) {
       await pdfManager.ensureModel('checkHeader', [])
@@ -34,7 +60,6 @@ var WorkerMessageHandler = PDFJS.WorkerMessageHandler = {
       const outlinePromise = pdfManager.ensureCatalog('documentOutline');
       const infoPromise = pdfManager.ensureModel('documentInfo');
       const metadataPromise = pdfManager.ensureCatalog('metadata');
-      const encryptedPromise = pdfManager.ensureXRef('encrypt');
 
       const results = await Promise.all([
         numPagesPromise,
@@ -42,7 +67,6 @@ var WorkerMessageHandler = PDFJS.WorkerMessageHandler = {
         outlinePromise,
         infoPromise,
         metadataPromise,
-        encryptedPromise,
       ])
       
       return {
@@ -51,13 +75,12 @@ var WorkerMessageHandler = PDFJS.WorkerMessageHandler = {
         outline: results[2],
         info: results[3],
         metadata: results[4],
-        encrypted: !!results[5],
       };
     }
 
     function getPdfManager (data) {
       const source = data.source;
-      pdfManager = new LocalPdfManager(source.data, source.password);
+      pdfManager = new LocalPdfManager(source.data);
     }
 
     handler.on('GetDocRequest', async (data) => {
@@ -103,10 +126,6 @@ var WorkerMessageHandler = PDFJS.WorkerMessageHandler = {
       pdfManager.onLoadedStream().then(function(stream) {
         promise.resolve({ length: stream.bytes.byteLength });
       });
-    });
-
-    handler.on('UpdatePassword', function wphSetupUpdatePassword(data) {
-      pdfManager.updatePassword(data);
     });
 
     handler.on('RenderPageRequest', async (data) => {

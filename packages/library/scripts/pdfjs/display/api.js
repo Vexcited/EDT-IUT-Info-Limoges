@@ -18,11 +18,8 @@
  * @return {Promise} A promise that is resolved with {PDFDocumentProxy} object.
  */
 PDFJS.getDocument = (buffer) => {
-  return new OPromise((resolve, reject) => {
-    const wrapper = { resolve, reject };
-    const transport = new WorkerTransport(wrapper);
-    transport.fetchDocument({ data: buffer });
-  })
+  const transport = new WorkerTransport();
+  return transport.fetchDocument({ data: buffer });
 };
 
 /**
@@ -325,8 +322,8 @@ class PDFPageProxy {
  * For internal use only.
  */
 class WorkerTransport {
-  constructor (workerReadyPromise) {
-    this.workerReadyPromise = workerReadyPromise;
+  constructor (/*workerReadyPromise*/) {
+    // this.workerReadyPromise = workerReadyPromise;
     this.commonObjs = new PDFObjects();
 
     this.pageCache = [];
@@ -334,6 +331,7 @@ class WorkerTransport {
     this.embeddedFontsUsed = false;
 
     this.setupFakeWorker();
+    this.customWorker = new CUSTOMWorker();
   }
 
   destroy () {
@@ -367,12 +365,12 @@ class WorkerTransport {
   setupMessageHandler (messageHandler) {
     this.messageHandler = messageHandler;
 
-    messageHandler.on('GetDoc', function transportDoc(data) {
-      var pdfInfo = data.pdfInfo;
-      var pdfDocument = new PDFDocumentProxy(pdfInfo, this);
-      this.pdfDocument = pdfDocument;
-      this.workerReadyPromise.resolve(pdfDocument);
-    }, this);
+    // messageHandler.on('GetDoc', function transportDoc(data) {
+    //   var pdfInfo = data.pdfInfo;
+    //   var pdfDocument = new PDFDocumentProxy(pdfInfo, this);
+    //   this.pdfDocument = pdfDocument;
+    //   this.workerReadyPromise.resolve(pdfDocument);
+    // }, this);
 
     messageHandler.on('InvalidPDF', function transportInvalidPDF(data) {
       this.workerReadyPromise.reject(data.exception.name, data.exception);
@@ -508,14 +506,26 @@ class WorkerTransport {
     });
   }
 
-  fetchDocument (source) {
+  async fetchDocument (source) {
     source.disableAutoFetch = false;
-    source.chunkedViewerLoading = false //!!this.pdfDataRangeTransport;
-    this.messageHandler.send('GetDocRequest', {
+    source.chunkedViewerLoading = false;
+    
+    const data = await this.customWorker.GetDocRequest({
       source,
       disableRange: false,
       maxImageSize: -1,
     });
+
+    const pdfInfo = data.pdfInfo;
+    const pdfDocument = new PDFDocumentProxy(pdfInfo, this);
+    this.pdfDocument = pdfDocument;
+    return pdfDocument;
+
+    // this.messageHandler.send('GetDocRequest', {
+    //   source,
+    //   disableRange: false,
+    //   maxImageSize: -1,
+    // });
   }
 
   getData (promise) {
