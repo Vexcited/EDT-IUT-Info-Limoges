@@ -90,8 +90,6 @@ var OPS = PDFJS.OPS = {
   showSpacedText: 45,
   nextLineShowText: 46,
   nextLineSetSpacingShowText: 47,
-  setCharWidth: 48,
-  setCharWidthAndBounds: 49,
   setStrokeColorSpace: 50,
   setFillColorSpace: 51,
   setStrokeColor: 52,
@@ -99,12 +97,8 @@ var OPS = PDFJS.OPS = {
   setFillColor: 54,
   setFillColorN: 55,
   setStrokeGray: 56,
-  setFillGray: 57,
   setStrokeRGBColor: 58,
   setFillRGBColor: 59,
-  setStrokeCMYKColor: 60,
-  setFillCMYKColor: 61,
-  shadingFill: 62,
   beginInlineImage: 63,
   beginImageData: 64,
   endInlineImage: 65,
@@ -114,22 +108,10 @@ var OPS = PDFJS.OPS = {
   beginMarkedContent: 69,
   beginMarkedContentProps: 70,
   endMarkedContent: 71,
-  beginCompat: 72,
-  endCompat: 73,
   paintFormXObjectBegin: 74,
   paintFormXObjectEnd: 75,
   beginGroup: 76,
   endGroup: 77,
-  beginAnnotations: 78,
-  endAnnotations: 79,
-  beginAnnotation: 80,
-  endAnnotation: 81,
-  paintJpegXObject: 82,
-  paintImageMaskXObject: 83,
-  paintImageMaskXObjectGroup: 84,
-  paintImageXObject: 85,
-  paintInlineImageXObject: 86,
-  paintInlineImageXObjectGroup: 87
 };
 
 //MQZ.Mar.22 Disabled Operators (to prevent image painting & annotation default appearance)
@@ -139,47 +121,18 @@ var NO_OPS_RANGE = PDFJS.NO_OPS_RANGE = [78, 79, 80, 81]; //range pairs, all ops
 
 // Use only for debugging purposes. This should not be used in any code that is
 // in mozilla master.
-var log = () => {}
+var log = (m) => console.log(m)
 
 // A notice for devs that will not trigger the fallback UI.  These are good
 // for things that are helpful to devs, such as warning that Workers were
 // disabled, which is important to devs but not end users.
 function info(msg) {
-  if (verbosity >= INFOS) {
-    log('Info: ' + msg);
-    PDFJS.LogManager.notify('info', msg);
-  }
-}
-
-// Non-fatal warnings that should trigger the fallback UI.
-function warn(msg) {
-  if (verbosity >= WARNINGS) {
-    log('Warning: ' + msg);
-    PDFJS.LogManager.notify('warn', msg);
-  }
-}
-
-// Fatal errors that should trigger the fallback UI and halt execution by
-// throwing an exception.
-function error(msg) {
-  // If multiple arguments were passed, pass them all to the log function.
-  if (arguments.length > 1) {
-    var logArguments = ['Error:'];
-    logArguments.push.apply(logArguments, arguments);
-    log.apply(null, logArguments);
-    // Join the arguments into a single string for the lines below.
-    msg = [].join.call(arguments, ' ');
-  } else {
-    //log('Error: ' + msg);
-  }
-  //log(backtrace());
-  //PDFJS.LogManager.notify('error', msg);
-  throw new Error(msg);
+  log('Info: ' + msg);
 }
 
 // Missing features that should trigger the fallback UI.
 function TODO(what) {
-  warn('TODO: ' + what);
+  console.warn('TODO: ' + what);
 }
 
 function backtrace() {
@@ -192,77 +145,15 @@ function backtrace() {
 
 function assert(cond, msg) {
   if (!cond)
-    error(msg);
+    throw new Error(msg);
 }
-
-// Combines two URLs. The baseUrl shall be absolute URL. If the url is an
-// absolute URL, it will be returned as is.
-function combineUrl(baseUrl, url) {
-  if (!url)
-    return baseUrl;
-  if (url.indexOf(':') >= 0)
-    return url;
-  if (url.charAt(0) == '/') {
-    // absolute path
-    var i = baseUrl.indexOf('://');
-    i = baseUrl.indexOf('/', i + 3);
-    return baseUrl.substring(0, i) + url;
-  } else {
-    // relative path
-    var pathLength = baseUrl.length, i;
-    i = baseUrl.lastIndexOf('#');
-    pathLength = i >= 0 ? i : pathLength;
-    i = baseUrl.lastIndexOf('?', pathLength);
-    pathLength = i >= 0 ? i : pathLength;
-    var prefixLength = baseUrl.lastIndexOf('/', pathLength);
-    return baseUrl.substring(0, prefixLength + 1) + url;
-  }
-}
-
-// Validates if URL is safe and allowed, e.g. to avoid XSS.
-function isValidUrl(url, allowRelative) {
-  if (!url) {
-    return false;
-  }
-  var colon = url.indexOf(':');
-  if (colon < 0) {
-    return allowRelative;
-  }
-  var protocol = url.substring(0, colon);
-  switch (protocol) {
-    case 'http':
-    case 'https':
-    case 'ftp':
-    case 'mailto':
-      return true;
-    default:
-      return false;
-  }
-}
-PDFJS.isValidUrl = isValidUrl;
 
 // In a well-formed PDF, |cond| holds.  If it doesn't, subsequent
 // behavior is undefined.
 function assertWellFormed(cond, msg) {
   if (!cond)
-    error(msg);
+    throw new Error(msg);
 }
-
-var LogManager = PDFJS.LogManager = (function LogManagerClosure() {
-  var loggers = [];
-  return {
-    addLogger: function logManager_addLogger(logger) {
-      loggers.push(logger);
-    },
-    notify: function(type, message) {
-      for (var i = 0, ii = loggers.length; i < ii; i++) {
-        var logger = loggers[i];
-        if (logger[type])
-          logger[type](message);
-      }
-    }
-  };
-})();
 
 function shadow(obj, prop, value) {
   Object.defineProperty(obj, prop, { value: value,
@@ -377,8 +268,10 @@ function bytesToString(bytes) {
 function stringToBytes(str) {
   var length = str.length;
   var bytes = new Uint8Array(length);
-  for (var n = 0; n < length; ++n)
+  for (var n = 0; n < length; ++n) {
     bytes[n] = str.charCodeAt(n) & 0xFF;
+  }
+
   return bytes;
 }
 
@@ -389,11 +282,6 @@ var Util = PDFJS.Util = (function UtilClosure() {
 
   Util.makeCssRgb = function Util_makeCssRgb(rgb) {
     return 'rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')';
-  };
-
-  Util.makeCssCmyk = function Util_makeCssCmyk(cmyk) {
-    var rgb = ColorSpace.singletons.cmyk.getRgb(cmyk, 0);
-    return Util.makeCssRgb(rgb);
   };
 
   // Concatenates two transformation matrices together and returns the result.
@@ -783,6 +671,8 @@ function isPDFFunction(v) {
   return fnDict.has('FunctionType');
 }
 
+var OPromise = Promise;
+
 /**
  * The following promise implementation tries to generally implment the
  * Promise/A+ spec. Some notable differences from other promise libaries are:
@@ -792,7 +682,7 @@ function isPDFFunction(v) {
  * Based off of the work in:
  * https://bugzilla.mozilla.org/show_bug.cgi?id=810490
  */
-var Promise = PDFJS.Promise = (function PromiseClosure() {
+globalThis.Promise = PDFJS.Promise = (function PromiseClosure() {
   var STATUS_PENDING = 0;
   var STATUS_RESOLVED = 1;
   var STATUS_REJECTED = 2;
@@ -888,7 +778,7 @@ var Promise = PDFJS.Promise = (function PromiseClosure() {
             if (unhandled.stack) {
               msg += '\n' + unhandled.stack;
             }
-            warn(msg);
+            console.warn(msg);
             this.unhandledRejections.splice(i);
             i--;
           }
@@ -1017,59 +907,6 @@ var Promise = PDFJS.Promise = (function PromiseClosure() {
   return Promise;
 })();
 
-var StatTimer = (function StatTimerClosure() {
-  function rpad(str, pad, length) {
-    while (str.length < length)
-      str += pad;
-    return str;
-  }
-  function StatTimer() {
-    this.started = {};
-    this.times = [];
-    this.enabled = true;
-  }
-  StatTimer.prototype = {
-    time: function StatTimer_time(name) {
-      if (!this.enabled)
-        return;
-      if (name in this.started)
-        warn('Timer is already running for ' + name);
-      this.started[name] = Date.now();
-    },
-    timeEnd: function StatTimer_timeEnd(name) {
-      if (!this.enabled)
-        return;
-      if (!(name in this.started))
-        warn('Timer has not been started for ' + name);
-      this.times.push({
-        'name': name,
-        'start': this.started[name],
-        'end': Date.now()
-      });
-      // Remove timer from started so it can be called again.
-      delete this.started[name];
-    },
-    toString: function StatTimer_toString() {
-      var times = this.times;
-      var out = '';
-      // Find the longest name for padding purposes.
-      var longest = 0;
-      for (var i = 0, ii = times.length; i < ii; ++i) {
-        var name = times[i]['name'];
-        if (name.length > longest)
-          longest = name.length;
-      }
-      for (var i = 0, ii = times.length; i < ii; ++i) {
-        var span = times[i];
-        var duration = span.end - span.start;
-        out += rpad(span['name'], ' ', longest) + ' ' + duration + 'ms\n';
-      }
-      return out;
-    }
-  };
-  return StatTimer;
-})();
-
 PDFJS.createBlob = function createBlob(data, contentType) {
 	return new Blob([data], { type: contentType });
 };
@@ -1116,7 +953,7 @@ function MessageHandler(name, comObj) {
     log.apply(null, data);
   }];
   ah['_warn'] = [function ah_Warn(data) {
-    warn(data);
+    console.warn(data);
   }];
 
   if (typeof comObj === 'object') {
@@ -1129,7 +966,7 @@ function MessageHandler(name, comObj) {
 				delete callbacks[callbackId];
 				callback(data.data);
 			} else {
-				error('Cannot resolve callback ' + callbackId);
+				throw new Error('Cannot resolve callback ' + callbackId);
 			}
 			} else if (data.action in ah) {
 			var action = ah[data.action];
@@ -1147,7 +984,7 @@ function MessageHandler(name, comObj) {
 				action[0].call(action[1], data.data);
 			}
 			} else {
-				error('Unknown action from worker: ' + data.action);
+				throw new Error('Unknown action from worker: ' + data.action);
 			}
 		};
 	}
@@ -1157,7 +994,7 @@ MessageHandler.prototype = {
   on: function messageHandlerOn(actionName, handler, scope) {
     var ah = this.actionHandler;
     if (ah[actionName]) {
-      error('There is already an actionName called "' + actionName + '"');
+      throw new Error('There is already an actionName called "' + actionName + '"');
     }
     ah[actionName] = [handler, scope];
   },
@@ -1185,15 +1022,3 @@ MessageHandler.prototype = {
     }
   }
 };
-
-function loadJpegStream(id, imageUrl, objs) {
-  var img = new Image();
-  img.onload = (function loadJpegStream_onloadClosure() {
-    objs.resolve(id, img);
-  });
-//  img.src = imageUrl;
-    //MQZ. Apr.09.2013 calls windows.btoa safely
-    img.src = 'data:image/jpeg;base64,' + img.btoa(imageUrl);
-}
-
-
