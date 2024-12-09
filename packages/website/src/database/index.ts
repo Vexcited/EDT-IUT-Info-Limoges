@@ -99,6 +99,27 @@ export async function getCachedEntries(year: YEARS): Promise<TimetableEntry[]> {
   return entries;
 }
 
+export async function getEntryAsIs(entry: TimetableEntry): Promise<ITimetable> {
+  const base_timetable = await entry.getTimetable();
+  const last_update = await entry.lastUpdated();
+
+  return {
+    header: {
+      ...base_timetable.header,
+      start_date: base_timetable.header.start_date.toISO()!,
+      end_date: base_timetable.header.end_date.toISO()!
+    },
+    lessons: base_timetable.lessons.map(
+      lesson => ({
+        ...lesson,
+        start_date: lesson.start_date.toISO()!,
+        end_date: lesson.end_date.toISO()!
+      })
+    ),
+    last_update: last_update.toISO() as string
+  };
+}
+
 export async function getCachedTimetable(entry: TimetableEntry): Promise<ITimetable> {
   let timetable: ITimetable | undefined;
   let shouldUpdateDatabase = false;
@@ -128,27 +149,11 @@ export async function getCachedTimetable(entry: TimetableEntry): Promise<ITimeta
   }
 
   if (!timetable) {
-    const base_timetable = await entry.getTimetable();
-    const last_update = await entry.lastUpdated();
     const last_fetch = Date.now();
 
     // Redefine some DateTime to make
     // sure they're all in an ISO string.
-    timetable = {
-      header: {
-        ...base_timetable.header,
-        start_date: base_timetable.header.start_date.toISO()!,
-        end_date: base_timetable.header.end_date.toISO()!
-      },
-      lessons: base_timetable.lessons.map(
-        lesson => ({
-          ...lesson,
-          start_date: lesson.start_date.toISO()!,
-          end_date: lesson.end_date.toISO()!
-        })
-      ),
-      last_update: last_update.toISO() as string
-    };
+    timetable = await getEntryAsIs(entry);
 
     // Means we already have the timetable inside the DB.
     if (shouldUpdateDatabase) {

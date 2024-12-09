@@ -3,35 +3,19 @@ const fs = require("node:fs");
 const files = [
   'shared/util.js',
   'shared/colorspace.js',
-  'shared/pattern.js',
-  'shared/function.js',
-  'shared/annotation.js',
 
   'core/core.js',
   'core/obj.js',
-  'core/charsets.js',
   'core/crypto.js',
   'core/evaluator.js',
   'core/fonts.js',
-  'core/font_renderer.js',
-  'core/glyphlist.js',
-  'core/image.js',
-  'core/metrics.js',
   'core/parser.js',
   'core/stream.js',
   'core/worker.js',
-  'core/jpx.js',
-  'core/jbig2.js',
-  'core/bidi.js',
-  'core/jpg.js',
-  'core/chunked_stream.js',
   'core/pdf_manager.js',
-  'core/cmap.js',
-  'core/cidmaps.js',
 
   'display/canvas.js',
   'display/font_loader.js',
-  'display/metadata.js',
   'display/api.js'
 ];
 

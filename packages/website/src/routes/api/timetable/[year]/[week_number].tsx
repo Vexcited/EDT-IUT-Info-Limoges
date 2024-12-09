@@ -5,11 +5,15 @@ import { jsonWithCors } from "~/utils/cors";
 import {
   connectDatabase,
   getCachedEntries,
-  getCachedTimetable
+  getCachedTimetable,
+  getEntryAsIs
 } from "~/database";
 
-export const GET = async ({ params }: APIEvent) => {
+import type { ITimetable } from "~/types/api";
+
+export const GET = async ({ params, request }: APIEvent) => {
   const year = params.year as YEARS;
+  const asIs = new URL(request.url).searchParams.has("asIs");
 
   if (Object.values(YEARS).indexOf(year) === -1) {
     return jsonWithCors({
@@ -28,8 +32,7 @@ export const GET = async ({ params }: APIEvent) => {
   }
 
   const entries = await getCachedEntries(year);
-  await connectDatabase();
-
+  
   const timetable_entry = entries.find(entry => entry.week_number === week_number);
   if (!timetable_entry) {
     return jsonWithCors({
@@ -38,7 +41,15 @@ export const GET = async ({ params }: APIEvent) => {
     }, 404);
   }
 
-  const timetable = await getCachedTimetable(timetable_entry);
+  let timetable: ITimetable;
+
+  if (asIs) {
+    timetable = await getEntryAsIs(timetable_entry);
+  }
+  else {
+    await connectDatabase();
+    timetable = await getCachedTimetable(timetable_entry);
+  }
 
   return jsonWithCors({
     success: true,
