@@ -2,7 +2,7 @@
  * @param {number} code 
  * @returns {number}
  */
-function mapPrivateUseChars (code) {
+export function mapPrivateUseChars (code) {
   switch (code) {
     case 0xF8E9: // copyrightsans
     case 0xF6D9: // copyrightserif
@@ -12,7 +12,7 @@ function mapPrivateUseChars (code) {
   }
 }
 
-class Font {
+export class Font {
   constructor (properties) {
     this.differences = properties.differences;
     this.encoding = properties.baseEncoding;

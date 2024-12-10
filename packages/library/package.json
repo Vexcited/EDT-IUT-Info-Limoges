@@ -24,8 +24,8 @@
   },
   "scripts": {
     "release": "release-it",
-    "build": "node ./scripts/make_pdfjs_bundle.js && rimraf dist && tsup ./src/index.ts --dts --minify terser --format esm,cjs --sourcemap",
-    "test": "jest"
+    "build": "tsup ./src/index.ts --clean --dts --minify terser --format esm,cjs --sourcemap",
+    "test": "bun test"
   },
   "release-it": {
     "hooks": {
@@ -50,16 +50,12 @@
     }
   },
   "devDependencies": {
-    "@jest/globals": "^29.7.0",
+    "@types/bun": "^1.1.14",
     "@types/jest": "^29.5.12",
     "@types/luxon": "^3.4.2",
     "@types/node": "^20.11.24",
-    "jest": "^29.7.0",
     "release-it": "^17.1.1",
-    "rimraf": "^5.0.5",
     "terser": "^5.28.1",
-    "ts-jest": "^29.1.2",
-    "ts-node": "^10.9.2",
     "tsup": "^7.2.0"
   },
   "author": "Mikkel RINGAUD <mikkel@milescode.dev> (https://github.com/Vexcited)",

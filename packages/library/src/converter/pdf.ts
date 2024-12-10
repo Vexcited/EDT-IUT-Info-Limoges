@@ -1,6 +1,7 @@
 import { EventEmitter } from "node:events";
 
 import PDFCanvas from "./pdfcanvas";
+import { getDocument } from "../pdf/display/api";
 
 function createScratchCanvas(width: number, height: number) { return new PDFCanvas({}, width, height); }
 
@@ -116,12 +117,6 @@ class PDFPageParser {
     }
 }
 
-// empty object on import,
-// will be populated by the PDFJS library code
-// after the first 
-const PDFJS = {};
-let PDFJSLoaded = false;
-
 export default class PDFJSClass extends EventEmitter {
   pdfDocument = null;
   pages = null;
@@ -154,15 +149,7 @@ export default class PDFJSClass extends EventEmitter {
   public async parsePDFData(arrayBuffer) {
     this.pdfDocument = null;
 
-    // instantiate the PDFJS object only when needed.
-    if (!PDFJSLoaded) {
-      const { code } = require("./pdfjs_bundle");
-      eval(code);
-      PDFJSLoaded = true;
-    }
-
-    // @ts-expect-error
-    const document = await PDFJS.getDocument(arrayBuffer);
+    const document = await getDocument(arrayBuffer);
     this.load(document);
   };
 

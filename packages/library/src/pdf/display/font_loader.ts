@@ -1,4 +1,4 @@
-class FontFace {
+export class FontFace {
   constructor (data) {
     this.compiledGlyphs = {};
 

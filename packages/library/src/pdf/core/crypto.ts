@@ -20,8 +20,8 @@ const k = new Int32Array([
   -1051523, -2054922799, 1873313359, -30611744, -1560198380, 1309151649,
   -145523070, -1120210379, 718787259, -343485551]);
 
-const calculateMD5 = (data, offset, length) => {
-  const h0 = 1732584193, h1 = -271733879, h2 = -1732584194, h3 = 271733878;
+export const calculateMD5 = (data, offset, length) => {
+  let h0 = 1732584193, h1 = -271733879, h2 = -1732584194, h3 = 271733878;
   // pre-processing
   const paddedLength = (length + 72) & ~63; // data + 9 extra bytes
   const padded = new Uint8Array(paddedLength);

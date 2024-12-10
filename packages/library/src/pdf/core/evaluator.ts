@@ -1,7 +1,9 @@
-// @ts-check
-'use strict';
+import { assert, isCmd, isName, isRef, isStream, OPS, TextRenderingMode } from "../shared/util";
+import { Font } from "./fonts";
+import { Dict } from "./obj";
+import { isEOF, Lexer, Parser } from "./parser";
 
-class PartialEvaluator {
+export class PartialEvaluator {
   constructor (pdfManager, xref, handler, pageIndex, uniquePrefix, idCounters, fontCache) {
     this.state = new EvalState();
     this.stateStack = [];
@@ -325,7 +327,7 @@ class PartialEvaluator {
   }
 }
 
-class OperatorList {
+export class OperatorList {
   static CHUNK_SIZE = 100;
 
   /**
@@ -399,18 +401,10 @@ class OperatorList {
   }
 }
 
-class EvalState {
-  /**
-   * @public
-   * @type {Font | null}
-   */
-  font;
+export class EvalState {
+  public font: Font | null;
 
-  /**
-   * @public
-   * @type {number}
-   */
-  textRenderingMode;
+  public textRenderingMode: TextRenderingMode;
 
   constructor () {
     this.font = null;

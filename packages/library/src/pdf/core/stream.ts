@@ -1,14 +1,12 @@
-// @ts-check
-'use strict';
+export class Stream {
+  public isStream = true;
+  public bytes: Uint8Array;
+  public start: number;
+  public pos: number;
+  public end: number;
+  public dict?: any;
 
-class Stream {
-  /**
-   * @param {ArrayBuffer | Uint8Array} arrayBuffer 
-   * @param {number} [start] 
-   * @param {number} [length] 
-   * @param {any} [dict] 
-   */
-  constructor (arrayBuffer, start, length, dict) {
+  constructor (arrayBuffer: ArrayBuffer | Uint8Array, start?: number, length?: number, dict?: any) {
     this.bytes = arrayBuffer instanceof Uint8Array ? arrayBuffer : new Uint8Array(arrayBuffer);
     this.start = start || 0;
     this.pos = this.start;
@@ -19,17 +17,11 @@ class Stream {
     this.dict = dict;
   }
 
-  /**
-   * @returns {number}
-   */
-  get length() {
+  get length(): number {
     return this.end - this.start;
   }
 
-  /**
-   * @returns {number}
-   */
-  getByte () {
+  getByte (): number {
     if (this.pos >= this.end)
       return -1;
 
@@ -39,11 +31,8 @@ class Stream {
   /**
    * Returns subarray of original buffer
    * should only be read.
-   * 
-   * @param {number} length
-   * @returns {Uint8Array}
    */
-  getBytes (length) {
+  getBytes (length: number): Uint8Array {
     var bytes = this.bytes;
     var pos = this.pos;
     var strEnd = this.end;
@@ -59,54 +48,33 @@ class Stream {
     return bytes.subarray(pos, end);
   }
 
-  /**
-   * @param {number} length 
-   * @returns {Uint8Array}
-   */
-  peekBytes (length) {
+  peekBytes (length: number): Uint8Array {
     var bytes = this.getBytes(length);
     this.pos -= bytes.length;
     return bytes;
   }
 
-  /**
-   * @param {number} [n]
-   * @returns {void} 
-   */
-  skip (n) {
+  skip (n?: number): void {
     if (!n) n = 1;
     this.pos += n;
   }
 
-  /**
-   * @returns {void}
-   */
-  reset () {
+  reset (): void {
     this.pos = this.start;
   }
   
-  /**
-   * @returns {void}
-   */
-  moveStart () {
+  moveStart (): void {
     this.start = this.pos;
   }
 
-  /**
-   * @param {number} start 
-   * @param {number} length 
-   * @param {any} [dict] 
-   * @returns 
-   */
-  makeSubStream (start, length, dict) {
+  makeSubStream (start: number, length: number, dict?: any) {
     return new Stream(this.bytes.buffer, start, length, dict);
   }
 
-  isStream = true
 }
 
 // super class for the decoding streams
-class DecodeStream {
+export class DecodeStream {
   constructor () {
     this.pos = 0;
     this.bufferLength = 0;
@@ -198,7 +166,7 @@ class DecodeStream {
   }
 }
 
-class StreamsSequenceStream extends DecodeStream {
+export class StreamsSequenceStream extends DecodeStream {
   constructor (streams) {
     super();
     this.streams = streams;
@@ -221,7 +189,7 @@ class StreamsSequenceStream extends DecodeStream {
   }
 }
 
-class FlateStream extends DecodeStream {
+export class FlateStream extends DecodeStream {
   static codeLenCodeMap = new Uint32Array([
     16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15
   ]);
@@ -583,7 +551,7 @@ class FlateStream extends DecodeStream {
   }
 }
 
-class NullStream extends Stream {
+export class NullStream extends Stream {
   constructor () {
     super(new Uint8Array(0));
   }

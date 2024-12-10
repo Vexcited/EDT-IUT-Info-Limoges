@@ -1,21 +1,22 @@
-// @ts-check
-const FONT_IDENTITY_MATRIX = [0.001, 0, 0, 0.001, 0, 0];
+import { Cmd, Dict, Name, Ref } from "../core/obj";
 
-var TextRenderingMode = {
-  FILL: 0,
-  STROKE: 1,
-  FILL_STROKE: 2,
-  INVISIBLE: 3,
-  FILL_ADD_TO_PATH: 4,
-  STROKE_ADD_TO_PATH: 5,
-  FILL_STROKE_ADD_TO_PATH: 6,
-  ADD_TO_PATH: 7,
-  FILL_STROKE_MASK: 3,
-  ADD_TO_PATH_FLAG: 4
+export const FONT_IDENTITY_MATRIX = [0.001, 0, 0, 0.001, 0, 0];
+
+export enum TextRenderingMode {
+  FILL = 0,
+  STROKE = 1,
+  FILL_STROKE = 2,
+  INVISIBLE = 3,
+  FILL_ADD_TO_PATH = 4,
+  STROKE_ADD_TO_PATH = 5,
+  FILL_STROKE_ADD_TO_PATH = 6,
+  ADD_TO_PATH = 7,
+  FILL_STROKE_MASK = 3,
+  ADD_TO_PATH_FLAG = 4
 };
 
 // All the possible operations for an operator list.
-const OPS = {
+export const OPS = {
   // Intentionally start from 1 so it is easy to spot bad operators that will be
   // 0's.
   dependency: 1,
@@ -91,15 +92,15 @@ const OPS = {
 
 //MQZ.Mar.22 Disabled Operators (to prevent image painting & annotation default appearance)
 //paintJpegXObject, paintImageMaskXObject, paintImageMaskXObjectGroup, paintImageXObject, paintInlineImageXObject, paintInlineImageXObjectGroup
-const NO_OPS = [82, 83, 84, 85, 86, 87];
-const NO_OPS_RANGE = [78, 79, 80, 81]; //range pairs, all ops with each pair will be skipped. !important!
+export const NO_OPS = [82, 83, 84, 85, 86, 87];
+export const NO_OPS_RANGE = [78, 79, 80, 81]; //range pairs, all ops with each pair will be skipped. !important!
 
-function assert(cond, msg) {
+export function assert(cond, msg) {
   if (!cond)
     throw new Error(msg);
 }
 
-function shadow(obj, prop, value) {
+export function shadow(obj, prop, value) {
   Object.defineProperty(obj, prop, { value: value,
                                      enumerable: true,
                                      configurable: true,
@@ -107,7 +108,7 @@ function shadow(obj, prop, value) {
   return value;
 }
 
-function bytesToString(bytes) {
+export function bytesToString(bytes) {
   var str = '';
   var length = bytes.length;
   for (var n = 0; n < length; ++n)
@@ -115,7 +116,7 @@ function bytesToString(bytes) {
   return str;
 }
 
-function stringToBytes(str) {
+export function stringToBytes(str) {
   var length = str.length;
   var bytes = new Uint8Array(length);
   for (var n = 0; n < length; ++n) {
@@ -125,9 +126,9 @@ function stringToBytes(str) {
   return bytes;
 }
 
-var IDENTITY_MATRIX = [1, 0, 0, 1, 0, 0];
+export var IDENTITY_MATRIX = [1, 0, 0, 1, 0, 0];
 
-class Util {
+export class Util {
   static makeCssRgb = function Util_makeCssRgb(rgb) {
     return 'rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')';
   };
@@ -177,7 +178,7 @@ class Util {
   };
 }
 
-class PageViewport {
+export class PageViewport {
   constructor (viewBox, scale, rotation, offsetX, offsetY, dontFlip) {
     this.viewBox = viewBox;
     this.scale = scale;
@@ -265,7 +266,7 @@ class PageViewport {
   }
 }
 
-var PDFStringTranslateTable = [
+export const PDFStringTranslateTable = [
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   0x2D8, 0x2C7, 0x2C6, 0x2D9, 0x2DD, 0x2DB, 0x2DA, 0x2DC, 0, 0, 0, 0, 0, 0, 0,
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -277,7 +278,7 @@ var PDFStringTranslateTable = [
   0x178, 0x17D, 0x131, 0x142, 0x153, 0x161, 0x17E, 0, 0x20AC
 ];
 
-function stringToPDFString(str) {
+export function stringToPDFString(str) {
   var i, n = str.length, str2 = '';
   if (str[0] === '\xFE' && str[1] === '\xFF') {
     // UTF16BE BOM
@@ -293,46 +294,46 @@ function stringToPDFString(str) {
   return str2;
 }
 
-function stringToUTF8String(str) {
+export function stringToUTF8String(str) {
   return decodeURIComponent(escape(str));
 }
 
-function isEmptyObj(obj) {
+export function isEmptyObj(obj) {
   for (var key in obj) {
     return false;
   }
   return true;
 }
 
-function isBool(v) {
+export function isBool(v) {
   return typeof v == 'boolean';
 }
 
-function isInt(v) {
+export function isInt(v) {
   return typeof v == 'number' && ((v | 0) == v);
 }
 
-function isNum(v) {
+export function isNum(v) {
   return typeof v == 'number';
 }
 
-function isString(v) {
+export function isString(v) {
   return typeof v == 'string';
 }
 
-function isNull(v) {
+export function isNull(v) {
   return v === null;
 }
 
-function isName(v) {
+export function isName(v) {
   return v instanceof Name;
 }
 
-function isCmd(v, cmd) {
+export function isCmd(v, cmd) {
   return v instanceof Cmd && (!cmd || v.cmd == cmd);
 }
 
-function isDict(v, type) {
+export function isDict(v, type) {
   if (!(v instanceof Dict)) {
     return false;
   }
@@ -343,25 +344,25 @@ function isDict(v, type) {
   return isName(dictType) && dictType.name == type;
 }
 
-function isArray(v) {
+export function isArray(v) {
   return v instanceof Array;
 }
 
-function isStream(v) {
+export function isStream(v) {
   return typeof v == 'object' && v !== null && v !== undefined &&
          ('getBytes' in v);
 }
 
-function isArrayBuffer(v) {
+export function isArrayBuffer(v) {
   return typeof v == 'object' && v !== null && v !== undefined &&
          ('byteLength' in v);
 }
 
-function isRef(v) {
+export function isRef(v) {
   return v instanceof Ref;
 }
 
-function isPDFFunction(v) {
+export function isPDFFunction(v) {
   var fnDict;
   if (typeof v != 'object')
     return false;

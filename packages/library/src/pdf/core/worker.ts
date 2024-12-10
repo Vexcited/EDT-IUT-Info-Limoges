@@ -1,11 +1,18 @@
-'use strict';
+import { LocalPdfManager } from "./pdf_manager";
 
-class CustomWorker {
+export class CustomWorker {
+  public pdfManager?: LocalPdfManager;
+  public transport?: any;
+
   constructor (transport) {
     this.transport = transport;
   }
 
-  async loadDocument (recoveryMode) {
+  async loadDocument (recoveryMode?: boolean) {
+    if (!this.pdfManager) {
+      throw new Error('pdfManager not initialized');
+    }
+
     await this.pdfManager.ensureModel('checkHeader', [])
     await this.pdfManager.ensureModel('parseStartXRef', [])
     await this.pdfManager.ensureModel('parse', [recoveryMode]);

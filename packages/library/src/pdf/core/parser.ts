@@ -1,12 +1,14 @@
-'use strict';
+import { isArray, isCmd, isDict, isInt, isName, isNum, isRef, isString } from "../shared/util";
+import { Cmd, Dict, Name, Ref } from "./obj";
+import { FlateStream, NullStream } from "./stream";
 
-const EOF = {};
+export const EOF = {};
 
-function isEOF(v) {
+export function isEOF(v) {
   return v == EOF;
 }
 
-class Parser {
+export class Parser {
   constructor (lexer, allowStreams, xref) {
     this.lexer = lexer;
     this.allowStreams = allowStreams;
@@ -285,7 +287,7 @@ class Parser {
   }
 }
 
-class Lexer {
+export class Lexer {
   /**
    * @param {*} stream 
    * @param {Record<string, any>} knownCommands 
@@ -652,7 +654,7 @@ class Lexer {
   }
 }
 
-class Linearization {
+export class Linearization {
   constructor (stream) {
     this.parser = new Parser(new Lexer(stream), false, null);
     const obj1 = this.parser.getObj();

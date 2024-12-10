@@ -1,13 +1,15 @@
-// @ts-check
-'use strict';
+import { assert, bytesToString, isArray, isCmd, isDict, isInt, isName, isRef, isStream, shadow, stringToPDFString, stringToUTF8String } from "../shared/util";
+import { Page } from "./core";
+import { Lexer, Parser } from "./parser";
+import { Stream } from "./stream";
 
-class Name {
+export class Name {
   constructor (name) {
     this.name = name;
   }
 }
 
-class Cmd {
+export class Cmd {
   constructor (cmd) {
     this.cmd = cmd;
   }
@@ -28,7 +30,7 @@ var nonSerializable = function nonSerializableClosure() {
   return nonSerializable; // creating closure on some variable
 };
 
-class Dict {
+export class Dict {
   /**
    * 
    * @param {any} [xref] 
@@ -115,7 +117,7 @@ class Dict {
   }
 }
 
-class Ref {
+export class Ref {
   num;
   gen;
 
@@ -129,7 +131,7 @@ class Ref {
  * The reference is identified by number and generation,
  * this structure stores only one instance of the reference.
  */
-class RefSet {
+export class RefSet {
   /** @type {Record<string, boolean>} */
   dict = {};
 
@@ -158,7 +160,7 @@ class RefSet {
   }
 }
 
-class RefSetCache {
+export class RefSetCache {
   constructor () {
     this.dict = Object.create(null);
   }
@@ -187,7 +189,7 @@ class RefSetCache {
   }
 }
 
-class Catalog {
+export class Catalog {
   constructor (pdfManager, xref) {
     this.pdfManager = pdfManager;
     this.xref = xref;
@@ -219,8 +221,8 @@ class Catalog {
         // arbitrary charsets, let's just hope that the author of the PDF
         // was reasonable enough to stick with the XML default charset,
         // which is UTF-8.
+        metadata = stringToUTF8String(bytesToString(stream.getBytes()));
         try {
-          metadata = stringToUTF8String(bytesToString(stream.getBytes()));
         } catch (e) {
           console.info('Skipping invalid metadata.');
         }
@@ -469,7 +471,7 @@ class Catalog {
   }
 }
 
-class XRef {
+export class XRef {
   constructor (stream) {
     this.stream = stream;
     this.entries = [];
@@ -878,7 +880,7 @@ class XRef {
  * A NameTree is like a Dict but has some adventagous properties, see the spec
  * (7.9.6) for more details.
  */
-class NameTree {
+export class NameTree {
   constructor (root, xref) {
     this.root = root;
     this.xref = xref;
@@ -931,7 +933,7 @@ function addChildren(node, nodesToVisit) {
  * that have references to the catalog or other pages since that will cause the
  * entire PDF document object graph to be traversed.
  */
-class ObjectLoader {
+export class ObjectLoader {
   obj;
   keys;
   xref;

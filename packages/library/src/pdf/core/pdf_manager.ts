@@ -1,7 +1,10 @@
-// @ts-check
-'use strict';
+import { PDFDocument } from "./core";
+import { Stream } from "./stream";
 
-class LocalPdfManager {
+export class LocalPdfManager {
+  public stream: Stream;
+  public pdfModel: PDFDocument;
+
   constructor (data) {
     this.stream = new Stream(data);
     this.pdfModel = new PDFDocument(this, this.stream);
@@ -33,7 +36,7 @@ class LocalPdfManager {
     return this.ensure(this.pdfModel.catalog, prop, args);
   }
 
-  getPage (pageIndex) {
+  getPage (pageIndex: number) {
     return this.pdfModel.getPage(pageIndex);
   }
 

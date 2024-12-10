@@ -1,6 +1,11 @@
-'use strict';
+import { assert, isArray, isArrayBuffer, isName, isStream, isString, shadow, stringToBytes, stringToPDFString, Util } from "../shared/util";
+import { calculateMD5 } from "./crypto";
+import { OperatorList, PartialEvaluator } from "./evaluator";
+import { Catalog, ObjectLoader, XRef } from "./obj";
+import { Lexer, Linearization } from "./parser";
+import { NullStream, Stream, StreamsSequenceStream } from "./stream";
 
-class Page {
+export class Page {
   constructor (pdfManager, xref, pageIndex, pageDict, ref, fontCache) {
     this.pdfManager = pdfManager;
     this.pageIndex = pageIndex;
@@ -156,7 +161,7 @@ class Page {
   }
 }
 
-const DocumentInfoValidators = {
+export const DocumentInfoValidators = {
   get entries() {
     // Lazily build this since all the validation functions below are not
     // defined until after this file loads.
@@ -181,7 +186,7 @@ const DocumentInfoValidators = {
  * for each worker. If there is no worker support enabled, there are two
  * `PDFDocument` objects on the main thread created.
  */
-class PDFDocument {
+export class PDFDocument {
   constructor (pdfManager, arg) {
     const init = (pdfManager, stream) => {
       assert(stream.length > 0, 'stream must have data');

@@ -1,15 +1,15 @@
-// @ts-check
-'use strict';
-
 // <canvas> contexts store most of the state we need natively.
 // However, PDF needs a bit more state, which we store here.
+
+import { ColorSpace } from "../shared/colorspace";
+import { FONT_IDENTITY_MATRIX, IDENTITY_MATRIX, isArray, isNum, NO_OPS, NO_OPS_RANGE, OPS, TextRenderingMode, Util } from "../shared/util";
 
 // Minimal font size that would be used during canvas fillText operations.
 var MIN_FONT_SIZE = 16;
 
 var COMPILE_TYPE3_GLYPHS = true;
 
-function addContextCurrentTransform(ctx) {
+export function addContextCurrentTransform(ctx) {
   // If the context doesn't expose a `mozCurrentTransform`, add a JS based on.
   if (!ctx.mozCurrentTransform) {
     // Store the original context
@@ -128,7 +128,7 @@ function addContextCurrentTransform(ctx) {
   }
 }
 
-var CachedCanvases = (function CachedCanvasesClosure() {
+export var CachedCanvases = (function CachedCanvasesClosure() {
   var cache = {};
   return {
     getCanvas: function CachedCanvases_getCanvas(id, width, height,
@@ -156,7 +156,7 @@ var CachedCanvases = (function CachedCanvasesClosure() {
   };
 })();
 
-var CanvasExtraState = (function CanvasExtraStateClosure() {
+export var CanvasExtraState = (function CanvasExtraStateClosure() {
   function CanvasExtraState(old) {
     // Are soft masks and alpha values shapes or opacities?
     this.alphaIsShape = false;
@@ -208,7 +208,7 @@ var CanvasExtraState = (function CanvasExtraStateClosure() {
   return CanvasExtraState;
 })();
 
-var CanvasGraphics = (function CanvasGraphicsClosure() {
+export var CanvasGraphics = (function CanvasGraphicsClosure() {
   // Defines the time the executeOperatorList is going to be executing
   // before it stops and shedules a continue of execution.
   var EXECUTION_TIME = 15;

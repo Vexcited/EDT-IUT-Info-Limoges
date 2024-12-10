@@ -1,4 +1,6 @@
-class ColorSpace {
+import { shadow } from "./util";
+
+export class ColorSpace {
   static singletons = {
     get gray() {
       return shadow(this, 'gray', new DeviceGrayCS());
@@ -9,12 +11,10 @@ class ColorSpace {
   };
 }
 
-class DeviceGrayCS {
-  constructor() {
-    this.name = 'DeviceGray';
-    this.numComps = 1;
-    this.defaultColor = new Float32Array([0]);
-  }
+export class DeviceGrayCS {
+  public name = 'DeviceGray';
+  public numComps = 1;
+  public defaultColor = new Float32Array([0]);
 
   getRgb (src, srcOffset) {
     const rgb = new Uint8Array(3);
@@ -29,12 +29,10 @@ class DeviceGrayCS {
   }
 }
 
-class DeviceRgbCS {
-  constructor () {
-    this.name = 'DeviceRGB';
-    this.numComps = 3;
-    this.defaultColor = new Float32Array([0, 0, 0]);
-  }
+export class DeviceRgbCS {
+  public name = 'DeviceRGB';
+  public numComps = 3;
+  public defaultColor = new Float32Array([0, 0, 0]);
 
   getRgb (src, srcOffset) {
     const rgb = new Uint8Array(3);

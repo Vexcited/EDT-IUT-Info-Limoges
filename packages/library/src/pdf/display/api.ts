@@ -1,4 +1,7 @@
-// @ts-check
+import { CustomWorker } from "../core/worker";
+import { PageViewport } from "../shared/util";
+import { CanvasGraphics } from "./canvas";
+import { FontFace } from "./font_loader";
 
 /**
  * This is the main entry point for loading a PDF and interacting with it.
@@ -19,7 +22,7 @@
  *
  * @return {Promise} A promise that is resolved with {PDFDocumentProxy} object.
  */
-PDFJS.getDocument = (buffer) => {
+export const getDocument = (buffer) => {
   const transport = new WorkerTransport();
   return transport.fetchDocument({ data: buffer });
 };
@@ -28,7 +31,7 @@ PDFJS.getDocument = (buffer) => {
  * Proxy to a PDFDocument in the worker thread. Also, contains commonly used
  * properties that can be read synchronously.
  */
-class PDFDocumentProxy {
+export class PDFDocumentProxy {
   constructor (pdfInfo, transport) {
     this.pdfInfo = pdfInfo;
     this.transport = transport;
@@ -123,7 +126,7 @@ class PDFDocumentProxy {
   }
 }
 
-class PDFPageProxy {
+export class PDFPageProxy {
   constructor (pageInfo, transport) {
     this.pageInfo = pageInfo;
     this.transport = transport;
@@ -269,7 +272,13 @@ class PDFPageProxy {
 /**
  * For internal use only.
  */
-class WorkerTransport {
+export class WorkerTransport {
+  public commonObjs: PDFObjects;
+  public customWorker: CustomWorker;
+  public pageCache: PDFPageProxy[];
+  public embeddedFontsUsed: boolean;
+  public pdfDocument?: PDFDocumentProxy;
+
   constructor () {
     this.commonObjs = new PDFObjects();
 
@@ -307,7 +316,7 @@ class WorkerTransport {
     return this.customWorker.DataLoaded();
   }
 
-  async getPage (pageNumber) {
+  async getPage (pageNumber: number) {
     const pageIndex = pageNumber - 1;
     
     if (pageIndex in this.pageCache)
@@ -381,7 +390,9 @@ class WorkerTransport {
  * inside of a worker. The `PDFObjects` implements some basic functions to
  * manage these objects.
  */
-class PDFObjects {
+export class PDFObjects {
+  public objs: Record<string, any>;
+
   constructor () {
     this.objs = {};
   }
@@ -390,7 +401,7 @@ class PDFObjects {
    * Internal function.
    * Ensures there is an object defined for `objId`.
    */
-  ensureObj (objId) {
+  ensureObj (objId: string) {
     if (this.objs[objId])
       return this.objs[objId];
 
@@ -411,7 +422,7 @@ class PDFObjects {
    * function and the object is already resolved, the callback gets called
    * right away.
    */
-  get (objId) {
+  get (objId: string) {
     const obj = this.objs[objId];
     return obj.data;
   }
@@ -419,25 +430,25 @@ class PDFObjects {
   /**
    * Resolves the object `objId` with optional `data`.
    */
-  resolve (objId, data) {
+  resolve (objId: string, data) {
     const obj = this.ensureObj(objId);
     obj.data = data;
   }
 
-  isResolved (objId) {
+  isResolved (objId: string) {
     if (!this.objs[objId]) {
       return false;
     }
   }
 
-  hasData (objId) {
+  hasData (objId: string) {
     return this.isResolved(objId);
   }
 
   /**
    * Returns the data of `objId` if object exists, null otherwise.
    */
-  getData (objId) {
+  getData (objId: string) {
     const objs = this.objs;
     if (!objs[objId]) {
       return null;
@@ -451,7 +462,7 @@ class PDFObjects {
   }
 }
 
-class InternalRenderTask {
+export class InternalRenderTask {
   constructor (params, objs, commonObjs, operatorList, pageNumber) {
     this.params = params;
     this.objs = objs;
