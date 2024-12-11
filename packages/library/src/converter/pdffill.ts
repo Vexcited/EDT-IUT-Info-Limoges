@@ -1,7 +1,7 @@
 import type { Canvas } from "./pdfcanvas";
 import PDFUnit from "./pdfunit";
 
-export default class PDFFill{
+export default class PDFFill {
   x: number;
   y: number;
   width: number;

@@ -5,12 +5,12 @@ export class LocalPdfManager {
   public stream: Stream;
   public pdfModel: PDFDocument;
 
-  constructor (data) {
+  constructor (data: ArrayBuffer) {
     this.stream = new Stream(data);
     this.pdfModel = new PDFDocument(this, this.stream);
   }
 
-  async ensure (obj, prop, args) {
+  async ensure (obj: any, prop: string, args?: any[]) {
     let value = obj[prop];
     
     if (typeof(value) === 'function') {

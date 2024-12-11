@@ -3,28 +3,9 @@ import { PageViewport } from "../shared/util";
 import { CanvasGraphics } from "./canvas";
 import { FontFace } from "./font_loader";
 
-/**
- * This is the main entry point for loading a PDF and interacting with it.
- * NOTE: If a URL is used to fetch the PDF data a standard XMLHttpRequest(XHR)
- * is used, which means it must follow the same origin rules that any XHR does
- * e.g. No cross domain requests without CORS.
- *
- * @param {string|TypedAray|object} source Can be an url to where a PDF is
- * located, a typed array (Uint8Array) already populated with data or
- * and parameter object with the following possible fields:
- *  - url   - The URL of the PDF.
- *  - data  - A typed array with PDF data.
- *  - httpHeaders - Basic authentication headers.
- *  - password - For decrypting password-protected PDFs.
- *  - initialData - A typed array with the first portion or all of the pdf data.
- *                  Used by the extension since some data is already loaded
- *                  before the switch to range requests. 
- *
- * @return {Promise} A promise that is resolved with {PDFDocumentProxy} object.
- */
-export const getDocument = (buffer) => {
+export const getDocument = (buffer: ArrayBuffer): Promise<PDFDocumentProxy> => {
   const transport = new WorkerTransport();
-  return transport.fetchDocument({ data: buffer });
+  return transport.fetchDocument(buffer);
 };
 
 /**
@@ -32,9 +13,11 @@ export const getDocument = (buffer) => {
  * properties that can be read synchronously.
  */
 export class PDFDocumentProxy {
-  constructor (pdfInfo, transport) {
+  constructor (
+    pdfInfo,
+    public transport: WorkerTransport
+  ) {
     this.pdfInfo = pdfInfo;
-    this.transport = transport;
   }
 
   /**
@@ -65,14 +48,6 @@ export class PDFDocumentProxy {
   getPage (number) {
     return this.transport.getPage(number);
   }
-  /**
-   * @param {object} Must have 'num' and 'gen' properties.
-   * @return {Promise} A promise that is resolved with the page index that is
-   * associated with the reference.
-   */
-  getPageIndex (ref) {
-    return this.transport.getPageIndex(ref);
-  }
 
   /**
    * @return {Promise} A promise that is resolved with an {array} that is a
@@ -102,15 +77,6 @@ export class PDFDocumentProxy {
     };
   }
 
-  /**
-   * @return {Promise} A promise that is resolved with a TypedArray that has
-   * the raw data from the PDF.
-   */
-  getData () {
-    var promise = new PDFJS.Promise();
-    this.transport.getData(promise);
-    return promise;
-  }
   /**
    * @return {Promise} A promise that is resolved when the document's data
    * is loaded
@@ -168,13 +134,13 @@ export class PDFPageProxy {
   }
 
   /**
-   * @param {number} scale The desired scale of the viewport.
-   * @param {number} rotate Degrees to rotate the viewport. If omitted this
+   * @param scale The desired scale of the viewport.
+   * @param rotate Degrees to rotate the viewport. If omitted this
    * defaults to the page rotation.
-   * @return {PageViewport} Contains 'width' and 'height' properties along
+   * @return Contains 'width' and 'height' properties along
    * with transforms required for rendering.
    */
-  getViewport (scale, rotate) {
+  getViewport (scale: number, rotate?: number): PageViewport {
     if (arguments.length < 2)
       rotate = this.rotate;
     return new PageViewport(this.view, scale, rotate, 0, 0);
@@ -292,20 +258,15 @@ export class WorkerTransport {
     this.pageCache = [];
   }
 
-  async fetchDocument (source) {
-    source.disableAutoFetch = false;
-    source.chunkedViewerLoading = false;
-    
-    const data = await this.customWorker.GetDocRequest({
-      source,
+  async fetchDocument (buffer: ArrayBuffer): Promise<PDFDocumentProxy> {
+    const pdfInfo = await this.customWorker.GetDocRequest({
+      source: buffer,
       disableRange: false,
       maxImageSize: -1,
     });
 
-    const pdfInfo = data.pdfInfo;
-    const pdfDocument = new PDFDocumentProxy(pdfInfo, this);
-    this.pdfDocument = pdfDocument;
-    return pdfDocument;
+    this.pdfDocument = new PDFDocumentProxy(pdfInfo, this);
+    return this.pdfDocument;
   }
 
   async getData () {
@@ -327,10 +288,6 @@ export class WorkerTransport {
     this.pageCache[pageIndex] = page;
     
     return page;
-  }
-
-  async getPageIndex (ref) {
-    return this.customWorker.GetPageIndex({ ref });
   }
 
   startCleanup () {

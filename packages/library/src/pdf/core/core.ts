@@ -1,23 +1,26 @@
 import { assert, isArray, isArrayBuffer, isName, isStream, isString, shadow, stringToBytes, stringToPDFString, Util } from "../shared/util";
 import { calculateMD5 } from "./crypto";
 import { OperatorList, PartialEvaluator } from "./evaluator";
-import { Catalog, ObjectLoader, XRef } from "./obj";
+import { Catalog, ObjectLoader, Ref, RefSetCache, XRef } from "./obj";
 import { Lexer, Linearization } from "./parser";
+import { LocalPdfManager } from "./pdf_manager";
 import { NullStream, Stream, StreamsSequenceStream } from "./stream";
+import { Dict } from "./obj";
 
 export class Page {
-  constructor (pdfManager, xref, pageIndex, pageDict, ref, fontCache) {
-    this.pdfManager = pdfManager;
-    this.pageIndex = pageIndex;
-    this.pageDict = pageDict;
-    this.xref = xref;
-    this.ref = ref;
-    this.fontCache = fontCache;
-    this.idCounters = {
-      obj: 0
-    };
-    this.resourcesPromise = null;
+  public resourcesPromise: Promise<any> | null = null;
+  public idCounters = {
+    obj: 0
   }
+
+  constructor (
+    public pdfManager: LocalPdfManager,
+    public xref: XRef,
+    public pageIndex: number,
+    public pageDict: Dict,
+    public ref: Ref,
+    public fontCache: RefSetCache
+  ) {}
 
   getPageProp (key) {
     return this.pageDict.get(key);

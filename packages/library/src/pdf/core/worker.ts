@@ -40,21 +40,30 @@ export class CustomWorker {
     };
   }
 
-  getPdfManager (data) {
-    const source = data.source;
-    this.pdfManager = new LocalPdfManager(source.data);
+  private getPdfManager (data: {
+    source: ArrayBuffer
+    disableRange: boolean
+    maxImageSize: number
+  }): void {
+    this.pdfManager = new LocalPdfManager(data.source);
   }
 
   // replies with GetDoc
-  async GetDocRequest (data) {
-    this.getPdfManager(data); // make sure it's defined
-
-    const pdfInfo = await this.loadDocument(false)
-    return { pdfInfo };
+  async GetDocRequest (data: {
+    source: ArrayBuffer
+    disableRange: boolean
+    maxImageSize: number
+  }) {
+    // Define `this.pdfManager`.
+    this.getPdfManager(data);
+    return this.loadDocument(false)
   }
 
-  // replies with GetPage
   async GetPageRequest (data) {
+    if (!this.pdfManager) {
+      throw new Error('pdfManager not initialized');
+    }
+
     const page = await this.pdfManager.getPage(data.pageIndex);
 
     const results = await Promise.all([
@@ -71,11 +80,6 @@ export class CustomWorker {
     };
 
     return { pageInfo };
-  }
-
-  async GetPageIndex (data) {
-    const ref = new Ref(data.ref.num, data.ref.gen);
-    return this.pdfManager.pdfModel.catalog.getPageIndex(ref);
   }
 
   Cleanup () {

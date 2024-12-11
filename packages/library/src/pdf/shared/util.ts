@@ -179,6 +179,9 @@ export class Util {
 }
 
 export class PageViewport {
+  public width: number;
+  public height: number;
+
   constructor (viewBox, scale, rotation, offsetX, offsetY, dontFlip) {
     this.viewBox = viewBox;
     this.scale = scale;
