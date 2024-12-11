@@ -31,6 +31,7 @@ export class Page {
     let obj = dict.get(key);
 
     while (obj === undefined) {
+      // @ts-expect-error
       dict = dict.get('Parent');
       if (!dict) break;
       obj = dict.get(key);
@@ -48,7 +49,7 @@ export class Page {
   }
 
   get mediaBox() {
-    var obj = this.inheritPageProp('MediaBox');
+    var obj = this.inheritPageProp('MediaBox') as unknown as number[];
     // Reset invalid media box to letter size.
     if (!isArray(obj) || obj.length !== 4)
       obj = [0, 0, 612, 792];
@@ -65,6 +66,7 @@ export class Page {
     // "The crop, bleed, trim, and art boxes should not ordinarily
     // extend beyond the boundaries of the media box. If they do, they are
     // effectively reduced to their intersection with the media box."
+    // @ts-expect-error
     cropBox = Util.intersect(cropBox, mediaBox);
     if (!cropBox)
       return shadow(this, 'view', mediaBox);
@@ -73,7 +75,8 @@ export class Page {
   }
 
   get rotate() {
-    var rotate = this.inheritPageProp('Rotate') || 0;
+    // TODO
+    var rotate = this.inheritPageProp('Rotate') as unknown as number || 0;
     // Normalize rotation so it's a multiple of 90 and between 0 and 270
     if (rotate % 90 !== 0) {
       rotate = 0;
@@ -326,10 +329,13 @@ export class PDFDocument {
       var validEntries = DocumentInfoValidators.entries;
       // Only fill the document info with valid entries from the spec.
       for (var key in validEntries) {
+        // @ts-expect-error
         if (infoDict.has(key)) {
+          // @ts-expect-error
           var value = infoDict.get(key);
           // Make sure the value conforms to the spec.
           if (validEntries[key](value)) {
+            // @ts-expect-error
             docInfo[key] = typeof value !== 'string' ? value :
               stringToPDFString(value);
           } else {
@@ -346,10 +352,13 @@ export class PDFDocument {
     var xref = this.xref, hash, fileID = '';
 
     if (xref.trailer!.has('ID')) {
+      // @ts-expect-error
       hash = stringToBytes(xref.trailer.get('ID')[0]);
     }
 
+    // @ts-expect-error
     for (var i = 0, n = hash.length; i < n; i++) {
+      // @ts-expect-error
       fileID += hash[i].toString(16);
     }
 

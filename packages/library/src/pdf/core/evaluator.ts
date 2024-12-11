@@ -1,20 +1,26 @@
+import { WorkerTransport } from "../display/api";
 import { assert, isCmd, isName, isRef, isStream, OPS, TextRenderingMode } from "../shared/util";
 import { Font } from "./fonts";
-import { Dict } from "./obj";
+import { Dict, Name, XRef } from "./obj";
 import { isEOF, Lexer, Parser } from "./parser";
+import { LocalPdfManager } from "./pdf_manager";
+import { Stream } from "./stream";
 
 export class PartialEvaluator {
-  constructor (pdfManager, xref, handler, pageIndex, uniquePrefix, idCounters, fontCache) {
+  public state: EvalState;
+  public stateStack: EvalState[];
+
+  constructor (
+    public pdfManager: LocalPdfManager,
+    public xref: XRef,
+    public handler: WorkerTransport,
+    public pageIndex: number,
+    public uniquePrefix: any,
+    public idCounters: any,
+    public fontCache: any
+  ) {
     this.state = new EvalState();
     this.stateStack = [];
-
-    this.pdfManager = pdfManager;
-    this.xref = xref;
-    this.handler = handler;
-    this.pageIndex = pageIndex;
-    this.uniquePrefix = uniquePrefix;
-    this.idCounters = idCounters;
-    this.fontCache = fontCache;
   }
 
   // Specifies properties for each command
@@ -113,6 +119,7 @@ export class PartialEvaluator {
 
   static SHADING_PATTERN = 2;
 
+  // @ts-expect-error
   buildFormXObject (resources, xobj, operatorList) {
     const matrix = xobj.dict.get('Matrix');
     const bbox = xobj.dict.get('BBox');
@@ -122,13 +129,8 @@ export class PartialEvaluator {
     operatorList.addOp(OPS.paintFormXObjectEnd, []);
   }
 
-  /**
-   * @param {*} resources 
-   * @param {Array<any> | null} fontArgs 
-   * @param {*} fontRef 
-   * @returns 
-   */
-  handleSetFont (resources, fontArgs, fontRef) {
+  // @ts-expect-error
+  handleSetFont (resources, fontArgs: any[] | null, fontRef) {
     let fontName;
     if (fontArgs) {
       fontArgs = fontArgs.slice();
@@ -154,19 +156,18 @@ export class PartialEvaluator {
     return loadedName;
   }
 
-  /**
-   * @param {string} chars 
-   * @returns {Array<any>} array of glyphs
-   */
-  handleText (chars) {
+  handleText (chars: string) {
+    // @ts-expect-error
     const font = this.state.font.translated;
     return font.charsToGlyphs(chars);
   }
 
+  // @ts-expect-error
   loadFont (fontName, font, xref, resources) {
     let fontRef;
 
     if (font) { // Loading by ref.
+      // @ts-expect-error
       assert(isRef(font));
       fontRef = font;
     }
@@ -197,9 +198,10 @@ export class PartialEvaluator {
     return font;
   }
 
-  getOperatorList (stream, resources, operatorList) {
+  getOperatorList (stream: Stream, resources: Dict, operatorList: OperatorList) {
     const xref = this.xref;
     
+    // @ts-expect-error
     operatorList = operatorList || new OperatorList();
     resources = resources || new Dict();
 
@@ -215,6 +217,7 @@ export class PartialEvaluator {
         const cmd = obj.cmd;
 
         // Check that the command is valid
+        // @ts-expect-error
         var opSpec = PartialEvaluator.OP_MAP[cmd];
         if (!opSpec) {
           console.warn('Unknown command "' + cmd + '"');
@@ -238,6 +241,7 @@ export class PartialEvaluator {
             }
 
             const name = args[0].name;
+            // @ts-expect-error
             const xobj = xobjs.get(name);
 
             if (xobj) {
@@ -272,7 +276,7 @@ export class PartialEvaluator {
             this.state = old.clone();
             break;
           }
-
+          
           case OPS.restore: {
             const prev = this.stateStack.pop();
             
@@ -303,10 +307,10 @@ export class PartialEvaluator {
     return operatorList;
   }
 
-  translateFont (dict) {
+  translateFont (dict: Dict) {
     const MAX_CHAR_INDEX = 0xFF;
 
-    const type = dict.get('Subtype');
+    const type = dict.get('Subtype') as unknown as Name;
     assert(isName(type), 'invalid font: Subtype');
 
     const properties = {
@@ -316,10 +320,10 @@ export class PartialEvaluator {
     };
 
     if (dict.get('FontDescriptor')) {
-      const firstChar = dict.get('FirstChar');
+      const firstChar = dict.get('FirstChar') as unknown as number;
       if (firstChar) properties.firstChar = firstChar;
       
-      const lastChar = dict.get('LastChar');
+      const lastChar = dict.get('LastChar') as unknown as number;
       if (lastChar) properties.lastChar = lastChar;
     }
 
@@ -329,18 +333,18 @@ export class PartialEvaluator {
 
 export class OperatorList {
   static CHUNK_SIZE = 100;
+  public fnArray: Uint8Array;
+  public argsArray: any[];
+  public dependencies: Record<string, boolean>;
+  public fnIndex: number;
 
-  /**
-   * 
-   * @param {*} [messageHandler] 
-   * @param {number} [pageIndex] 
-   */
-  constructor (messageHandler, pageIndex) {
-    this.messageHandler = messageHandler;
+  constructor (
+    public messageHandler: WorkerTransport,
+    public pageIndex: number
+  ) {
     this.fnArray = new Uint8Array(OperatorList.CHUNK_SIZE);
     this.argsArray = [];
     this.dependencies = {},
-    this.pageIndex = pageIndex;
     this.fnIndex = 0;
   }
 
@@ -349,10 +353,9 @@ export class OperatorList {
   }
 
   /**
-   * @param {number} fn - probably from OPS 
-   * @param {Array<unknown>} args 
+   * @param fn probably from OPS 
    */
-  addOp (fn, args) {
+  addOp (fn: number, args: unknown[]) {
     this.fnArray[this.fnIndex++] = fn;
     this.argsArray.push(args);
     if (this.fnIndex >= OperatorList.CHUNK_SIZE) {
@@ -360,16 +363,10 @@ export class OperatorList {
     }
   }
 
-  addDependency (dependency) {
+  addDependency (dependency: string) {
     if (dependency in this.dependencies) return;
     this.dependencies[dependency] = true;
     this.addOp(OPS.dependency, [dependency]);
-  }
-
-  addDependencies (dependencies) {
-    for (const key in dependencies) {
-      this.addDependency(key);
-    }
   }
 
   getIR () {
@@ -380,11 +377,7 @@ export class OperatorList {
     };
   }
 
-  /**
-   * @param {boolean} [lastChunk]
-   * @returns {void} 
-   */
-  flush (lastChunk) {
+  flush (lastChunk?: boolean): void {
     this.messageHandler.RenderPageChunk({
       operatorList: {
         fnArray: this.fnArray,
@@ -395,21 +388,15 @@ export class OperatorList {
       pageIndex: this.pageIndex
     })
 
-    this.dependencies = [];
+    this.dependencies = {};
     this.argsArray = [];
     this.fnIndex = 0;
   }
 }
 
 export class EvalState {
-  public font: Font | null;
-
-  public textRenderingMode: TextRenderingMode;
-
-  constructor () {
-    this.font = null;
-    this.textRenderingMode = TextRenderingMode.FILL;
-  }
+  public font: Font | null = null;
+  public textRenderingMode = TextRenderingMode.FILL;
   
   clone () {
     return Object.create(this);

@@ -1,8 +1,4 @@
-/**
- * @param {number} code 
- * @returns {number}
- */
-export function mapPrivateUseChars (code) {
+function mapPrivateUseChars (code: number): number {
   switch (code) {
     case 0xF8E9: // copyrightsans
     case 0xF6D9: // copyrightserif
@@ -13,8 +9,11 @@ export function mapPrivateUseChars (code) {
 }
 
 export class Font {
+  // @ts-expect-error
   constructor (properties) {
+    // @ts-expect-error
     this.differences = properties.differences;
+    // @ts-expect-error
     this.encoding = properties.baseEncoding;
   }
 
@@ -23,24 +22,22 @@ export class Font {
     
     for (const key in this) {
       if (this.hasOwnProperty(key))
+        // @ts-expect-error
         data[key] = this[key];
     }
 
     return data;
   }
 
-  charToGlyph (charcode) {
+  charToGlyph (charcode: number) {
     return {
       fontChar: String.fromCharCode(mapPrivateUseChars(charcode)),
       unicode: typeof charcode === 'number' ? String.fromCharCode(charcode) : charcode
     };
   }
 
-  /**
-   * @param {string} chars 
-   * @returns {Array<{ fontChar: string, unicode: string, accent: null, width: number, vmetric: undefined, disabled: false, operatorList: undefined }>}
-   */
-  charsToGlyphs (chars) {
+  charsToGlyphs (chars: string) {
+    // @ts-expect-error
     let charsCache = this.charsCache;
     let glyphs;
 
@@ -52,6 +49,7 @@ export class Font {
 
     // lazily create the translation cache
     if (!charsCache)
+      // @ts-expect-error
       charsCache = this.charsCache = Object.create(null);
 
     glyphs = [];

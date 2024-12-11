@@ -7,8 +7,7 @@ import { FONT_IDENTITY_MATRIX, IDENTITY_MATRIX, isArray, isNum, NO_OPS, NO_OPS_R
 // Minimal font size that would be used during canvas fillText operations.
 var MIN_FONT_SIZE = 16;
 
-var COMPILE_TYPE3_GLYPHS = true;
-
+// @ts-expect-error
 export function addContextCurrentTransform(ctx) {
   // If the context doesn't expose a `mozCurrentTransform`, add a JS based on.
   if (!ctx.mozCurrentTransform) {
@@ -71,6 +70,7 @@ export function addContextCurrentTransform(ctx) {
       }
     };
 
+    // @ts-expect-error
     ctx.translate = function ctxTranslate(x, y) {
       var m = this._transformMatrix;
       m[4] = m[0] * x + m[2] * y + m[4];
@@ -79,6 +79,7 @@ export function addContextCurrentTransform(ctx) {
       this._originalTranslate(x, y);
     };
 
+    // @ts-expect-error
     ctx.scale = function ctxScale(x, y) {
       var m = this._transformMatrix;
       m[0] = m[0] * x;
@@ -89,6 +90,7 @@ export function addContextCurrentTransform(ctx) {
       this._originalScale(x, y);
     };
 
+    // @ts-expect-error
     ctx.transform = function ctxTransform(a, b, c, d, e, f) {
       var m = this._transformMatrix;
       this._transformMatrix = [
@@ -103,12 +105,14 @@ export function addContextCurrentTransform(ctx) {
       ctx._originalTransform(a, b, c, d, e, f);
     };
 
+    // @ts-expect-error
     ctx.setTransform = function ctxSetTransform(a, b, c, d, e, f) {
       this._transformMatrix = [a, b, c, d, e, f];
 
       ctx._originalSetTransform(a, b, c, d, e, f);
     };
 
+    // @ts-expect-error
     ctx.rotate = function ctxRotate(angle) {
       var cosValue = Math.cos(angle);
       var sinValue = Math.sin(angle);
@@ -131,21 +135,24 @@ export function addContextCurrentTransform(ctx) {
 export var CachedCanvases = (function CachedCanvasesClosure() {
   var cache = {};
   return {
-    getCanvas: function CachedCanvases_getCanvas(id, width, height,
-                                                 trackTransform) {
+    // @ts-expect-error
+    getCanvas (id, width, height, trackTransform) {
       var canvasEntry;
       if (id in cache) {
+        // @ts-expect-error
         canvasEntry = cache[id];
         canvasEntry.canvas.width = width;
         canvasEntry.canvas.height = height;
         // reset canvas transform for emulated mozCurrentTransform, if needed
         canvasEntry.context.setTransform(1, 0, 0, 1, 0, 0);
       } else {
+        // @ts-expect-error
         var canvas = createScratchCanvas(width, height);
         var ctx = canvas.getContext('2d');
         if (trackTransform) {
           addContextCurrentTransform(ctx);
         }
+        // @ts-expect-error
         cache[id] = canvasEntry = {canvas: canvas, context: ctx};
       }
       return canvasEntry;
@@ -157,42 +164,71 @@ export var CachedCanvases = (function CachedCanvasesClosure() {
 })();
 
 export var CanvasExtraState = (function CanvasExtraStateClosure() {
+  // @ts-expect-error
   function CanvasExtraState(old) {
     // Are soft masks and alpha values shapes or opacities?
+    // @ts-expect-error
     this.alphaIsShape = false;
+    // @ts-expect-error
     this.fontSize = 0;
+    // @ts-expect-error
     this.fontSizeScale = 1;
+    // @ts-expect-error
     this.textMatrix = IDENTITY_MATRIX;
+    // @ts-expect-error
     this.fontMatrix = FONT_IDENTITY_MATRIX;
+    // @ts-expect-error
     this.leading = 0;
     // Current point (in user coordinates)
+    // @ts-expect-error
     this.x = 0;
+    // @ts-expect-error
     this.y = 0;
     // Start of text line (in text coordinates)
+    // @ts-expect-error
     this.lineX = 0;
+    // @ts-expect-error
     this.lineY = 0;
     // Character and word spacing
+    // @ts-expect-error
     this.charSpacing = 0;
+    // @ts-expect-error
     this.wordSpacing = 0;
+    // @ts-expect-error
     this.textHScale = 1;
+    // @ts-expect-error
     this.textRenderingMode = TextRenderingMode.FILL;
+    // @ts-expect-error
     this.textRise = 0;
     // Color spaces
+    // @ts-expect-error
     this.fillColorSpace = ColorSpace.singletons.gray;
+    // @ts-expect-error
     this.fillColorSpaceObj = null;
+    // @ts-expect-error
     this.strokeColorSpace = ColorSpace.singletons.gray;
+    // @ts-expect-error
     this.strokeColorSpaceObj = null;
+    // @ts-expect-error
     this.fillColorObj = null;
+    // @ts-expect-error
     this.strokeColorObj = null;
     // Default fore and background colors
+    // @ts-expect-error
     this.fillColor = '#000000';
+    // @ts-expect-error
     this.strokeColor = '#000000';
     // Note: fill alpha applies to all non-stroking operations
+    // @ts-expect-error
     this.fillAlpha = 1;
+    // @ts-expect-error
     this.strokeAlpha = 1;
+    // @ts-expect-error
     this.lineWidth = 1;
+    // @ts-expect-error
     this.paintFormXObjectDepth = 0;
 
+    // @ts-expect-error
     this.old = old;
   }
 
@@ -200,6 +236,7 @@ export var CanvasExtraState = (function CanvasExtraStateClosure() {
     clone: function CanvasExtraState_clone() {
       return Object.create(this);
     },
+    // @ts-expect-error
     setCurrentPoint: function CanvasExtraState_setCurrentPoint(x, y) {
       this.x = x;
       this.y = y;
@@ -221,28 +258,47 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
    * @param {*} textLayer 
    * @param {*} imageLayer 
    */
+  // @ts-expect-error
   function CanvasGraphics(canvasCtx, commonObjs, objs, textLayer, imageLayer) {
+    // @ts-expect-error
     this.ctx = canvasCtx;
+    // @ts-expect-error
     this.current = new CanvasExtraState();
+    // @ts-expect-error
     this.stateStack = [];
+    // @ts-expect-error
     this.pendingClip = null;
+    // @ts-expect-error
     this.pendingEOFill = false;
+    // @ts-expect-error
     this.res = null;
+    // @ts-expect-error
     this.xobjs = null;
+    // @ts-expect-error
     this.commonObjs = commonObjs;
+    // @ts-expect-error
     this.objs = objs;
+    // @ts-expect-error
     this.textLayer = textLayer;
+    // @ts-expect-error
     this.imageLayer = imageLayer;
+    // @ts-expect-error
     this.groupStack = [];
+    // @ts-expect-error
     this.processingType3 = null;
     // Patterns are painted relative to the initial page/form transform, see pdf
     // spec 8.7.2 NOTE 1.
+    // @ts-expect-error
     this.baseTransform = null;
+    // @ts-expect-error
     this.baseTransformStack = [];
+    // @ts-expect-error
     this.groupLevel = 0;
 
     //MQZ.Mar.22 Disabled Operators
+    // @ts-expect-error
     this.opMode = true;
+    // @ts-expect-error
     this.noOpStartIdx = -1;
 
     if (canvasCtx) {
@@ -256,7 +312,7 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
   var EO_CLIP = {};
 
   CanvasGraphics.prototype = {
-
+    // @ts-expect-error
     beginDrawing: function CanvasGraphics_beginDrawing(viewport, transparency) {
       // For pdfs that use blend modes we have to clear the canvas else certain
       // blend modes can look wrong since we'd be blending with a white
@@ -288,6 +344,7 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
       }
     },
 
+    // @ts-expect-error
     executeOperatorList (operatorList, executionStartIdx) {
       var argsArray = operatorList.argsArray;
       var fnArray = operatorList.fnArray;
@@ -355,19 +412,24 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
     },
 
     // Graphics state
+    // @ts-expect-error
     setLineWidth: function CanvasGraphics_setLineWidth(width) {
       this.current.lineWidth = width;
       this.ctx.lineWidth = width;
     },
+    // @ts-expect-error
     setLineCap: function CanvasGraphics_setLineCap(style) {
       this.ctx.lineCap = LINE_CAP_STYLES[style];
     },
+    // @ts-expect-error
     setLineJoin: function CanvasGraphics_setLineJoin(style) {
       this.ctx.lineJoin = LINE_JOIN_STYLES[style];
     },
+    // @ts-expect-error
     setMiterLimit: function CanvasGraphics_setMiterLimit(limit) {
       this.ctx.miterLimit = limit;
     },
+    // @ts-expect-error
     setDash: function CanvasGraphics_setDash(dashArray, dashPhase) {
       var ctx = this.ctx;
       if ('setLineDash' in ctx) {
@@ -378,15 +440,18 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
         ctx.mozDashOffset = dashPhase;
       }
     },
+    // @ts-expect-error
     setRenderingIntent: function CanvasGraphics_setRenderingIntent(intent) {
       // Maybe if we one day fully support color spaces this will be important
       // for now we can ignore.
       // TODO set rendering intent?
     },
+    // @ts-expect-error
     setFlatness: function CanvasGraphics_setFlatness(flatness) {
       // There's no way to control this with canvas, but we can safely ignore.
       // TODO set flatness?
     },
+    // @ts-expect-error
     setGState: function CanvasGraphics_setGState(states) {
       for (var i = 0, ii = states.length; i < ii; i++) {
         var state = states[i];
@@ -428,6 +493,7 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
           case 'BM':
             if (value && value.name && (value.name !== 'Normal')) {
               var mode = value.name.replace(/([A-Z])/g,
+                // @ts-expect-error
                 function(c) {
                   return '-' + c.toLowerCase();
                 }
@@ -457,28 +523,34 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
         this.ctx.restore();
       }
     },
+    // @ts-expect-error
     transform: function CanvasGraphics_transform(a, b, c, d, e, f) {
       this.ctx.transform(a, b, c, d, e, f);
     },
 
     // Path
+    // @ts-expect-error
     moveTo: function CanvasGraphics_moveTo(x, y) {
       this.ctx.moveTo(x, y);
       this.current.setCurrentPoint(x, y);
     },
+    // @ts-expect-error
     lineTo: function CanvasGraphics_lineTo(x, y) {
       this.ctx.lineTo(x, y);
       this.current.setCurrentPoint(x, y);
     },
+    // @ts-expect-error
     curveTo: function CanvasGraphics_curveTo(x1, y1, x2, y2, x3, y3) {
       this.ctx.bezierCurveTo(x1, y1, x2, y2, x3, y3);
       this.current.setCurrentPoint(x3, y3);
     },
+    // @ts-expect-error
     curveTo2: function CanvasGraphics_curveTo2(x2, y2, x3, y3) {
       var current = this.current;
       this.ctx.bezierCurveTo(current.x, current.y, x2, y2, x3, y3);
       current.setCurrentPoint(x3, y3);
     },
+    // @ts-expect-error
     curveTo3: function CanvasGraphics_curveTo3(x1, y1, x3, y3) {
       this.curveTo(x1, y1, x3, y3, x3, y3);
       this.current.setCurrentPoint(x3, y3);
@@ -486,9 +558,11 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
     closePath: function CanvasGraphics_closePath() {
       this.ctx.closePath();
     },
+    // @ts-expect-error
     rectangle: function CanvasGraphics_rectangle(x, y, width, height) {
       this.ctx.rect(x, y, width, height);
     },
+    // @ts-expect-error
     stroke: function CanvasGraphics_stroke(consumePath) {
       consumePath = typeof consumePath !== 'undefined' ? consumePath : true;
       var ctx = this.ctx;
@@ -518,6 +592,7 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
       this.closePath();
       this.stroke();
     },
+    // @ts-expect-error
     fill: function CanvasGraphics_fill(consumePath) {
       consumePath = typeof consumePath !== 'undefined' ? consumePath : true;
       var ctx = this.ctx;
@@ -618,18 +693,23 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
       ctx.beginPath();
       delete this.pendingTextPaths;
     },
+    // @ts-expect-error
     setCharSpacing: function CanvasGraphics_setCharSpacing(spacing) {
       this.current.charSpacing = spacing;
     },
+    // @ts-expect-error
     setWordSpacing: function CanvasGraphics_setWordSpacing(spacing) {
       this.current.wordSpacing = spacing;
     },
+    // @ts-expect-error
     setHScale: function CanvasGraphics_setHScale(scale) {
       this.current.textHScale = scale / 100;
     },
+    // @ts-expect-error
     setLeading: function CanvasGraphics_setLeading(leading) {
       this.current.leading = -leading;
     },
+    // @ts-expect-error
     setFont: function CanvasGraphics_setFont(fontRefName, size) {
       var fontObj = this.commonObjs.get(fontRefName);
       var current = this.current;
@@ -682,20 +762,25 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
 
       this.ctx.setFont(fontObj);
     },
+    // @ts-expect-error
     setTextRenderingMode: function CanvasGraphics_setTextRenderingMode(mode) {
       this.current.textRenderingMode = mode;
     },
+    // @ts-expect-error
     setTextRise: function CanvasGraphics_setTextRise(rise) {
       this.current.textRise = rise;
     },
+    // @ts-expect-error
     moveText: function CanvasGraphics_moveText(x, y) {
       this.current.x = this.current.lineX += x;
       this.current.y = this.current.lineY += y;
     },
+    // @ts-expect-error
     setLeadingMoveText: function CanvasGraphics_setLeadingMoveText(x, y) {
       this.setLeading(-y);
       this.moveText(x, y);
     },
+    // @ts-expect-error
     setTextMatrix: function CanvasGraphics_setTextMatrix(a, b, c, d, e, f) {
       this.current.textMatrix = [a, b, c, d, e, f];
 
@@ -730,18 +815,28 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
       var angle = Math.atan2(b, a);
       var x = e;
       var y = f;
+      // @ts-expect-error
       geometry.x = x;
+      // @ts-expect-error
       geometry.y = y;
+      // @ts-expect-error
       geometry.hScale = sx;
+      // @ts-expect-error
       geometry.vScale = sy;
+      // @ts-expect-error
       geometry.angle = angle;
+      // @ts-expect-error
       geometry.spaceWidth = font.spaceWidth;
+      // @ts-expect-error
       geometry.fontName = font.loadedName;
+      // @ts-expect-error
       geometry.fontFamily = font.fallbackName;
+      // @ts-expect-error
       geometry.fontSize = this.current.fontSize;
       return geometry;
     },
 
+    // @ts-expect-error
     paintChar: function (character, x, y) {
       var ctx = this.ctx;
       var current = this.current;
@@ -784,6 +879,7 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
       }
     },
 
+    // @ts-expect-error
     showText: function CanvasGraphics_showText(glyphs, skipTextSelection) {
       var ctx = this.ctx;
       var current = this.current;
@@ -850,10 +946,11 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
 //MQZ Dec.04.2013 handles leading word spacing
           var tx = 0;
           if (wordSpacing !== 0) {
-              var firstGlyph = glyphs.filter(g => g && ('fontChar' in g || 'unicode' in g))[0];
-              if (firstGlyph && (firstGlyph.fontChar === ' ' || firstGlyph.unicode === ' ')) {
-                tx = wordSpacing * fontSize * textHScale;
-              }
+            // @ts-expect-error
+            var firstGlyph = glyphs.filter(g => g && ('fontChar' in g || 'unicode' in g))[0];
+            if (firstGlyph && (firstGlyph.fontChar === ' ' || firstGlyph.unicode === ' ')) {
+              tx = wordSpacing * fontSize * textHScale;
+            }
           }
 
         current.x += tx
@@ -899,6 +996,7 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
             vx = -vx * fontSize * current.fontMatrix[0];
             var vy = vmetric[2] * fontSize * current.fontMatrix[0];
           }
+          // @ts-expect-error
           var width = vmetric ? -vmetric[0] : glyph.width;
           var charWidth = width * fontSize * current.fontMatrix[0] +
                           charSpacing * current.fontDirection;
@@ -908,6 +1006,7 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
           if (!glyph.disabled) {
             if (vertical) {
               scaledX = vx / fontSizeScale;
+              // @ts-expect-error
               scaledY = (x + vy) / fontSizeScale;
             } else {
               scaledX = x / fontSizeScale;
@@ -926,6 +1025,7 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
               ctx.scale(characterScaleX, 1);
               scaledX /= characterScaleX;
               if (accent) {
+                // @ts-expect-error
                 scaledAccentX /= characterScaleX;
               }
             }
@@ -989,7 +1089,8 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
 
       return canvasWidth;
     },
-    showSpacedText: function CanvasGraphics_showSpacedText(arr) {
+    // @ts-expect-error
+    showSpacedText (arr) {
       var ctx = this.ctx;
       var current = this.current;
       var font = current.font;
@@ -1012,6 +1113,7 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
       }
 
 //MQZ Nov.28.2012 Adjust Text Positions, and also make it a string
+      // @ts-expect-error
       var stGlyphs = [];
       var spaceWidth = font.spaceWidth;
       if (!font.spaceWidth) {
@@ -1055,6 +1157,7 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
 //            spacingAccumulator = 0;
 //          }
 
+            // @ts-expect-error
             stGlyphs = stGlyphs.concat(e);
         }
       }
@@ -1075,30 +1178,26 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
         this.textLayer.appendText(geom);
       }
     },
+    // @ts-expect-error
     nextLineShowText: function CanvasGraphics_nextLineShowText(text) {
       this.nextLine();
       this.showText(text);
     },
-    nextLineSetSpacingShowText:
-      function CanvasGraphics_nextLineSetSpacingShowText(wordSpacing,
-                                                         charSpacing,
-                                                         text) {
+    // @ts-expect-error
+    nextLineSetSpacingShowText (wordSpacing, charSpacing, text) {
       this.setWordSpacing(wordSpacing);
       this.setCharSpacing(charSpacing);
       this.nextLineShowText(text);
     },
 
     // Type3 fonts
+    // @ts-expect-error
     setCharWidth: function CanvasGraphics_setCharWidth(xWidth, yWidth) {
       // We can safely ignore this since the width should be the same
       // as the width in the Widths array.
     },
-    setCharWidthAndBounds: function CanvasGraphics_setCharWidthAndBounds(xWidth,
-                                                                        yWidth,
-                                                                        llx,
-                                                                        lly,
-                                                                        urx,
-                                                                        ury) {
+    // @ts-expect-error
+    setCharWidthAndBounds (xWidth, yWidth, llx, lly, urx, ury) {
       // TODO According to the spec we're also suppose to ignore any operators
       // that set color or include images while processing this type3 font.
       this.rectangle(llx, lly, urx - llx, ury - lly);
@@ -1126,6 +1225,7 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
     setFillColorN: function CanvasGraphics_setFillColorN(/*...*/) {
       this.setFillColor.apply(this, arguments);
     },
+    // @ts-expect-error
     setStrokeGray: function CanvasGraphics_setStrokeGray(gray) {
       this.current.strokeColorSpace = ColorSpace.singletons.gray;
 
@@ -1134,6 +1234,7 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
       this.ctx.strokeStyle = color;
       this.current.strokeColor = color;
     },
+    // @ts-expect-error
     setStrokeRGBColor: function CanvasGraphics_setStrokeRGBColor(r, g, b) {
       this.current.strokeColorSpace = ColorSpace.singletons.rgb;
 
@@ -1142,6 +1243,7 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
       this.ctx.strokeStyle = color;
       this.current.strokeColor = color;
     },
+    // @ts-expect-error
     setFillRGBColor (r, g, b) {
       this.current.fillColorSpace = ColorSpace.singletons.rgb;
 
@@ -1152,6 +1254,7 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
     },
 
 
+    // @ts-expect-error
     paintFormXObjectBegin (matrix, bbox) {
       this.save();
       this.current.paintFormXObjectDepth++;
@@ -1207,6 +1310,7 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
       this.ctx.beginPath();
     },
 
+    // @ts-expect-error
     getSinglePixelWidth: function CanvasGraphics_getSinglePixelWidth(scale) {
       var inverse = this.ctx.mozCurrentTransformInverse;
       // max of the current horizontal and vertical scale
@@ -1214,7 +1318,8 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
         (inverse[0] * inverse[0] + inverse[1] * inverse[1]),
         (inverse[2] * inverse[2] + inverse[3] * inverse[3])));
     },
-
+      
+    // @ts-expect-error
     getCanvasPosition: function CanvasGraphics_getCanvasPosition(x, y) {
         var transform = this.ctx.mozCurrentTransform;
         return [
@@ -1225,6 +1330,7 @@ export var CanvasGraphics = (function CanvasGraphicsClosure() {
   };
 
   for (const op in OPS) {
+    // @ts-expect-error
     CanvasGraphics.prototype[OPS[op]] = CanvasGraphics.prototype[op];
   }
 

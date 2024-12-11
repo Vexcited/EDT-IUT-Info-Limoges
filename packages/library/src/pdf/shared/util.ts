@@ -96,11 +96,13 @@ export const OPS = {
 export const NO_OPS = [82, 83, 84, 85, 86, 87];
 export const NO_OPS_RANGE = [78, 79, 80, 81]; //range pairs, all ops with each pair will be skipped. !important!
 
+// @ts-expect-error
 export function assert(cond, msg) {
   if (!cond)
     throw new Error(msg);
 }
 
+// @ts-expect-error
 export function shadow(obj, prop, value) {
   Object.defineProperty(obj, prop, { value: value,
                                      enumerable: true,
@@ -109,6 +111,7 @@ export function shadow(obj, prop, value) {
   return value;
 }
 
+// @ts-expect-error
 export function bytesToString(bytes) {
   var str = '';
   var length = bytes.length;
@@ -117,6 +120,7 @@ export function bytesToString(bytes) {
   return str;
 }
 
+// @ts-expect-error
 export function stringToBytes(str) {
   var length = str.length;
   var bytes = new Uint8Array(length);
@@ -130,17 +134,20 @@ export function stringToBytes(str) {
 export var IDENTITY_MATRIX = [1, 0, 0, 1, 0, 0];
 
 export class Util {
+  // @ts-expect-error
   static makeCssRgb = function Util_makeCssRgb(rgb) {
     return 'rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')';
   };
 
   // For 2d affine transforms
+  // @ts-expect-error
   static applyTransform = function Util_applyTransform(p, m) {
     var xt = p[0] * m[0] + p[1] * m[2] + m[4];
     var yt = p[0] * m[1] + p[1] * m[3] + m[5];
     return [xt, yt];
   };
 
+  // @ts-expect-error
   static applyInverseTransform (p, m) {
     var d = m[0] * m[3] - m[1] * m[2];
     var xt = (p[0] * m[3] - p[1] * m[2] + m[2] * m[5] - m[4] * m[3]) / d;
@@ -151,6 +158,7 @@ export class Util {
   // Returns a rectangle [x1, y1, x2, y2] corresponding to the
   // intersection of rect1 and rect2. If no intersection, returns 'null'
   // The rectangle coordinates of rect1, rect2 should be [x1, y1, x2, y2]
+  // @ts-expect-error
   static intersect = function Util_intersect(rect1, rect2) {
     const xLow = Math.max(
       Math.min(rect1[0], rect1[2]),
@@ -183,11 +191,17 @@ export class PageViewport {
   public width: number;
   public height: number;
 
+  // @ts-expect-error
   constructor (viewBox, scale, rotation, offsetX, offsetY, dontFlip) {
+    // @ts-expect-error
     this.viewBox = viewBox;
+    // @ts-expect-error
     this.scale = scale;
+    // @ts-expect-error
     this.rotation = rotation;
+    // @ts-expect-error
     this.offsetX = offsetX;
+    // @ts-expect-error
     this.offsetY = offsetY;
 
     // creating transform to convert pdf coordinate system to the normal
@@ -233,6 +247,7 @@ export class PageViewport {
     // creating transform for the following operations:
     // translate(-centerX, -centerY), rotate and flip vertically,
     // scale, and translate(offsetCanvasX, offsetCanvasY)
+    // @ts-expect-error
     this.transform = [
       rotateA * scale,
       rotateB * scale,
@@ -244,28 +259,38 @@ export class PageViewport {
 
     this.width = width;
     this.height = height;
+    // @ts-expect-error
     this.fontScale = scale;
   }
 
+  // @ts-expect-error
   clone (args) {
     args = args || {};
+    // @ts-expect-error
     var scale = 'scale' in args ? args.scale : this.scale;
+    // @ts-expect-error
     var rotation = 'rotation' in args ? args.rotation : this.rotation;
-    return new PageViewport(this.viewBox.slice(), scale, rotation,
-                            this.offsetX, this.offsetY, args.dontFlip);
+    // @ts-expect-error
+    return new PageViewport(this.viewBox.slice(), scale, rotation, this.offsetX, this.offsetY, args.dontFlip);
   }
 
+  // @ts-expect-error
   convertToViewportPoint (x, y) {
+    // @ts-expect-error
     return Util.applyTransform([x, y], this.transform);
   }
 
+  // @ts-expect-error
   convertToViewportRectangle (rect) {
+    // @ts-expect-error
     var tl = Util.applyTransform([rect[0], rect[1]], this.transform);
+    // @ts-expect-error
     var br = Util.applyTransform([rect[2], rect[3]], this.transform);
     return [tl[0], tl[1], br[0], br[1]];
   }
-
+  // @ts-expect-error
   convertToPdfPoint (x, y) {
+    // @ts-expect-error
     return Util.applyInverseTransform([x, y], this.transform);
   }
 }
@@ -282,6 +307,7 @@ export const PDFStringTranslateTable = [
   0x178, 0x17D, 0x131, 0x142, 0x153, 0x161, 0x17E, 0, 0x20AC
 ];
 
+// @ts-expect-error
 export function stringToPDFString(str) {
   var i, n = str.length, str2 = '';
   if (str[0] === '\xFE' && str[1] === '\xFF') {
@@ -298,10 +324,12 @@ export function stringToPDFString(str) {
   return str2;
 }
 
+// @ts-expect-error
 export function stringToUTF8String(str) {
   return decodeURIComponent(escape(str));
 }
 
+// @ts-expect-error
 export function isEmptyObj(obj) {
   for (var key in obj) {
     return false;

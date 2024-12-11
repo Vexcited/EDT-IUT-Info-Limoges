@@ -14,43 +14,47 @@ export const getDocument = (buffer: ArrayBuffer): Promise<PDFDocumentProxy> => {
  */
 export class PDFDocumentProxy {
   constructor (
+    // @ts-expect-error
     pdfInfo,
     public transport: WorkerTransport
   ) {
+    // @ts-expect-error
     this.pdfInfo = pdfInfo;
   }
 
   /**
-   * @return {number} Total number of pages the PDF contains.
+   * @return Total number of pages the PDF contains.
    */
-  get numPages() {
+  get numPages(): number {
+    // @ts-expect-error
     return this.pdfInfo.numPages;
   }
   /**
-   * @return {string} A unique ID to identify a PDF. Not guaranteed to be
+   * @return A unique ID to identify a PDF. Not guaranteed to be
    * unique.
    */
-  get fingerprint() {
+  get fingerprint(): string {
+    // @ts-expect-error
     return this.pdfInfo.fingerprint;
   }
   /**
-   * @return {boolean} true if embedded document fonts are in use. Will be
+   * @return `true` if embedded document fonts are in use. Will be
    * set during rendering of the pages.
    */
-  get embeddedFontsUsed() {
+  get embeddedFontsUsed(): boolean {
     return this.transport.embeddedFontsUsed;
   }
   /**
-   * @param {number} The page number to get. The first page is 1.
-   * @return {Promise} A promise that is resolved with a {PDFPageProxy}
+   * @param number The page number to get. The first page is 1.
+   * @return A promise that is resolved with a {PDFPageProxy}
    * object.
    */
-  getPage (number) {
+  getPage (number: number): Promise<any> {
     return this.transport.getPage(number);
   }
 
   /**
-   * @return {Promise} A promise that is resolved with an {array} that is a
+   * @return A promise that is resolved with an {array} that is a
    * tree outline (if it has one) of the PDF. The tree is in the format of:
    * [
    *  {
@@ -64,15 +68,18 @@ export class PDFDocumentProxy {
    *  ...
    * ].
    */
-  async getOutline () {
+  async getOutline (): Promise<any> {
+    // @ts-expect-error
     return this.pdfInfo.outline;
   }
   
   getMetadata () {
+    // @ts-expect-error
     const info = this.pdfInfo.info;
 
     return {
       info: info,
+      // @ts-expect-error
       metadata: this.pdfInfo.metadata
     };
   }
@@ -93,13 +100,21 @@ export class PDFDocumentProxy {
 }
 
 export class PDFPageProxy {
+  // @ts-expect-error
   constructor (pageInfo, transport) {
+    // @ts-expect-error
     this.pageInfo = pageInfo;
+    // @ts-expect-error
     this.transport = transport;
+    // @ts-expect-error
     this.commonObjs = transport.commonObjs;
+    // @ts-expect-error
     this.objs = new PDFObjects();
+    // @ts-expect-error
     this.receivingOperatorList  = false;
+    // @ts-expect-error
     this.cleanupAfterRender = false;
+    // @ts-expect-error
     this.pendingDestroy = false;
   }
 
@@ -107,6 +122,7 @@ export class PDFPageProxy {
    * @return {number} Page number of the page. First page is 1.
    */
   get pageNumber() {
+    // @ts-expect-error
     return this.pageInfo.pageIndex + 1;
   }
 
@@ -114,6 +130,7 @@ export class PDFPageProxy {
    * @return {number} The number of degrees the page is rotated clockwise.
    */
   get rotate() {
+    // @ts-expect-error
     return this.pageInfo.rotate;
   }
 
@@ -122,6 +139,7 @@ export class PDFPageProxy {
    * 'gen' properties.
    */
   get ref() {
+    // @ts-expect-error
     return this.pageInfo.ref;
   }
 
@@ -130,6 +148,7 @@ export class PDFPageProxy {
    * user space units - [x1, y1, x2, y2].
    */
   get view() {
+    // @ts-expect-error
     return this.pageInfo.view;
   }
 
@@ -143,9 +162,11 @@ export class PDFPageProxy {
   getViewport (scale: number, rotate?: number): PageViewport {
     if (arguments.length < 2)
       rotate = this.rotate;
+    // @ts-expect-error
     return new PageViewport(this.view, scale, rotate, 0, 0);
   }
 
+  // @ts-expect-error
   internalRenderTask;
 
   /**
@@ -164,10 +185,14 @@ export class PDFPageProxy {
    * }.
    * @return {Promise}
    */
+  // @ts-expect-error
   async render (params) {
+    // @ts-expect-error
     this.pendingDestroy = false;
 
+    // @ts-expect-error
     this.receivingOperatorList = true;
+    // @ts-expect-error
     this.operatorList = {
       fnArray: [],
       argsArray: [],
@@ -176,10 +201,13 @@ export class PDFPageProxy {
 
     this.internalRenderTask = new InternalRenderTask(
       params,
+      // @ts-expect-error
       this.objs, this.commonObjs,
+      // @ts-expect-error
       this.operatorList, this.pageNumber
     );
 
+    // @ts-expect-error
     await this.transport.customWorker.RenderPageRequest({
       pageIndex: this.pageNumber - 1
     });
@@ -189,6 +217,7 @@ export class PDFPageProxy {
    * Destroys resources allocated by the page.
    */
   destroy () {
+    // @ts-expect-error
     this.pendingDestroy = true;
     this._tryDestroy();
   }
@@ -196,15 +225,18 @@ export class PDFPageProxy {
   /**
    * For internal use only. Attempts to clean up if rendering is in a state
    * where that's possible.
-   * @private
    */
-  _tryDestroy () {
+  private _tryDestroy () {
+    // @ts-expect-error
     if (!this.pendingDestroy || this.receivingOperatorList) {
       return;
     }
 
+    // @ts-expect-error
     delete this.operatorList;
+    // @ts-expect-error
     this.objs.clear();
+    // @ts-expect-error
     this.pendingDestroy = false;
   }
   /**
@@ -217,18 +249,23 @@ export class PDFPageProxy {
   /**
    * For internal use only.
    */
+  // @ts-expect-error
   _renderPageChunk (operatorListChunk) {
     // Add the new chunk to the current operator list.
     for (let i = 0, ii = operatorListChunk.length; i < ii; i++) {
+      // @ts-expect-error
       this.operatorList.fnArray.push(operatorListChunk.fnArray[i]);
+      // @ts-expect-error
       this.operatorList.argsArray.push(operatorListChunk.argsArray[i]);
     }
+    // @ts-expect-error
     this.operatorList.lastChunk = operatorListChunk.lastChunk;
 
     // Notify all the rendering tasks there are more operators to be consumed.
     this.internalRenderTask.operatorListChanged();
 
     if (operatorListChunk.lastChunk) {
+      // @ts-expect-error
       this.receivingOperatorList = false;
       this._tryDestroy();
     }
@@ -301,16 +338,19 @@ export class WorkerTransport {
     this.commonObjs.clear();
   }
 
+  // @ts-expect-error
   RenderPageChunk(data) {
     const page = this.pageCache[data.pageIndex];
     page._renderPageChunk(data.operatorList);
   }
 
+  // @ts-expect-error
   StartRenderPage(data) {
     const page = this.pageCache[data.pageIndex];
     page._startRenderPage();
   }
 
+  // @ts-expect-error
   commonobj (data) {
     var id = data[0];
       var type = data[1];
@@ -387,6 +427,7 @@ export class PDFObjects {
   /**
    * Resolves the object `objId` with optional `data`.
    */
+  // @ts-expect-error
   resolve (objId: string, data) {
     const obj = this.ensureObj(objId);
     obj.data = data;
@@ -420,77 +461,110 @@ export class PDFObjects {
 }
 
 export class InternalRenderTask {
+  // @ts-expect-error
   constructor (params, objs, commonObjs, operatorList, pageNumber) {
+    // @ts-expect-error
     this.params = params;
+    // @ts-expect-error
     this.objs = objs;
+    // @ts-expect-error
     this.commonObjs = commonObjs;
+    // @ts-expect-error
     this.operatorListIdx = null;
+    // @ts-expect-error
     this.operatorList = operatorList;
+    // @ts-expect-error
     this.pageNumber = pageNumber;
+    // @ts-expect-error
     this.running = false;
+    // @ts-expect-error
     this.graphicsReadyCallback = null;
+    // @ts-expect-error
     this.graphicsReady = false;
+    // @ts-expect-error
     this.cancelled = false;
   }
 
-  initalizeGraphics (transparency) {
+  initalizeGraphics (transparency: boolean) {
+    // @ts-expect-error
     if (this.cancelled) {
       return;
     }
 
+    // @ts-expect-error
     var params = this.params;
-    this.gfx = new CanvasGraphics(params.canvasContext, this.commonObjs,
-                                  this.objs, params.textLayer,
-                                  params.imageLayer);
-
+    // @ts-expect-error
+    this.gfx = new CanvasGraphics(params.canvasContext, this.commonObjs, this.objs, params.textLayer, params.imageLayer);
+    
+    // @ts-expect-error
     this.gfx.beginDrawing(params.viewport, transparency);
+    // @ts-expect-error
     this.operatorListIdx = 0;
+    // @ts-expect-error
     this.graphicsReady = true;
+    // @ts-expect-error
     if (this.graphicsReadyCallback) {
+      // @ts-expect-error
       this.graphicsReadyCallback();
     }
   }
-
+  
   cancel () {
+    // @ts-expect-error
     this.running = false;
+    // @ts-expect-error
     this.cancelled = true;
   }
-
+  
   operatorListChanged () {
+    // @ts-expect-error
     if (!this.graphicsReady) {
+      // @ts-expect-error
       if (!this.graphicsReadyCallback) {
+        // @ts-expect-error
         this.graphicsReadyCallback = () => this._continue();
       }
       return;
     }
-
+    
+    // @ts-expect-error
     if (this.running) {
       return;
     }
-
+    
     this._continue();
   }
-
+  
   _continue () {
+    // @ts-expect-error
     this.running = true;
+    // @ts-expect-error
     if (this.cancelled) {
       return;
     }
+    // @ts-expect-error
     if (this.params.continueCallback) {
+      // @ts-expect-error
       this.params.continueCallback(() => this._next());
     } else {
       this._next();
     }
   }
-
+  
   _next () {
+    // @ts-expect-error
     if (this.cancelled) {
       return;
     }
+    // @ts-expect-error
     this.operatorListIdx = this.gfx.executeOperatorList(this.operatorList, this.operatorListIdx);
+    // @ts-expect-error
     if (this.operatorListIdx === this.operatorList.argsArray.length) {
+      // @ts-expect-error
       this.running = false;
+      // @ts-expect-error
       if (this.operatorList.lastChunk) {
+        // @ts-expect-error
         this.gfx.endDrawing();
         return;
       }

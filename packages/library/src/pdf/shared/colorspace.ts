@@ -16,12 +16,14 @@ export class DeviceGrayCS {
   public numComps = 1;
   public defaultColor = new Float32Array([0]);
 
+  // @ts-expect-error
   getRgb (src, srcOffset) {
     const rgb = new Uint8Array(3);
     this.getRgbItem(src, srcOffset, rgb, 0);
     return rgb;
   }
-
+  
+  // @ts-expect-error
   getRgbItem (src, srcOffset, dest, destOffset) {
     let c = (src[srcOffset] * 255) | 0;
     c = c < 0 ? 0 : c > 255 ? 255 : c;
@@ -33,13 +35,15 @@ export class DeviceRgbCS {
   public name = 'DeviceRGB';
   public numComps = 3;
   public defaultColor = new Float32Array([0, 0, 0]);
-
+  
+  // @ts-expect-error
   getRgb (src, srcOffset) {
     const rgb = new Uint8Array(3);
     this.getRgbItem(src, srcOffset, rgb, 0);
     return rgb;
   }
 
+  // @ts-expect-error
   getRgbItem (src, srcOffset, dest, destOffset) {
     const r = (src[srcOffset] * 255) | 0;
     const g = (src[srcOffset + 1] * 255) | 0;

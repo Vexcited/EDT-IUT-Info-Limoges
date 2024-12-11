@@ -34,14 +34,17 @@ export class Dict {
     var xref = this.xref;
     if (typeof (value = this.map[key1]) != 'undefined' || key1 in this.map ||
         typeof key2 == 'undefined') {
+      // @ts-expect-error
       return xref ? xref.fetchIfRef(value) : value;
     }
     if (typeof (value = this.map[key2]) != 'undefined' || key2 in this.map ||
         typeof key3 == 'undefined') {
+      // @ts-expect-error
       return xref ? xref.fetchIfRef(value) : value;
     }
 
     value = this.map[key3] || null;
+    // @ts-expect-error
     return xref ? xref.fetchIfRef(value) : value;
   }
 
@@ -87,6 +90,7 @@ export class Dict {
     
     for (const key in this.map) {
       const obj = this.get(key);
+      // @ts-expect-error
       all[key] = obj instanceof Dict ? obj.getAll() : obj;
     }
     
@@ -126,73 +130,81 @@ export class RefSet {
     return ('R' + ref.num + '.' + ref.gen) in this.dict;
   }
 
-  /**
-   * @param {Ref} ref 
-   * @returns {void}
-   */
-  put (ref) {
+  put (ref: Ref): void {
     this.dict['R' + ref.num + '.' + ref.gen] = true;
   }
   
-  /**
-   * @param {Ref} ref 
-   * @returns {void}
-   */
-  remove (ref) {
+  remove (ref: Ref): void {
     delete this.dict['R' + ref.num + '.' + ref.gen];
   }
 }
 
 export class RefSetCache {
   constructor () {
+    // @ts-expect-error
     this.dict = Object.create(null);
   }
 
+  // @ts-expect-error
   get (ref) {
+    // @ts-expect-error
     return this.dict['R' + ref.num + '.' + ref.gen];
   }
-
+  
+  // @ts-expect-error
   has (ref) {
     //MQZ. 03/08/2016 fix https://github.com/modesty/pdf2json/issues/26
+    // @ts-expect-error
     return !!ref ? ('R' + ref.num + '.' + ref.gen) in this.dict : false;
   }
-
+  
+  // @ts-expect-error
   put (ref, obj) {
+    // @ts-expect-error
     this.dict['R' + ref.num + '.' + ref.gen] = obj;
   }
-
+  
+  // @ts-expect-error
   forEach (fn, thisArg) {
+    // @ts-expect-error
     for (var i in this.dict) {
+      // @ts-expect-error
       fn.call(thisArg, this.dict[i]);
     }
   }
-
+  
   clear () {
+    // @ts-expect-error
     this.dict = Object.create(null);
   }
 }
 
 export class Catalog {
   constructor (public pdfManager: LocalPdfManager, public xref: XRef) {
+    // @ts-expect-error
     this.catDict = xref.getCatalogObj();
+    // @ts-expect-error
     this.fontCache = new RefSetCache();
+    // @ts-expect-error
     assert(isDict(this.catDict), 'catalog object is not a dictionary');
-
+    
+    // @ts-expect-error
     this.pagePromises = [];
   }
 
   get metadata() {
+    // @ts-expect-error
     var streamRef = this.catDict.getRaw('Metadata');
     if (!isRef(streamRef))
       return shadow(this, 'metadata', null);
 
-    var encryptMetadata = !this.xref.encrypt ? false :
-      this.xref.encrypt.encryptMetadata;
-
-    var stream = this.xref.fetch(streamRef, !encryptMetadata);
+    var stream = this.xref.fetch(streamRef);
     var metadata;
+    // @ts-expect-error
     if (stream && isDict(stream.dict)) {
+      // @ts-expect-error
       var type = stream.dict.get('Type');
+      // @ts-expect-error
       var subtype = stream.dict.get('Subtype');
 
       if (isName(type) && isName(subtype) &&
@@ -202,6 +214,7 @@ export class Catalog {
         // arbitrary charsets, let's just hope that the author of the PDF
         // was reasonable enough to stick with the XML default charset,
         // which is UTF-8.
+        // @ts-expect-error
         metadata = stringToUTF8String(bytesToString(stream.getBytes()));
         try {
         } catch (e) {
@@ -214,6 +227,7 @@ export class Catalog {
   }
 
   get toplevelPagesDict() {
+    // @ts-expect-error
     var pagesObj = this.catDict.get('Pages');
     assert(isDict(pagesObj), 'invalid top-level pages dictionary');
     // shadow the prototype getter
@@ -232,6 +246,7 @@ export class Catalog {
 
   readDocumentOutline () {
     var xref = this.xref;
+    // @ts-expect-error
     var obj = this.catDict.get('Outlines');
     var root = { items: [] };
     if (isDict(obj)) {
@@ -244,37 +259,51 @@ export class Catalog {
         processed.put(obj);
         while (queue.length > 0) {
           var i = queue.shift();
+          // @ts-expect-error
           var outlineDict = xref.fetchIfRef(i.obj);
           if (outlineDict === null)
             continue;
+          // @ts-expect-error
           if (!outlineDict.has('Title'))
             throw new Error('Invalid outline item');
+          // @ts-expect-error
           var dest = outlineDict.get('A');
           if (dest)
             dest = dest.get('D');
+          // @ts-expect-error
           else if (outlineDict.has('Dest')) {
+            // @ts-expect-error
             dest = outlineDict.getRaw('Dest');
             if (isName(dest))
               dest = dest.name;
           }
+          // @ts-expect-error
           var title = outlineDict.get('Title');
           var outlineItem = {
             dest: dest,
             title: stringToPDFString(title),
+            // @ts-expect-error
             color: outlineDict.get('C') || [0, 0, 0],
+            // @ts-expect-error
             count: outlineDict.get('Count'),
+            // @ts-expect-error
             bold: !!(outlineDict.get('F') & 2),
+            // @ts-expect-error
             italic: !!(outlineDict.get('F') & 1),
             items: []
           };
+          // @ts-expect-error
           i.parent.items.push(outlineItem);
+          // @ts-expect-error
           obj = outlineDict.getRaw('First');
           if (isRef(obj) && !processed.has(obj)) {
             queue.push({obj: obj, parent: outlineItem});
             processed.put(obj);
           }
+          // @ts-expect-error
           obj = outlineDict.getRaw('Next');
           if (isRef(obj) && !processed.has(obj)) {
+            // @ts-expect-error
             queue.push({obj: obj, parent: i.parent});
             processed.put(obj);
           }
@@ -295,32 +324,38 @@ export class Catalog {
   }
 
   cleanup () {
+    // @ts-expect-error
     this.fontCache.forEach(function (font) {
       delete font.sent;
       delete font.translated;
     });
+    // @ts-expect-error
     this.fontCache.clear();
   }
 
-  getPage (pageIndex) {
+  getPage (pageIndex: number) {
+    // @ts-expect-error
     if (!(pageIndex in this.pagePromises)) {
+      // @ts-expect-error
       this.pagePromises[pageIndex] = this.getPageDict(pageIndex).then((a) => {
+        // @ts-expect-error
         const dict = a[0];
+        // @ts-expect-error
         const ref = a[1];
-
+        
         return new Page(this.pdfManager, this.xref, pageIndex, dict, ref,
-                        this.fontCache);
+          // @ts-expect-error
+          this.fontCache);
       });
     }
 
+    // @ts-expect-error
     return this.pagePromises[pageIndex];
   }
 
-  /**
-   * @param {number} pageIndex 
-   */
-  getPageDict (pageIndex) {
+  getPageDict (pageIndex: number) {
     return new Promise((resolve, reject) => {
+      // @ts-expect-error
       var nodesToVisit = [this.catDict.getRaw('Pages')];
       var currentPageIndex = 0;
       var xref = this.xref;
@@ -643,15 +678,18 @@ export class XRef {
       throw new Error('bad XRef entry');
     }
     
+    // @ts-expect-error
     e = parser.getObj() as Dict | Stream;
     
     if (!isStream(e)) {
+      // @ts-expect-error
       this.cache[num] = e;
     }
 
     return e;
   }
 
+  // @ts-expect-error
   async fetchIfRefAsync (obj) {
     if (!isRef(obj)) {
       return obj;
@@ -674,12 +712,16 @@ export class XRef {
  * (7.9.6) for more details.
  */
 export class NameTree {
+  // @ts-expect-error
   constructor (root, xref) {
+    // @ts-expect-error
     this.root = root;
+    // @ts-expect-error
     this.xref = xref;
   }
 }
 
+// @ts-expect-error
 function mayHaveChildren(value) {
   return isRef(value) || isDict(value) || isArray(value) || isStream(value);
 }
@@ -691,17 +733,20 @@ function addChildren(node: Dict | Stream, nodesToVisit: (Dict | undefined)[]) {
       map = node.map;
     }
     else {
+      // @ts-expect-error
       map = node.dict.map;
     }
 
     for (const key in map) {
       const value = map[key];
       if (mayHaveChildren(value)) {
+        // @ts-expect-error
         nodesToVisit.push(value);
       }
     }
   }
   else if (isArray(node)) {
+    // @ts-expect-error
     for (let i = 0, ii = node.length; i < ii; i++) {
       const value = node[i];
       if (mayHaveChildren(value)) {
@@ -728,6 +773,7 @@ export class ObjectLoader {
   xref;
   refSet: RefSet | null = null;
 
+  // @ts-expect-error
   constructor (obj, keys, xref) {
     this.obj = obj;
     this.keys = keys;

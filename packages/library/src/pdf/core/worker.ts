@@ -1,12 +1,9 @@
+import { WorkerTransport } from "../display/api";
 import { LocalPdfManager } from "./pdf_manager";
 
 export class CustomWorker {
   public pdfManager?: LocalPdfManager;
-  public transport?: any;
-
-  constructor (transport) {
-    this.transport = transport;
-  }
+  constructor (public transport: WorkerTransport) {}
 
   async loadDocument (recoveryMode?: boolean) {
     if (!this.pdfManager) {
@@ -17,10 +14,15 @@ export class CustomWorker {
     await this.pdfManager.ensureModel('parseStartXRef', [])
     await this.pdfManager.ensureModel('parse', [recoveryMode]);
 
+    // @ts-expect-error
     const numPagesPromise = this.pdfManager.ensureModel('numPages');
+    // @ts-expect-error
     const fingerprintPromise = this.pdfManager.ensureModel('fingerprint');
+    // @ts-expect-error
     const outlinePromise = this.pdfManager.ensureCatalog('documentOutline');
+    // @ts-expect-error
     const infoPromise = this.pdfManager.ensureModel('documentInfo');
+    // @ts-expect-error
     const metadataPromise = this.pdfManager.ensureCatalog('metadata');
 
     const results = await Promise.all([
@@ -59,6 +61,7 @@ export class CustomWorker {
     return this.loadDocument(false)
   }
 
+  // @ts-expect-error
   async GetPageRequest (data) {
     if (!this.pdfManager) {
       throw new Error('pdfManager not initialized');
@@ -83,21 +86,22 @@ export class CustomWorker {
   }
 
   Cleanup () {
-    this.pdfManager.cleanup();
+    this.pdfManager!.cleanup();
   }
 
   async GetData () {
-    const stream = await this.pdfManager.onLoadedStream();
+    const stream = await this.pdfManager!.onLoadedStream();
     return stream.bytes;
   }
 
   async DataLoaded () {
-    const stream = await this.pdfManager.onLoadedStream();
+    const stream = await this.pdfManager!.onLoadedStream();
     return { length: stream.bytes.byteLength };
   }
 
+  // @ts-expect-error
   async RenderPageRequest (data) {
-    const page = await this.pdfManager.getPage(data.pageIndex);
+    const page = await this.pdfManager!.getPage(data.pageIndex);
     // pre-compile the PDF page and fetch the fonts/images.
     await page.getOperatorList(this.transport);
   }

@@ -24,14 +24,17 @@ export class LocalPdfManager {
     return this.stream;
   }
 
+  // @ts-expect-error
   ensureModel (prop, args) {
     return this.ensure(this.pdfModel, prop, args);
   }
 
+  // @ts-expect-error
   ensureXRef (prop, args) {
     return this.ensure(this.pdfModel.xref, prop, args);
   }
 
+  // @ts-expect-error
   ensureCatalog (prop, args) {
     return this.ensure(this.pdfModel.catalog, prop, args);
   }

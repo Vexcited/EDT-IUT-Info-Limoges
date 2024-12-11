@@ -108,10 +108,11 @@ abstract class DecodeStream {
         return -1;
       this.readBlock();
     }
+    // @ts-expect-error
     return this.buffer[this.pos++];
   }
 
-  getBytes (length) {
+  getBytes (length: number) {
     var end, pos = this.pos;
 
     if (length) {
@@ -165,7 +166,9 @@ abstract class DecodeStream {
   }
 
   getBaseStreams () {
+    // @ts-expect-error
     if (this.str && this.str.getBaseStreams) {
+      // @ts-expect-error
       return this.str.getBaseStreams();
     }
     return [];
@@ -267,11 +270,9 @@ export class FlateStream extends DecodeStream {
     0x50003, 0x50013, 0x5000b, 0x5001b, 0x50007, 0x50017, 0x5000f, 0x00000
   ]), 5];
 
-  /**
-   * @type {Dict}
-   */
-  dict;
+  dict: Dict;
 
+  // @ts-expect-error
   constructor (stream) {
     super()
     var bytes = stream.getBytes();
@@ -289,17 +290,26 @@ export class FlateStream extends DecodeStream {
     if (flg & 0x20)
       throw new Error('FDICT bit set in flate stream: ' + cmf + ', ' + flg);
 
+    // @ts-expect-error
     this.bytes = bytes;
+    // @ts-expect-error
     this.bytesPos = bytesPos;
-
+    
+    // @ts-expect-error
     this.codeSize = 0;
+    // @ts-expect-error
     this.codeBuf = 0;
   }
 
+  // @ts-expect-error
   getBits (bits) {
+    // @ts-expect-error
     var codeSize = this.codeSize;
+    // @ts-expect-error
     var codeBuf = this.codeBuf;
+    // @ts-expect-error
     var bytes = this.bytes;
+    // @ts-expect-error
     var bytesPos = this.bytesPos;
 
     var b;
@@ -310,18 +320,26 @@ export class FlateStream extends DecodeStream {
       codeSize += 8;
     }
     b = codeBuf & ((1 << bits) - 1);
+    // @ts-expect-error
     this.codeBuf = codeBuf >> bits;
+    // @ts-expect-error
     this.codeSize = codeSize -= bits;
+    // @ts-expect-error
     this.bytesPos = bytesPos;
     return b;
   };
 
+  // @ts-expect-error
   getCode (table) {
     var codes = table[0];
     var maxLen = table[1];
+    // @ts-expect-error
     var codeSize = this.codeSize;
+    // @ts-expect-error
     var codeBuf = this.codeBuf;
+    // @ts-expect-error
     var bytes = this.bytes;
+    // @ts-expect-error
     var bytesPos = this.bytesPos;
 
     while (codeSize < maxLen) {
@@ -336,12 +354,16 @@ export class FlateStream extends DecodeStream {
     var codeVal = code & 0xffff;
     if (codeSize === 0 || codeSize < codeLen || codeLen === 0)
       throw new Error('Bad encoding in flate stream');
+    // @ts-expect-error
     this.codeBuf = (codeBuf >> codeLen);
+    // @ts-expect-error
     this.codeSize = (codeSize - codeLen);
+    // @ts-expect-error
     this.bytesPos = bytesPos;
     return codeVal;
   };
 
+  // @ts-expect-error
   generateHuffmanTable (lengths) {
     var n = lengths.length;
 
@@ -390,7 +412,9 @@ export class FlateStream extends DecodeStream {
     hdr >>= 1;
 
     if (hdr === 0) { // uncompressed block
+      // @ts-expect-error
       let bytes = this.bytes;
+      // @ts-expect-error
       let bytesPos = this.bytesPos;
       let b;
 
@@ -415,7 +439,9 @@ export class FlateStream extends DecodeStream {
         throw new Error('Bad uncompressed block length in flate stream');
       }
 
+      // @ts-expect-error
       this.codeBuf = 0;
+      // @ts-expect-error
       this.codeSize = 0;
 
       var bufferLength = this.bufferLength;
@@ -429,6 +455,7 @@ export class FlateStream extends DecodeStream {
         }
         buffer[n] = b;
       }
+      // @ts-expect-error
       this.bytesPos = bytesPos;
       return;
     }
@@ -499,6 +526,7 @@ export class FlateStream extends DecodeStream {
           limit = buffer.length;
         }
 
+        // @ts-expect-error
         buffer[pos++] = code1;
         continue;
       }
@@ -531,6 +559,7 @@ export class FlateStream extends DecodeStream {
       }
 
       for (let k = 0; k < len; ++k, ++pos)
+        // @ts-expect-error
         buffer[pos] = buffer[pos - dist];
     }
   }

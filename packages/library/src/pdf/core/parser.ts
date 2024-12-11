@@ -4,6 +4,7 @@ import { FlateStream, NullStream, Stream } from "./stream";
 
 export const EOF = {};
 
+// @ts-expect-error
 export function isEOF(v) {
   return v == EOF;
 }
@@ -261,6 +262,7 @@ export class Parser {
     return stream;
   }
 
+  // @ts-expect-error
   filter (stream, dict, length) {
     var filter = this.fetchIfRef(dict.get('Filter', 'F'));
     var params = this.fetchIfRef(dict.get('DecodeParms', 'DP'));
@@ -285,9 +287,10 @@ export class Parser {
     return stream;
   }
 
+  // @ts-expect-error
   makeFilter (stream, name, length, params) {
     if (stream.dict.get('Length') === 0) {
-      return new NullStream(stream);
+      return new NullStream();
     }
     if (name == 'FlateDecode' || name == 'Fl') {
       return new FlateStream(stream);
@@ -542,7 +545,7 @@ export class Lexer {
             ch = this.nextChar();
             continue;
           }
-          str += String.fromCharCode((firstDigit << 4) | secondDigit);
+          str += String.fromCharCode((firstDigit! << 4) | secondDigit);
         }
 
         isFirstHex = !isFirstHex;
@@ -627,7 +630,7 @@ export class Lexer {
       // stop if known command is found and next character does not make
       // the str a command
       var possibleCommand = str + String.fromCharCode(ch);
-      if (knownCommandFound && !(possibleCommand in knownCommands)) {
+      if (knownCommandFound && !(possibleCommand in knownCommands!)) {
         break;
       }
 
