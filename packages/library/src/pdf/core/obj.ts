@@ -1,53 +1,35 @@
 import { assert, bytesToString, isArray, isCmd, isDict, isInt, isName, isRef, isStream, shadow, stringToPDFString, stringToUTF8String } from "../shared/util";
 import { Page } from "./core";
 import { Lexer, Parser } from "./parser";
+import { LocalPdfManager } from "./pdf_manager";
 import { Stream } from "./stream";
 
 export class Name {
-  constructor (name) {
-    this.name = name;
-  }
+  constructor (public name: string) {}
 }
 
 export class Cmd {
-  constructor (cmd) {
-    this.cmd = cmd;
-  }
+  constructor (public cmd: string) {}
+  private static cache: Record<string, Cmd> = {};
 
-  /** @private */
-  static cmdCache = {};
+  static get (cmd: string): Cmd {
+    const value = Cmd.cache[cmd];
+    if (value) return value;
 
-  static get (cmd) {
-    var cmdValue = Cmd.cmdCache[cmd];
-    if (cmdValue)
-      return cmdValue;
-
-    return Cmd.cmdCache[cmd] = new Cmd(cmd);
+    return Cmd.cache[cmd] = new Cmd(cmd);
   }
 }
 
-var nonSerializable = function nonSerializableClosure() {
-  return nonSerializable; // creating closure on some variable
-};
-
 export class Dict {
-  /**
-   * 
-   * @param {any} [xref] 
-   */
-  constructor (xref) {
-    // Map should only be used internally, use functions below to access.
-    this.map = Object.create(null);
-    this.xref = xref;
-    this.__nonSerializable__ = nonSerializable; // disable cloning of the Dict
-  }
+  public map: Record<string, XRef> = {};
+  constructor (public xref?: XRef) {}
 
-  assignXref (newXref) {
-    this.xref = newXref;
+  assignXref (xref: XRef): void {
+    this.xref = xref;
   }
 
   // automatically dereferences Ref objects
-  get (key1, key2, key3) {
+  get (key1: string, key2?: string, key3?: string): XRef | undefined {
     var value;
     var xref = this.xref;
     if (typeof (value = this.map[key1]) != 'undefined' || key1 in this.map ||
@@ -58,14 +40,16 @@ export class Dict {
         typeof key3 == 'undefined') {
       return xref ? xref.fetchIfRef(value) : value;
     }
+
     value = this.map[key3] || null;
     return xref ? xref.fetchIfRef(value) : value;
   }
 
   // Same as get(), but returns a promise and uses fetchIfRefAsync().
-  async getAsync (key1, key2, key3) {
-    var value;
-    var xref = this.xref;
+  async getAsync (key1: string, key2?: string, key3?: string): Promise<XRef | undefined> {
+    let value;
+    const xref = this.xref;
+
     if (typeof (value = this.map[key1]) !== undefined || key1 in this.map ||
         typeof key2 === undefined) {
       if (xref) {
@@ -73,58 +57,62 @@ export class Dict {
       }
       return value;
     }
-    if (typeof (value = this.map[key2]) !== undefined || key2 in this.map ||
-        typeof key3 === undefined) {
+
+    if (typeof (value = this.map[key2 as string]) !== undefined || key2 as string in this.map ||
+      typeof key3 === undefined
+    ) {
       if (xref) {
         return xref.fetchIfRefAsync(value);
       }
+
       return value;
     }
-    value = this.map[key3] || null;
+
+    value = this.map[key3 as string] || null;
     if (xref) {
       return xref.fetchIfRefAsync(value);
     }
+
     return value;
   }
 
   // no dereferencing
-  getRaw (key) {
+  getRaw (key: string): XRef | undefined {
     return this.map[key];
   }
 
   // creates new map and dereferences all Refs
   getAll () {
-    var all = {};
-    for (var key in this.map) {
-      var obj = this.get(key);
+    const all: Record<string, XRef> = {};
+    
+    for (const key in this.map) {
+      const obj = this.get(key);
       all[key] = obj instanceof Dict ? obj.getAll() : obj;
     }
+    
     return all;
   }
 
-  set (key, value) {
+  set (key: string, value: XRef): void {
     this.map[key] = value;
   }
 
-  has (key) {
+  has (key: string): boolean {
     return key in this.map;
   }
 
-  forEach (callback) {
-    for (var key in this.map) {
+  forEach (callback: (key: string, value: XRef | undefined) => void): void {
+    for (const key in this.map) {
       callback(key, this.get(key));
     }
   }
 }
 
 export class Ref {
-  num;
-  gen;
-
-  constructor (num, gen) {
-    this.num = num;
-    this.gen = gen;
-  }
+  constructor (
+    public num: number,
+    public gen: number
+  ) {}
 }
 
 /**
@@ -132,14 +120,9 @@ export class Ref {
  * this structure stores only one instance of the reference.
  */
 export class RefSet {
-  /** @type {Record<string, boolean>} */
-  dict = {};
+  public dict: Record<string, boolean> = {};
 
-  /**
-   * @param {Ref} ref 
-   * @returns {boolean}
-   */
-  has (ref) {
+  has (ref: Ref): boolean {
     return ('R' + ref.num + '.' + ref.gen) in this.dict;
   }
 
@@ -190,9 +173,7 @@ export class RefSetCache {
 }
 
 export class Catalog {
-  constructor (pdfManager, xref) {
-    this.pdfManager = pdfManager;
-    this.xref = xref;
+  constructor (public pdfManager: LocalPdfManager, public xref: XRef) {
     this.catDict = xref.getCatalogObj();
     this.fontCache = new RefSetCache();
     assert(isDict(this.catDict), 'catalog object is not a dictionary');
@@ -405,37 +386,57 @@ export class Catalog {
   }
 }
 
+export interface XRefEntry {
+  offset: number,
+  gen: number,
+  free?: boolean,
+  uncompressed?: boolean
+}
+
 export class XRef {
-  constructor (stream) {
-    this.stream = stream;
+  public entries: Array<Dict | XRefEntry | null>;
+  public startXRefQueue?: number[];
+  public cache: Array<Dict | null>;
+  public topDict?: Dict;
+  public trailer?: Dict;
+  public root?: XRef;
+  
+  constructor (public stream: Stream) {
     this.entries = [];
-    this.xrefstms = {};
-    // prepare the XRef cache
     this.cache = [];
   }
 
-  setStartXRef (startXRef) {
+  setStartXRef (startXRef: number): void {
     // Store the starting positions of xref tables as we process them
-    // so we can recover from missing data errors
+    // so we can recover from missing data errors.
     this.startXRefQueue = [startXRef];
   }
 
-  parse (recoveryMode) {
-    let trailerDict;
+  parse (recoveryMode: boolean): void {
+    let trailerDict: Dict | undefined;
     
     if (!recoveryMode) {
       trailerDict = this.readXRef();
     }
 
-    trailerDict.assignXref(this);
+    trailerDict?.assignXref(this);
     this.trailer = trailerDict;
-    this.root = trailerDict.get('Root')
+    this.root = trailerDict?.get('Root')
   }
 
-  processXRefTable (parser) {
-    if (!('tableState' in this)) {
+  public tableState?: {
+    entryNum: number,
+    streamPos: number,
+    parserBuf1: number,
+    parserBuf2: number,
+    firstEntryNum?: number,
+    entryCount?: number
+  }
+
+  processXRefTable (parser: Parser): Dict {
+    if (!this.tableState) {
       // Stores state of the table as we process it so we can resume
-      // from middle of table in case of missing data error
+      // from middle of table in case of missing data error.
       this.tableState = {
         entryNum: 0,
         streamPos: parser.lexer.stream.pos,
@@ -444,7 +445,7 @@ export class XRef {
       };
     }
 
-    var obj = this.readXRefTable(parser);
+    const obj = this.readXRefTable(parser);
 
     // Sanity check
     if (!isCmd(obj, 'trailer'))
@@ -459,7 +460,7 @@ export class XRef {
     //    >>
     // The parser goes through the entire stream << ... >> and provides
     // a getter interface for the key-value table
-    var dict = parser.getObj();
+    const dict = parser.getObj();
     if (!isDict(dict))
       throw new Error('Invalid XRef table: could not parse trailer dictionary');
 
@@ -467,7 +468,7 @@ export class XRef {
     return dict;
   }
 
-  readXRefTable (parser) {
+  readXRefTable (parser: Parser) {
     // Example of cross-reference table:
     // xref
     // 0 1                    <-- subsection header (first obj #, obj count)
@@ -478,14 +479,15 @@ export class XRef {
     // trailer
     // ...
 
-    var stream = parser.lexer.stream;
-    var tableState = this.tableState;
+    const stream = parser.lexer.stream;
+    const tableState = this.tableState!;
     stream.pos = tableState.streamPos;
     parser.buf1 = tableState.parserBuf1;
     parser.buf2 = tableState.parserBuf2;
 
     // Outer loop is over subsection headers
-    var obj;
+    let obj;
+    let first: number | undefined;
 
     while (true) {
       if (!('firstEntryNum' in tableState) || !('entryCount' in tableState)) {
@@ -496,22 +498,24 @@ export class XRef {
         tableState.entryCount = parser.getObj();
       }
 
-      var first = tableState.firstEntryNum;
-      var count = tableState.entryCount;
+      first = tableState.firstEntryNum;
+      const count = tableState.entryCount;
       if (!isInt(first) || !isInt(count))
         throw new Error('Invalid XRef table: wrong types in subsection header');
 
       // Inner loop is over objects themselves
-      for (var i = tableState.entryNum; i < count; i++) {
+      for (let i = tableState.entryNum; i < count; i++) {
         tableState.streamPos = stream.pos;
         tableState.entryNum = i;
         tableState.parserBuf1 = parser.buf1;
         tableState.parserBuf2 = parser.buf2;
 
-        var entry = {};
-        entry.offset = parser.getObj();
-        entry.gen = parser.getObj();
-        var type = parser.getObj();
+        const entry: XRefEntry = {
+          offset: parser.getObj(),
+          gen: parser.getObj()
+        };
+
+        const type = parser.getObj();
 
         if (isCmd(type, 'f'))
           entry.free = true;
@@ -519,10 +523,7 @@ export class XRef {
           entry.uncompressed = true;
 
         // Validate entry obj
-        if (!isInt(entry.offset) || !isInt(entry.gen) ||
-            !(entry.free || entry.uncompressed)) {
-          console.log(entry.offset, entry.gen, entry.free,
-              entry.uncompressed);
+        if (!isInt(entry.offset) || !isInt(entry.gen) || !(entry.free || entry.uncompressed)) {
           throw new Error('Invalid entry in XRef subsection: ' + first + ', ' + count);
         }
 
@@ -539,113 +540,26 @@ export class XRef {
     }
 
     // Per issue 3248: hp scanners generate bad XRef
-    if (first === 1 && this.entries[1] && this.entries[1].free) {
+    if (first === 1 && this.entries[1] && (this.entries[1] as XRefEntry).free) {
       // shifting the entries
       this.entries.shift();
     }
 
     // Sanity check: as per spec, first object must be free
-    if (this.entries[0] && !this.entries[0].free)
+    if (this.entries[0] && !(this.entries[0] as XRefEntry).free)
       throw new Error('Invalid XRef table: unexpected first object');
 
     return obj;
   }
 
-  processXRefStream (stream) {
-    if (!('streamState' in this)) {
-      // Stores state of the stream as we process it so we can resume
-      // from middle of stream in case of missing data error
-      var streamParameters = stream.dict;
-      var byteWidths = streamParameters.get('W');
-      var range = streamParameters.get('Index');
-      if (!range) {
-        range = [0, streamParameters.get('Size')];
-      }
-
-      this.streamState = {
-        entryRanges: range,
-        byteWidths: byteWidths,
-        entryNum: 0,
-        streamPos: stream.pos
-      };
-    }
-    this.readXRefStream(stream);
-    delete this.streamState;
-
-    return stream.dict;
-  }
-
-  readXRefStream (stream) {
-    var i, j;
-    var streamState = this.streamState;
-    stream.pos = streamState.streamPos;
-
-    var byteWidths = streamState.byteWidths;
-    var typeFieldWidth = byteWidths[0];
-    var offsetFieldWidth = byteWidths[1];
-    var generationFieldWidth = byteWidths[2];
-
-    var entryRanges = streamState.entryRanges;
-    while (entryRanges.length > 0) {
-
-      var first = entryRanges[0];
-      var n = entryRanges[1];
-
-      if (!isInt(first) || !isInt(n))
-        throw new Error('Invalid XRef range fields: ' + first + ', ' + n);
-
-      if (!isInt(typeFieldWidth) || !isInt(offsetFieldWidth) ||
-          !isInt(generationFieldWidth)) {
-        throw new Error('Invalid XRef entry fields length: ' + first + ', ' + n);
-      }
-      for (i = streamState.entryNum; i < n; ++i) {
-        streamState.entryNum = i;
-        streamState.streamPos = stream.pos;
-
-        var type = 0, offset = 0, generation = 0;
-        for (j = 0; j < typeFieldWidth; ++j)
-          type = (type << 8) | stream.getByte();
-        // if type field is absent, its default value = 1
-        if (typeFieldWidth === 0)
-          type = 1;
-        for (j = 0; j < offsetFieldWidth; ++j)
-          offset = (offset << 8) | stream.getByte();
-        for (j = 0; j < generationFieldWidth; ++j)
-          generation = (generation << 8) | stream.getByte();
-        var entry = {};
-        entry.offset = offset;
-        entry.gen = generation;
-        switch (type) {
-          case 0:
-            entry.free = true;
-            break;
-          case 1:
-            entry.uncompressed = true;
-            break;
-          case 2:
-            break;
-          default:
-            throw new Error('Invalid XRef entry type: ' + type);
-        }
-        if (!this.entries[first + i])
-          this.entries[first + i] = entry;
-      }
-
-      streamState.entryNum = 0;
-      streamState.streamPos = stream.pos;
-      entryRanges.splice(0, 2);
-    }
-  }
-
-  readXRef () {
-    var stream = this.stream;
+  readXRef (): Dict | undefined {
+    const stream = this.stream;
 
     while (this.startXRefQueue?.length) {
-      var startXRef = this.startXRefQueue[0];
-
+      const startXRef = this.startXRefQueue[0];
       stream.pos = startXRef;
 
-      var parser = new Parser(new Lexer(stream), true, null);
+      const parser = new Parser(new Lexer(stream), true, null);
       const obj = parser.getObj();
 
       // Get dictionary
@@ -666,19 +580,17 @@ export class XRef {
     return this.topDict;
   }
 
-  /**
-   * 
-   * @param {number} i 
-   * @returns 
-   */
-  getEntry (i) {
-    var e = this.entries[i];
-    if (e === null)
+  getEntry (i: number): XRefEntry | null {
+    const entry = this.entries[i] as (XRefEntry | null);
+
+    if (entry === null)
       return null;
-    return e.free || !e.offset ? null : e; // returns null if entry is free
+
+    // Return `null` if entry is free.
+    return entry.free || !entry.offset ? null : entry;
   }
 
-  fetchIfRef (obj) {
+  fetchIfRef (obj: Dict): Dict | XRefEntry | number | null {
     if (!isRef(obj)) {
       return obj;
     }
@@ -686,18 +598,16 @@ export class XRef {
     return this.fetch(obj);
   }
 
-  fetch (ref) {
-    assert(isRef(ref), 'ref object is not a reference');
+  fetch (ref: Ref): Dict | XRefEntry | number | null {
+    if (!(ref instanceof Ref)) {
+      throw new Error('ref object is not a reference');
+    }
   
     let num = ref.num;
-    let e;
-    
-    if (num in this.cache) {
-      e = this.cache[num];
+    let e: Dict | XRefEntry | null;
 
-      if (e instanceof Stream) {
-        return e.makeSubStream(e.start, e.length, e.dict);
-      }
+    if (num in this.cache) {
+      e = this.cache[num] as Dict;
       return e;
     }
 
@@ -707,87 +617,36 @@ export class XRef {
     if (e === null)
       return (this.cache[num] = e);
 
-    var gen = ref.gen;
-    let stream, parser;
+    if (e.gen != ref.gen)
+      throw new Error('inconsistent generation in XRef');
 
-    if (e.uncompressed) {
-      if (e.gen != gen)
-        throw new Error('inconsistent generation in XRef');
-      stream = this.stream.makeSubStream(e.offset);
-      parser = new Parser(new Lexer(stream), true, this);
-      var obj1 = parser.getObj();
-      var obj2 = parser.getObj();
-      var obj3 = parser.getObj();
-      if (!isInt(obj1) || obj1 != num ||
-          !isInt(obj2) || obj2 != gen ||
-          !isCmd(obj3)) {
-        throw new Error('bad XRef entry');
-      }
-      if (!isCmd(obj3, 'obj')) {
-        // some bad pdfs use "obj1234" and really mean 1234
-        if (obj3.cmd.indexOf('obj') === 0) {
-          num = parseInt(obj3.cmd.substring(3), 10);
-          if (!isNaN(num))
-            return num;
-        }
-        throw new Error('bad XRef entry');
-      }
-      
-      e = parser.getObj();
-      
-      if (!isStream(e)) {
-        this.cache[num] = e;
-      }
+    const stream = this.stream.makeSubStream(e.offset);
+    const parser = new Parser(new Lexer(stream), true, this);
+    
+    const obj1 = parser.getObj();
+    const obj2 = parser.getObj();
+    const obj3 = parser.getObj();
 
-      return e;
+    if (!isInt(obj1) || obj1 != num ||
+        !isInt(obj2) || obj2 != ref.gen ||
+        !isCmd(obj3)) {
+      throw new Error('bad XRef entry');
     }
-
-    // compressed entry
-    const tableOffset = e.offset;
-    stream = this.fetch(new Ref(tableOffset, 0));
-
-    if (!isStream(stream)) {
-      throw new Error('bad ObjStm stream');
-    }
-    const first = stream.dict.get('First');
-    const n = stream.dict.get('N');
-
-    if (!isInt(first) || !isInt(n)) {
-      throw new Error('invalid first and n parameters for ObjStm stream');
-    }
-
-    parser = new Parser(new Lexer(stream), false, this);
-    parser.allowStreams = true;
-
-    const entries = [];
-    const nums = [];
-
-    // read the object numbers to populate cache
-    for (let i = 0; i < n; ++i) {
-      const num = parser.getObj();
-      if (!isInt(num)) {
-        throw new Error('invalid object number in the ObjStm stream: ' + num);
+    if (!isCmd(obj3, 'obj')) {
+      // some bad pdfs use "obj1234" and really mean 1234
+      if ((obj3 as Cmd).cmd.indexOf('obj') === 0) {
+        num = parseInt((obj3 as Cmd).cmd.substring(3), 10);
+        if (!isNaN(num))
+          return num;
       }
-      nums.push(num);
-      
-      const offset = parser.getObj();
-      if (!isInt(offset)) {
-        throw new Error('invalid object offset in the ObjStm stream: ' + offset);
-      }
-    }
-    // read stream objects for cache
-    for (let i = 0; i < n; ++i) {
-      entries.push(parser.getObj());
-      const num = nums[i];
-      var entry = this.entries[num];
-      if (entry && entry.offset === tableOffset && entry.gen === i) {
-        this.cache[num] = entries[i];
-      }
-    }
 
-    e = entries[e.gen];
-    if (e === undefined) {
-      throw new Error('bad XRef entry for compressed object');
+      throw new Error('bad XRef entry');
+    }
+    
+    e = parser.getObj() as Dict | Stream;
+    
+    if (!isStream(e)) {
+      this.cache[num] = e;
     }
 
     return e;
@@ -801,7 +660,7 @@ export class XRef {
     return this.fetchAsync(obj);
   }
 
-  async fetchAsync (ref) {
+  async fetchAsync (ref: Ref) {
     return this.fetch(ref)
   }
 
@@ -825,11 +684,7 @@ function mayHaveChildren(value) {
   return isRef(value) || isDict(value) || isArray(value) || isStream(value);
 }
 
-/**
- * @param {Dict | FlateStream} node 
- * @param {Array<Dict | undefined>} nodesToVisit 
- */
-function addChildren(node, nodesToVisit) {
+function addChildren(node: Dict | Stream, nodesToVisit: (Dict | undefined)[]) {
   if (isDict(node) || isStream(node)) {
     var map;
     if (isDict(node)) {
@@ -871,8 +726,7 @@ export class ObjectLoader {
   obj;
   keys;
   xref;
-  /** @type {RefSet | null} */
-  refSet = null;
+  refSet: RefSet | null = null;
 
   constructor (obj, keys, xref) {
     this.obj = obj;
@@ -894,11 +748,7 @@ export class ObjectLoader {
     this.walk(nodesToVisit);
   }
 
-  /**
-   * @param {Array<Dict | undefined>} nodesToVisit 
-   * @returns 
-   */
-  walk (nodesToVisit) {
+  walk (nodesToVisit: Array<Dict | undefined>) {
     // DFS walk of the object graph.
     while (nodesToVisit.length) {
       let currentNode = nodesToVisit.pop();
@@ -915,7 +765,7 @@ export class ObjectLoader {
         currentNode = this.xref.fetch(currentNode);
       }
 
-      addChildren(currentNode, nodesToVisit);
+      addChildren(currentNode!, nodesToVisit);
     }
 
     // Everything is loaded.

@@ -1,23 +1,27 @@
+import { type Dict } from "./obj";
+
 export class Stream {
   public isStream = true;
   public bytes: Uint8Array;
   public start: number;
   public pos: number;
   public end: number;
-  public dict?: any;
 
-  constructor (arrayBuffer: ArrayBuffer | Uint8Array, start?: number, length?: number, dict?: any) {
+  constructor (
+    arrayBuffer: ArrayBuffer | Uint8Array | ArrayBufferLike,
+    start?: number,
+    length?: number,
+    public dict?: Dict
+  ) {
     this.bytes = arrayBuffer instanceof Uint8Array ? arrayBuffer : new Uint8Array(arrayBuffer);
     this.start = start || 0;
     this.pos = this.start;
 
     // @ts-expect-error : `start + length` is not always defined
     this.end = (start + length) || this.bytes.length;
-    
-    this.dict = dict;
   }
 
-  get length(): number {
+  get length (): number {
     return this.end - this.start;
   }
 
@@ -67,33 +71,34 @@ export class Stream {
     this.start = this.pos;
   }
 
-  makeSubStream (start: number, length: number, dict?: any) {
+  makeSubStream (start: number, length?: number, dict?: any) {
     return new Stream(this.bytes.buffer, start, length, dict);
   }
-
 }
 
 // super class for the decoding streams
-export class DecodeStream {
-  constructor () {
-    this.pos = 0;
-    this.bufferLength = 0;
-    this.eof = false;
-    this.buffer = null;
-  }
+abstract class DecodeStream {
+  public buffer?: Uint8Array;
+  public pos = 0;
+  public bufferLength = 0;
+  public eof = false;
 
-  ensureBuffer (requested) {
-    var buffer = this.buffer;
-    var current = buffer ? buffer.byteLength : 0;
-    if (requested < current)
-      return buffer;
-    var size = 512;
+  ensureBuffer (requested: number): Uint8Array {
+    const current = this.buffer ? this.buffer.byteLength : 0;
+
+    if (requested < current) {
+      return this.buffer!;
+    }
+
+    let size = 512;
     while (size < requested)
       size <<= 1;
-    var buffer2 = new Uint8Array(size);
-    for (var i = 0; i < current; ++i)
-      buffer2[i] = buffer[i];
-    return (this.buffer = buffer2);
+
+    const buffer = new Uint8Array(size);
+    for (let i = 0; i < current; ++i)
+      buffer[i] = this.buffer![i];
+    
+    return (this.buffer = buffer);
   }
 
   getByte () {
@@ -132,25 +137,26 @@ export class DecodeStream {
     }
 
     this.pos = end;
-    return this.buffer.subarray(pos, end);
+    return this.buffer!.subarray(pos, end);
   }
 
-  peekBytes (length) {
+  peekBytes (length: number): Uint8Array {
     var bytes = this.getBytes(length);
     this.pos -= bytes.length;
     return bytes;
   }
 
-  makeSubStream (start, length, dict) {
-    var end = start + length;
+  makeSubStream (start: number, length: number, dict?: Dict) {
+    const end = start + length;
+    
     while (this.bufferLength <= end && !this.eof)
       this.readBlock();
-    return new Stream(this.buffer, start, length, dict);
+
+    return new Stream(this.buffer!, start, length, dict);
   }
 
-  skip (n) {
-    if (!n)
-      n = 1;
+  skip (n?: number) {
+    if (!n) n = 1;
     this.pos += n;
   }
 
@@ -164,29 +170,8 @@ export class DecodeStream {
     }
     return [];
   }
-}
 
-export class StreamsSequenceStream extends DecodeStream {
-  constructor (streams) {
-    super();
-    this.streams = streams;
-  }
-
-  readBlock () {
-    const streams = this.streams;
-    if (streams.length === 0) {
-      this.eof = true;
-      return;
-    }
-
-    const stream = streams.shift();
-    const chunk = stream.getBytes();
-    const bufferLength = this.bufferLength;
-    const newLength = bufferLength + chunk.length;
-    const buffer = this.ensureBuffer(newLength);
-    buffer?.set(chunk, bufferLength);
-    this.bufferLength = newLength;
-  }
+  protected abstract readBlock (): void;
 }
 
 export class FlateStream extends DecodeStream {

@@ -1,11 +1,11 @@
 import { assert, isArray, isArrayBuffer, isName, isStream, isString, shadow, stringToBytes, stringToPDFString, Util } from "../shared/util";
-import { calculateMD5 } from "./crypto";
 import { OperatorList, PartialEvaluator } from "./evaluator";
 import { Catalog, ObjectLoader, Ref, RefSetCache, XRef } from "./obj";
-import { Lexer, Linearization } from "./parser";
+import { Lexer } from "./parser";
 import { LocalPdfManager } from "./pdf_manager";
-import { NullStream, Stream, StreamsSequenceStream } from "./stream";
+import { NullStream, Stream } from "./stream";
 import { Dict } from "./obj";
+import { WorkerTransport } from "../display/api";
 
 export class Page {
   public resourcesPromise: Promise<any> | null = null;
@@ -22,19 +22,20 @@ export class Page {
     public fontCache: RefSetCache
   ) {}
 
-  getPageProp (key) {
+  getPageProp (key: string) {
     return this.pageDict.get(key);
   }
 
-  inheritPageProp (key) {
-    var dict = this.pageDict;
-    var obj = dict.get(key);
+  inheritPageProp (key: string) {
+    let dict = this.pageDict;
+    let obj = dict.get(key);
+
     while (obj === undefined) {
       dict = dict.get('Parent');
-      if (!dict)
-        break;
+      if (!dict) break;
       obj = dict.get(key);
     }
+
     return obj;
   }
 
@@ -86,27 +87,17 @@ export class Page {
     return shadow(this, 'rotate', rotate);
   }
 
-  getContentStream () {
-    var content = this.content;
-    var stream;
-    if (isArray(content)) {
-      // fetching items
-      var xref = this.xref;
-      var i, n = content.length;
-      var streams = [];
-      for (i = 0; i < n; ++i)
-        streams.push(xref.fetchIfRef(content[i]));
-      stream = new StreamsSequenceStream(streams);
-    } else if (isStream(content)) {
-      stream = content;
-    } else {
-      // replacing non-existent page content with empty one
-      stream = new NullStream();
+  getContentStream (): Stream {
+    if (isStream(this.content)) {
+      return this.content;
     }
-    return stream;
+    else {
+      // replacing non-existent page content with empty one
+      return new NullStream();
+    }
   }
 
-  async loadResources (keys) {
+  async loadResources (keys: string[]) {
     if (!this.resourcesPromise) {
       // TODO: add async inheritPageProp and remove this.
       this.resourcesPromise = this.pdfManager.ensure(this, 'resources');
@@ -116,44 +107,42 @@ export class Page {
     if (!this.resources) return;
     await this.resourcesPromise;
 
-    var objectLoader = new ObjectLoader(
+    const objectLoader = new ObjectLoader(
       this.resources.map,
       keys,
       this.xref
     );
 
-    objectLoader.load()
+    objectLoader.load();
   }
 
-  async getOperatorList (handler) {
-    var contentStreamPromise = this.pdfManager.ensure(
+  async getOperatorList (handler: WorkerTransport) {
+    const contentStreamPromise = this.pdfManager.ensure(
       this, 'getContentStream', []
     );
 
-    var resourcesPromise = this.loadResources([
+    const resourcesPromise = this.loadResources([
       'ExtGState',
       'ColorSpace',
       'Pattern',
       'Shading',
       'XObject',
       'Font'
-      // ProcSet
-      // Properties
     ]);
 
-    var partialEvaluator = new PartialEvaluator(
+    const partialEvaluator = new PartialEvaluator(
       this.pdfManager, this.xref, handler,
       this.pageIndex, 'p' + this.pageIndex + '_',
       this.idCounters, this.fontCache
     );
 
-    var data = await Promise.all([
+    const data = await Promise.all([
       contentStreamPromise,
       resourcesPromise
     ]);
 
-    var contentStream = data[0];
-    var opList = new OperatorList(handler, this.pageIndex);
+    const contentStream = data[0];
+    const opList = new OperatorList(handler, this.pageIndex);
 
     handler.StartRenderPage({
       pageIndex: this.pageIndex
@@ -165,7 +154,7 @@ export class Page {
 }
 
 export const DocumentInfoValidators = {
-  get entries() {
+  get entries () {
     // Lazily build this since all the validation functions below are not
     // defined until after this file loads.
     return shadow(this, 'entries', {
@@ -190,25 +179,28 @@ export const DocumentInfoValidators = {
  * `PDFDocument` objects on the main thread created.
  */
 export class PDFDocument {
-  constructor (pdfManager, arg) {
-    const init = (pdfManager, stream) => {
-      assert(stream.length > 0, 'stream must have data');
-      this.pdfManager = pdfManager;
-      this.stream = stream;
-      var xref = new XRef(this.stream);
-      this.xref = xref;
-    };
+  public pdfFormatVersion?: string;
+  public catalog?: Catalog;
+  public stream: Stream;
+  public xref: XRef;
 
-    if (isStream(arg))
-      init(pdfManager, arg);
-    else if (isArrayBuffer(arg))
-      init(pdfManager, new Stream(arg));
-    else
-      throw new Error('PDFDocument: Unknown argument type');
+  constructor (
+    public pdfManager: LocalPdfManager,
+    arg: Stream | ArrayBuffer
+  ) {
+    if (isStream(arg)) {
+      assert(arg.length > 0, 'stream must have data')
+      this.stream = arg;
+    }
+    else if (isArrayBuffer(arg)) {
+      this.stream = new Stream(arg)
+    }
+    else throw new Error('PDFDocument: Unknown argument type');
+
+    this.xref = new XRef(this.stream);
   }
 
-  /** @private */
-  static find(stream, needle, limit, backwards) {
+  private static find (stream: Stream, needle: string, limit: number, backwards?: boolean): boolean {
     var pos = stream.pos;
     var end = stream.end;
     var str = '';
@@ -224,98 +216,65 @@ export class PDFDocument {
     return true; /* found */
   }
 
-  parse (recoveryMode) {
+  parse (recoveryMode: boolean): void {
     this.setup(recoveryMode);
-    try {
-      // checking if AcroForm is present
-      this.acroForm = this.catalog.catDict.get('AcroForm');
-      if (this.acroForm) {
-        this.xfa = this.acroForm.get('XFA');
-        var fields = this.acroForm.get('Fields');
-        if ((!fields || !isArray(fields) || fields.length === 0) &&
-            !this.xfa) {
-          // no fields and no XFA -- not a form (?)
-          this.acroForm = null;
-        }
-      }
-    } catch (ex) {
-      console.info('Something wrong with AcroForm entry');
-      this.acroForm = null;
-    }
   }
 
   get linearization() {
-    var length = this.stream.length;
-    var linearization = false;
-    if (length) {
-      try {
-        linearization = new Linearization(this.stream);
-        if (linearization.length != length) {
-          linearization = false;
-        }
-      }
-      catch {
-        console.warn('The linearization data is not available ' +
-              'or unreadable PDF data is found');
-        linearization = false;
-      }
-    }
     // shadow the prototype getter with a data property
-    return shadow(this, 'linearization', linearization);
+    return shadow(this, 'linearization', false);
   }
 
-  get startXRef() {
-    var stream = this.stream;
-    var startXRef = 0;
-    var linearization = this.linearization;
-    if (linearization) {
-      // Find end of first obj.
-      stream.reset();
-      if (PDFDocument.find(stream, 'endobj', 1024))
-        startXRef = stream.pos + 6;
-    } else {
-      // Find startxref by jumping backward from the end of the file.
-      var step = 1024;
-      var found = false, pos = stream.end;
-      while (!found && pos > 0) {
-        pos -= step - 'startxref'.length;
-        if (pos < 0)
-          pos = 0;
-        stream.pos = pos;
-        found = PDFDocument.find(stream, 'startxref', step, true);
+  get startXRef () {
+    const stream = this.stream;
+    let startXRef = 0;
+
+    // Find startxref by jumping backward from the end of the file.
+    const step = 1024;
+    let found = false;
+    let pos = stream.end;
+
+    while (!found && pos > 0) {
+      pos -= step - 'startxref'.length;
+      if (pos < 0)
+        pos = 0;
+      stream.pos = pos;
+      found = PDFDocument.find(stream, 'startxref', step, true);
+    }
+
+    if (found) {
+      stream.skip(9);
+      let ch: number;
+
+      do {
+        ch = stream.getByte();
+      } while (Lexer.isSpace(ch));
+      
+      let str = '';
+      
+      while (ch >= 0x20 && ch <= 0x39) { // < '9'
+        str += String.fromCharCode(ch);
+        ch = stream.getByte();
       }
-      if (found) {
-        stream.skip(9);
-        var ch;
-        do {
-          ch = stream.getByte();
-        } while (Lexer.isSpace(ch));
-        var str = '';
-        while (ch >= 0x20 && ch <= 0x39) { // < '9'
-          str += String.fromCharCode(ch);
-          ch = stream.getByte();
-        }
-        startXRef = parseInt(str, 10);
-        if (isNaN(startXRef))
-          startXRef = 0;
+
+      startXRef = parseInt(str, 10);
+      if (isNaN(startXRef)) {
+        startXRef = 0;
       }
     }
+
     // shadow the prototype getter with a data property
     return shadow(this, 'startXRef', startXRef);
   }
 
-  get mainXRefEntriesOffset() {
-    var mainXRefEntriesOffset = 0;
-    var linearization = this.linearization;
-    if (linearization)
-      mainXRefEntriesOffset = linearization.mainXRefEntriesOffset;
+  get mainXRefEntriesOffset () {
     // shadow the prototype getter with a data property
-    return shadow(this, 'mainXRefEntriesOffset', mainXRefEntriesOffset);
+    return shadow(this, 'mainXRefEntriesOffset', 0);
   }
 
   // Find the header, remove leading garbage and setup the stream
   // starting from the header.
-  checkHeader () {
+  checkHeader (): void {
     var stream = this.stream;
     stream.reset();
     if (PDFDocument.find(stream, '%PDF-', 1024)) {
@@ -337,35 +296,32 @@ export class PDFDocument {
     // May not be a PDF file, continue anyway.
   }
 
-  parseStartXRef () {
+  parseStartXRef (): void {
     var startXRef = this.startXRef;
     this.xref.setStartXRef(startXRef);
   }
 
-  setup (recoveryMode) {
+  setup (recoveryMode: boolean): void {
     this.xref.parse(recoveryMode);
     this.catalog = new Catalog(this.pdfManager, this.xref);
   }
 
-  get numPages() {
-    var linearization = this.linearization;
-    var num = linearization ? linearization.numPages : this.catalog.numPages;
+  get numPages (): number {
     // shadow the prototype getter
-    return shadow(this, 'numPages', num);
+    return shadow(this, 'numPages', this.catalog!.numPages);
   }
 
-  get documentInfo() {
-    var docInfo = {
-      PDFFormatVersion: this.pdfFormatVersion,
-      IsAcroFormPresent: !!this.acroForm,
-      IsXFAPresent: !!this.xfa
-    };
-    var infoDict;
+  get documentInfo () {
+    const docInfo = { PDFFormatVersion: this.pdfFormatVersion };
+    let infoDict;
+
     try {
-      infoDict = this.xref.trailer.get('Info');
-    } catch (err) {
-      console.info('The document information dictionary is invalid.');
+      infoDict = this.xref.trailer?.get('Info');
     }
+    catch (err) {
+      console.info('the document information dictionary is invalid.');
+    }
+
     if (infoDict) {
       var validEntries = DocumentInfoValidators.entries;
       // Only fill the document info with valid entries from the spec.
@@ -389,10 +345,8 @@ export class PDFDocument {
   get fingerprint() {
     var xref = this.xref, hash, fileID = '';
 
-    if (xref.trailer.has('ID')) {
+    if (xref.trailer!.has('ID')) {
       hash = stringToBytes(xref.trailer.get('ID')[0]);
-    } else {
-      hash = calculateMD5(this.stream.bytes.subarray(0, 100), 0, 100);
     }
 
     for (var i = 0, n = hash.length; i < n; i++) {
@@ -403,12 +357,12 @@ export class PDFDocument {
   }
 
 
-  getPage (pageIndex) {
-    return this.catalog.getPage(pageIndex);
+  getPage (pageIndex: number) {
+    return this.catalog!.getPage(pageIndex);
   }
 
 
-  cleanup () {
-    return this.catalog.cleanup();
+  cleanup (): void {
+    return this.catalog!.cleanup();
   }
 }

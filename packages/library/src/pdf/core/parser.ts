@@ -1,6 +1,6 @@
 import { isArray, isCmd, isDict, isInt, isName, isNum, isRef, isString } from "../shared/util";
-import { Cmd, Dict, Name, Ref } from "./obj";
-import { FlateStream, NullStream } from "./stream";
+import { Cmd, Dict, Name, Ref, XRef } from "./obj";
+import { FlateStream, NullStream, Stream } from "./stream";
 
 export const EOF = {};
 
@@ -9,10 +9,20 @@ export function isEOF(v) {
 }
 
 export class Parser {
-  constructor (lexer, allowStreams, xref) {
-    this.lexer = lexer;
-    this.allowStreams = allowStreams;
-    this.xref = xref;
+  public buf1: any;
+  public buf2: any;
+
+  public state?: {
+    buf1: any;
+    buf2: any;
+    streamPos: number;
+  }
+
+  constructor (
+    public lexer: Lexer,
+    public allowStreams: boolean,
+    public xref: XRef | null
+  ) {
     this.refill();
   }
 
@@ -25,7 +35,8 @@ export class Parser {
   }
 
   restoreState () {
-    var state = this.state;
+    const state = this.state!;
+
     this.buf1 = state.buf1;
     this.buf2 = state.buf2;
     this.lexer.stream.pos = state.streamPos;
@@ -46,14 +57,14 @@ export class Parser {
     }
   }
 
-  getObj () {
+  getObj (): any {
     if (isCmd(this.buf1, 'BI')) { // inline image
       this.shift();
       return this.makeInlineImage();
     }
     if (isCmd(this.buf1, '[')) { // array
       this.shift();
-      var array = [];
+      const array = [];
       while (!isCmd(this.buf1, ']') && !isEOF(this.buf1))
         array.push(this.getObj());
       if (isEOF(this.buf1))
@@ -63,25 +74,25 @@ export class Parser {
     }
     if (isCmd(this.buf1, '<<')) { // dictionary or stream
       this.shift();
-      var dict = new Dict(this.xref);
+      const dict = new Dict(this.xref!);
       while (!isCmd(this.buf1, '>>') && !isEOF(this.buf1)) {
         if (!isName(this.buf1)) {
-          console.info('Malformed dictionary, key must be a name object');
+          console.info('malformed dictionary, key must be a name object');
           this.shift();
           continue;
         }
 
-        var key = this.buf1.name;
+        const key = (this.buf1 as Name).name;
         this.shift();
         if (isEOF(this.buf1))
           break;
         dict.set(key, this.getObj());
       }
       if (isEOF(this.buf1))
-        throw new Error('End of file inside dictionary');
+        throw new Error('end of file inside dictionary');
 
-      // stream objects are not allowed inside content streams or
-      // object streams
+      // Stream objects are not allowed inside content streams or
+      // object streams.
       if (isCmd(this.buf2, 'stream')) {
         return this.allowStreams ?
           this.makeStream(dict) : dict;
@@ -90,7 +101,7 @@ export class Parser {
       return dict;
     }
     if (isInt(this.buf1)) { // indirect reference or integer
-      var num = this.buf1;
+      const num = this.buf1;
       this.shift();
       if (isInt(this.buf1) && isCmd(this.buf2, 'R')) {
         var ref = new Ref(num, this.buf1);
@@ -174,12 +185,12 @@ export class Parser {
     return imageStream;
   }
 
-  fetchIfRef (obj) {
+  fetchIfRef (obj: any): any {
     // not relying on the xref.fetchIfRef -- xref might not be set
-    return isRef(obj) ? this.xref.fetch(obj) : obj;
+    return isRef(obj) ? this.xref!.fetch(obj) : obj;
   }
 
-  makeStream (dict) {
+  makeStream (dict: Dict) {
     var lexer = this.lexer;
     var stream = lexer.stream;
 
@@ -288,12 +299,13 @@ export class Parser {
 }
 
 export class Lexer {
-  /**
-   * @param {*} stream 
-   * @param {Record<string, any>} knownCommands 
-   */
-  constructor (stream, knownCommands) {
-    this.stream = stream;
+  public knownCommands?: Record<string, any>;
+  public currentChar?: number;
+
+  constructor (
+    public stream: Stream,
+    knownCommands?: Record<string, any>
+  ) {
     this.nextChar();
 
     // The PDFs might have "glued" commands with other commands, operands or
@@ -306,7 +318,7 @@ export class Lexer {
     this.knownCommands = knownCommands;
   }
 
-  static isSpace (ch) {
+  static isSpace (ch: number): boolean {
     // space is one of the following characters: SPACE, TAB, CR, or LF
     return ch === 0x20 || ch === 0x09 || ch === 0x0D || ch === 0x0A;
   };
@@ -332,7 +344,7 @@ export class Lexer {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0    // fx
   ];
 
-  static toHexDigit(ch) {
+  static toHexDigit (ch: number): number {
     if (ch >= 0x30 && ch <= 0x39) { // '0'-'9'
       return ch & 0x0F;
     }
@@ -349,7 +361,7 @@ export class Lexer {
 
   getNumber () {
     var floating = false;
-    var ch = this.currentChar;
+    var ch = this.currentChar!;
     var str = String.fromCharCode(ch);
     while ((ch = this.nextChar()) >= 0) {
       if (ch === 0x2E && !floating) { // '.'
@@ -497,7 +509,7 @@ export class Lexer {
 
   getHexString () {
     let str = '';
-    let ch = this.currentChar;
+    let ch = this.currentChar!;
     let isFirstHex = true;
     let firstDigit;
 
@@ -542,7 +554,7 @@ export class Lexer {
 
   getObj () {
     let comment = false;
-    let ch = this.currentChar;
+    let ch = this.currentChar!;
 
     while (true) {
       if (ch < 0) return EOF;
@@ -634,7 +646,7 @@ export class Lexer {
   }
 
   skipToNextLine () {
-    let ch = this.currentChar;
+    let ch = this.currentChar!;
 
     while (ch >= 0) {
       if (ch === 0x0D) { // CR
@@ -650,23 +662,6 @@ export class Lexer {
       }
 
       ch = this.nextChar();
-    }
-  }
-}
-
-export class Linearization {
-  constructor (stream) {
-    this.parser = new Parser(new Lexer(stream), false, null);
-    const obj1 = this.parser.getObj();
-    const obj2 = this.parser.getObj();
-    const obj3 = this.parser.getObj();
-    this.linDict = this.parser.getObj();
-    
-    if (isInt(obj1) && isInt(obj2) && isCmd(obj3, 'obj') && isDict(this.linDict)) {
-      const obj = this.linDict.get('Linearized');
-      if (!(isNum(obj) && obj > 0)) {
-        this.linDict = null;
-      }
     }
   }
 }

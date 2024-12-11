@@ -1,4 +1,5 @@
 import { Cmd, Dict, Name, Ref } from "../core/obj";
+import { Stream } from "../core/stream";
 
 export const FONT_IDENTITY_MATRIX = [0.001, 0, 0, 0.001, 0, 0];
 
@@ -308,35 +309,35 @@ export function isEmptyObj(obj) {
   return true;
 }
 
-export function isBool(v) {
+export function isBool(v: any): v is boolean {
   return typeof v == 'boolean';
 }
 
-export function isInt(v) {
+export function isInt(v: any): v is number {
   return typeof v == 'number' && ((v | 0) == v);
 }
 
-export function isNum(v) {
+export function isNum(v: any): v is number {
   return typeof v == 'number';
 }
 
-export function isString(v) {
+export function isString (v: any): v is string {
   return typeof v == 'string';
 }
 
-export function isNull(v) {
+export function isNull (v: any): v is null {
   return v === null;
 }
 
-export function isName(v) {
+export function isName (v: any): v is Name {
   return v instanceof Name;
 }
 
-export function isCmd(v, cmd) {
+export function isCmd (v: any, cmd?: string): v is Cmd {
   return v instanceof Cmd && (!cmd || v.cmd == cmd);
 }
 
-export function isDict(v, type) {
+export function isDict (v: any, type?: string): v is Dict {
   if (!(v instanceof Dict)) {
     return false;
   }
@@ -347,26 +348,27 @@ export function isDict(v, type) {
   return isName(dictType) && dictType.name == type;
 }
 
-export function isArray(v) {
+export function isArray (v: any): v is Array<any> {
   return v instanceof Array;
 }
 
-export function isStream(v) {
+export function isStream (v: any): v is Stream {
   return typeof v == 'object' && v !== null && v !== undefined &&
-         ('getBytes' in v);
+    ('getBytes' in v);
 }
 
-export function isArrayBuffer(v) {
+export function isArrayBuffer (v: any): v is ArrayBuffer {
   return typeof v == 'object' && v !== null && v !== undefined &&
-         ('byteLength' in v);
+    ('byteLength' in v);
 }
 
-export function isRef(v) {
+export function isRef (v: any): v is Ref {
   return v instanceof Ref;
 }
 
-export function isPDFFunction(v) {
-  var fnDict;
+export function isPDFFunction (v: any): v is Dict | Stream {
+  let fnDict;
+
   if (typeof v != 'object')
     return false;
   else if (isDict(v))
@@ -375,5 +377,6 @@ export function isPDFFunction(v) {
     fnDict = v.dict;
   else
     return false;
-  return fnDict.has('FunctionType');
+  
+    return fnDict!.has('FunctionType');
 }
