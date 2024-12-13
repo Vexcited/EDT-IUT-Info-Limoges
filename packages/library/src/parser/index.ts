@@ -1,4 +1,4 @@
-import PDF, { type Page } from "../converter";
+import { type Page, parsePDF } from "@literate.ink/pdf-inspector";
 
 import { type TimetableHeader, getTimetableHeader } from "./header";
 import { getTimetableTimings } from "./timings";
@@ -23,6 +23,6 @@ export const getTimetable = (page: Page): Timetable => {
 };
 
 export const getTimetableFromBuffer = async (pdf_buffer: ArrayBuffer): Promise<Timetable> => {
-  const pages = await new PDF().parseBuffer(pdf_buffer);
+  const pages = await parsePDF(pdf_buffer);
   return getTimetable(pages[0]);
 };

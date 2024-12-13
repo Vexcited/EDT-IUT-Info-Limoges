@@ -1,4 +1,4 @@
-import type { Page } from "../converter";
+import type { Page } from "@literate.ink/pdf-inspector";
 
 import { type FillBounds, getFillBounds, getTextsInFillBounds } from "./bounds";
 import { COLORS, DAYS, SUBGROUPS } from "./constants";
