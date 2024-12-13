@@ -61,6 +61,7 @@
   "author": "Mikkel RINGAUD <mikkel@milescode.dev> (https://github.com/Vexcited)",
   "repository": "github:Vexcited/EDT-IUT-Info-Limoges",
   "dependencies": {
+    "@literate.ink/pdf-inspector": "^1.0.0",
     "luxon": "^3.4.4"
   }
 }

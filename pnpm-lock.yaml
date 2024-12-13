@@ -10,6 +10,9 @@ importers:
 
   packages/library:
     dependencies:
+      '@literate.ink/pdf-inspector':
+        specifier: ^1.0.0
+        version: 1.0.0
       luxon:
         specifier: ^3.4.4
         version: 3.4.4
@@ -1383,6 +1386,10 @@ packages:
     resolution: {integrity: sha512-TYVCpQcpqo1+0HBn3NXoGEBzxd4tH6Um1oc07nrYw1V7Qq0qbMaYAOnfBc1qhlh7sGV4XZldmb0j13Of0FrZQg==}
     peerDependencies:
       solid-js: ^1.7.11
+
+  '@literate.ink/pdf-inspector@1.0.0':
+    resolution: {integrity: sha512-hlRFth61+1OUSw38Im86ot1ANFU4V2zGMLvmPEsWsIFY1s3y3ywCXw0KLGSaKWxk7auijr5SgXZxZlUolyGSkw==}
+    engines: {node: '>=18'}
 
   '@ljharb/through@2.3.12':
     resolution: {integrity: sha512-ajo/heTlG3QgC8EGP6APIejksVAYt4ayz4tqoP3MolFELzcH1x1fzwEYRJTPO0IELutZ5HQ0c26/GqAYy79u3g==}
@@ -6948,6 +6955,8 @@ snapshots:
       '@solid-primitives/utils': 6.2.1(solid-js@1.8.5)
       solid-js: 1.8.5
 
+  '@literate.ink/pdf-inspector@1.0.0': {}
+
   '@ljharb/through@2.3.12':
     dependencies:
       call-bind: 1.0.7
@@ -7370,7 +7379,7 @@ snapshots:
 
   '@types/resolve@1.17.1':
     dependencies:
-      '@types/node': 20.11.24
+      '@types/node': 20.12.14
 
   '@types/resolve@1.20.2': {}
 
@@ -9424,7 +9433,7 @@ snapshots:
 
   jest-worker@26.6.2:
     dependencies:
-      '@types/node': 20.11.24
+      '@types/node': 20.12.14
       merge-stream: 2.0.0
       supports-color: 7.2.0
 

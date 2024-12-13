@@ -1,4 +1,4 @@
-import type { Fill, Page, Text } from "../converter";
+import type { Fill, Page, Text } from "@literate.ink/pdf-inspector";
 
 export interface FillBounds {
   start_x: number;
