@@ -1,4 +1,4 @@
-import { describe, test, expect } from "@jest/globals";
+import { describe, test, expect } from "bun:test";
 
 import { YEARS } from "../src/downloader/constants";
 import { getTimetableEntries, getLatestTimetableEntry } from "../src/downloader";

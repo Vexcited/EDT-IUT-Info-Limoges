@@ -1,5 +1,5 @@
 import type { DateTime, WeekdayNumbers } from "luxon";
-import type { Page } from "../converter";
+import type { Page } from "@literate.ink/pdf-inspector";
 import type { TimetableGroup } from "./groups";
 import type { TimetableHeader } from "./header";
 
