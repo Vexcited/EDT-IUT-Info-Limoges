@@ -3,6 +3,7 @@
  */
 export const BUT_INFO_REF = {
   "EE1A": "Questionnaire",
+  "EE2A": "Questionnaire",
 
   // Semestre 1, commun.
   "S1.01": "Implémentation d'un besoin client",
@@ -61,7 +62,7 @@ export const BUT_INFO_REF = {
   "S3.St": "Stage",
   "S3.01A": "Développement logiciel",
   "S3.01B": "Réseaux",
-  
+
   "R3.01": "Développement web",
   "R3.01A": "Développement web / JavaScript",
   "R3.01B": "Développement web / PHP",
@@ -79,12 +80,13 @@ export const BUT_INFO_REF = {
   "R3.12": "Anglais",
   "R3.13": "Communication professionnelle",
   "R3.14": "Projet personnel et professionnel",
-  
+
   "P3.01": "Portfolio",
-  
+
   // Semestre 4, parcours A.
   "S4.St": "Stage",
-  "S4A.01": "Développement d'une application complexe",
+  "S4.01A": "Développement d'une application complexe",
+  "S4.01B": "Réseaux",
 
   "R4.01": "Architecture logicielle",
   "R4.02": "Qualité de développement",
