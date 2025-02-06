@@ -41,7 +41,7 @@
     "ics": "^3.5.0",
     "localforage": "^1.10.0",
     "luxon": "^3.4.4",
-    "mongoose": "^8.8.3",
+    "mongoose": "^8.9.5",
     "solid-js": "^1.8.5",
     "solid-start": "^0.3.10",
     "swiper": "^11.0.4"

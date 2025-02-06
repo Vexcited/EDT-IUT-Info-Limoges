@@ -78,8 +78,8 @@ importers:
         specifier: ^3.4.4
         version: 3.4.4
       mongoose:
-        specifier: ^8.8.3
-        version: 8.9.0(socks@2.8.1)
+        specifier: ^8.9.5
+        version: 8.9.5(socks@2.8.1)
       solid-js:
         specifier: ^1.8.5
         version: 1.8.5
@@ -4291,8 +4291,8 @@ packages:
       socks:
         optional: true
 
-  mongoose@8.9.0:
-    resolution: {integrity: sha512-b58zY3PLNBcoz6ZXFckr0leJcVVBMAOBvD+7Bj2ZjghAwntXmNnqwlDixTKQU3UYoQIGTv+AQx/0ThsvaeVrCA==}
+  mongoose@8.9.5:
+    resolution: {integrity: sha512-SPhOrgBm0nKV3b+IIHGqpUTOmgVL5Z3OO9AwkFEmvOZznXTvplbomstCnPOGAyungtRXE5pJTgKpKcZTdjeESg==}
     engines: {node: '>=16.20.1'}
 
   mpath@0.9.0:
@@ -10691,7 +10691,7 @@ snapshots:
     optionalDependencies:
       socks: 2.8.1
 
-  mongoose@8.9.0(socks@2.8.1):
+  mongoose@8.9.5(socks@2.8.1):
     dependencies:
       bson: 6.10.1
       kareem: 2.6.3
