@@ -2,7 +2,6 @@ import { defineConfig, presetWind3, transformerVariantGroup } from "unocss";
 import { presetKobalte } from "unocss-preset-primitives";
 
 export default defineConfig({
-  // @ts-expect-error : This is a custom property.
   presets: [presetWind3(), presetKobalte()],
   transformers: [transformerVariantGroup()],
 
@@ -23,5 +22,10 @@ export default defineConfig({
         "scale-out": "{from{opacity:1;transform:scale(&)}to{opacity:0;transform:scale(0.96)}}"
       }
     }
-  }
+  },
+
+  safelist: [
+    "bg-[rgb(18,18,18)]",
+    "font-[Poppins,sans-serif]"
+  ]
 });
