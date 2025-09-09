@@ -29,28 +29,24 @@ export default function App() {
 
   onMount(initializeNowRefresh);
   createEffect(() => {
-    // setup the custom color from the user preferences.
     const root = document.querySelector(':root') as HTMLElement;
     root.style.setProperty('--custom-color', primaryColor());
   });
 
   return (
-    <MetaProvider>
+    <Router
+      root={(props) => (
+        <MetaProvider>
+          <Meta name="theme-color" content={rgbToHex(...primaryColorHEX())} />
 
-      <Router
-        root={(props) => (
-          <>
-            <Meta name="theme-color" content={rgbToHex(...primaryColorHEX())} />
+          <UpdaterModal />
+          <LessonModal />
 
-            <UpdaterModal />
-            <LessonModal />
-
-            <Suspense>{props.children}</Suspense>
-          </>
-        )}
-        >
-        <FileRoutes />
-      </Router>
-    </MetaProvider>
+          <Suspense>{props.children}</Suspense>
+        </MetaProvider>
+      )}
+    >
+      <FileRoutes />
+    </Router>
   );
 }
