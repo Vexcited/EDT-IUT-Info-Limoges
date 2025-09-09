@@ -3,6 +3,5 @@
   "framework": "solidstart-1",
   "installCommand": "bun install",
   "devCommand": "bun website:dev",
-  "buildCommand": "bun full:build",
-  "outputDirectory": "packages/website/.vercel/output"
+  "buildCommand": "bun full:build"
 }
