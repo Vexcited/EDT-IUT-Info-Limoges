@@ -77,7 +77,7 @@ const SwiperView: Component<{
    * the screen is larger or equal to a tablet screen.
    */
   const isTablet = createMediaQuery("(min-width: 768px)");
-  
+
   // Needed for fixed height timetable feature.
   const shouldUseFixedHeightDays = () => getUserCustomizationKey("use_fixed_height");
   const windowSize = useWindowSize();
@@ -335,12 +335,12 @@ const SwiperView: Component<{
                     </p>
                   </div>
                   <div class="flex gap-3 items-center w-full text-[rgb(240,240,240)]">
-                    <button type="button" class="p-1 bg-red/20 hover:bg-red active:bg-red/60 transition border border-red rounded-full laptop-sm:(w-auto p-1.5) w-full flex justify-center items-center"
+                    <button type="button" class="p-1 bg-red/20 hover:bg-red active:bg-red/60 border border-red rounded-full laptop-sm:(w-auto p-1.5) w-full flex justify-center items-center"
                       onClick={() => goToPreviousWeek()}
                     >
                       <MdiChevronLeft class="text-lg" />
                     </button>
-                    <button type="button" class="p-1 bg-red/20 hover:bg-red active:bg-red/60 transition border border-red rounded-full laptop-sm:(w-auto p-1.5) w-full flex justify-center items-center"
+                    <button type="button" class="p-1 bg-red/20 hover:bg-red active:bg-red/60 border border-red rounded-full laptop-sm:(w-auto p-1.5) w-full flex justify-center items-center"
                       onClick={() => goToNextWeek()}
                     >
                       <MdiChevronRight class="text-lg" />

@@ -105,7 +105,7 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
             Ajustez le sous-groupe dans lequel vous êtes (ex.: G{preferences.main_group}A ou G{preferences.main_group}B)
           </p>
         </section>
-        
+
         <section>
           <div class="flex items-center gap-2 mb-2">
             <h3 class="text-[rgb(240,240,240)] text-[18px] flex">
@@ -116,18 +116,18 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
               style={{ "background-color": `rgb(${userPrimaryColor()})` }}
             ></div>
           </div>
-                   
-          <DefaultColorPicker format="rgb" value={"rgb(" + userPrimaryColor() + ")"} onChange={color => {     
+
+          <DefaultColorPicker format="rgb" value={"rgb(" + userPrimaryColor() + ")"} onChange={color => {
             if (color === pastColor) return;
-            
+
             pastColor = color;
             color = color.replace("rgb(", "").replace(")", "");
             setUserCustomization({
               ...preferences.customization,
               primary_color: color
             });
-          }} />
-          
+          }} lang="fr" />
+
         </section>
 
         <section>
@@ -179,7 +179,7 @@ export const SettingsModal: Component<{ open: boolean, setOpen: Setter<boolean> 
           Zone dangereuse
         </h3>
 
-        <button class="w-full text-center border border-red text-red hover:bg-red/10 active:bg-red/20 transition px-3 py-1 rounded-lg"
+        <button class="w-full text-center border border-red text-red hover:bg-red/10 active:bg-red/20 px-3 py-1 rounded-lg"
           type="button"
           onClick={async () => {
             await resetAppCache();

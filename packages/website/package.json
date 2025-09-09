@@ -27,7 +27,7 @@
     "@solidjs/meta": "^0.29.4",
     "@solidjs/router": "^0.15.3",
     "@solidjs/start": "^1.1.7",
-    "@thednp/solid-color-picker": "^0.0.7",
+    "@thednp/solid-color-picker": "^0.0.14",
     "@unocss/reset": "^66.5.1",
     "edt-iut-info-limoges": "workspace:*",
     "ics": "^3.8.1",
