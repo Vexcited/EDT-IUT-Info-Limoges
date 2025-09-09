@@ -1,4 +1,4 @@
-import { type Component, For, Show } from "solid-js";
+import { type Component, createMemo, For, Show } from "solid-js";
 import type { ITimetableHeader, ITimetableLesson } from "~/types/api";
 
 import MobileDayTimetableLesson from "./lesson";
@@ -6,6 +6,7 @@ import { getDayFromTimetable, getDayString } from "~/utils/dates";
 
 import MdiCheck from '~icons/mdi/check';
 import { textColorOnBG } from "~/stores/preferences";
+import { now } from "~/stores/temporary";
 
 const MobileDayTimetable: Component<{
   header: ITimetableHeader;
@@ -15,8 +16,7 @@ const MobileDayTimetable: Component<{
 }> = (props) => {
   const day = () => getDayFromTimetable(props.header, props.dayIndex);
 
-  const now = new Date();
-  const dayIsDone = () => {
+  const dayIsDone = createMemo(() => {
     // if there's no lessons, it's always `true`.
     if (props.lessons.length === 0) return true;
 
@@ -24,8 +24,8 @@ const MobileDayTimetable: Component<{
     // if we don't find the last lesson, it means there's nothing so `true`.
     if (!lastLesson) return true;
 
-    return now >= new Date(lastLesson.end_date);
-  };
+    return now().toMillis() >= new Date(lastLesson.end_date).getTime();
+  });
 
   return (
     <div class="w-full relative pt-6">
