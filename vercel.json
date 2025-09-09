@@ -4,5 +4,5 @@
   "installCommand": "bun install",
   "devCommand": "bun website:dev",
   "buildCommand": "bun full:build",
-  "outputDirectory": "packages/website/.output"
+  "outputDirectory": "packages/website/.vercel/output"
 }
