@@ -56,7 +56,7 @@
     "terser": "^5.28.1",
     "tsup": "^7.2.0"
   },
-  "author": "Mikkel RINGAUD <mikkel@milescode.dev> (https://github.com/Vexcited)",
+  "author": "Mikkel ALMONTE--RINGAUD <contact@vexcited.com> (https://github.com/Vexcited)",
   "repository": "github:Vexcited/EDT-IUT-Info-Limoges",
   "dependencies": {
     "@literate.ink/pdf-inspector": "^1.0.0",
