@@ -1,4 +1,4 @@
-import { type APIEvent } from "solid-start/api";
+import { type APIEvent } from "@solidjs/start/server";
 import { YEARS } from "edt-iut-info-limoges";
 import { jsonWithCors } from "~/utils/cors";
 
@@ -32,7 +32,7 @@ export const GET = async ({ params, request }: APIEvent) => {
   }
 
   const entries = await getCachedEntries(year);
-  
+
   const timetable_entry = entries.find(entry => entry.week_number === week_number);
   if (!timetable_entry) {
     return jsonWithCors({

@@ -30,8 +30,8 @@ Avec ${lesson.content.teacher} en salle ${lesson.content.room}.
   }));
 
   if (error || !value) {
+    alert("Une erreur s'est produit lors de la génération du fichier ICS, voir la console.");
     console.error(error);
-    alert("Une erreur s'est produit lors de la génération du fichier ICS.");
     return;
   }
 

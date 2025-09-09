@@ -1,4 +1,4 @@
-import { type APIEvent } from "solid-start/api";
+import { type APIEvent } from "@solidjs/start/server";
 import { YEARS } from "edt-iut-info-limoges";
 import { jsonWithCors } from "~/utils/cors";
 

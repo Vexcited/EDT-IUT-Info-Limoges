@@ -23,14 +23,11 @@ const [temporaryTimetablesStore, setTemporaryTimetablesStore] = createStore<Reco
 
 /**
  * Simplified getter for the temporary store.
- * 
- * @param year 
- * @param week_number 
+ *
+ * @param year
+ * @param week_number
  */
 export const getTemporaryTimetablesStore = (year: number, week_number: number): ITimetable | null => {
-  // Debug.
-  console.info("[getTemporaryTimetablesStore]:", year, week_number);
-
   // When we're loading, so current week is `-1` and next week may be `-1 | 0`, we don't want to show anything.
   if (week_number < 1) null;
   return temporaryTimetablesStore[makeYearSTR(year)][makeWeekSTR(week_number)] ?? null;
@@ -67,18 +64,12 @@ const getTimetableMetaStore = async (year: number, forceRefreshAll = false): Pro
       if (diff < 1000 * 60 * 60 * 12) {
         // if we don't force refresh all, we can return the cache.
         if (!forceRefreshAll) {
-          // Debug.
-          console.info("[getTimetableMetaStore]: retrieved cache from store.");
           return stored_meta;
         }
       }
       else {
-        // Debug.
-        console.info("[getTimetableMetaStore]: cache is outdated, fetching again...");
-
         try {
-          const renewed_meta = await renew();
-          return renewed_meta;
+          return renew();
         }
         catch {
           // No internet connection, return the old cache.
@@ -90,9 +81,7 @@ const getTimetableMetaStore = async (year: number, forceRefreshAll = false): Pro
   }
 
   try {
-    console.info("[getTimetableMetaStore]: cache is empty, fetching all timetables...");
-    const meta = await renew();
-    return meta;
+    return renew();
   }
   catch {
     if (forceRefreshAll && stored_meta) {
@@ -155,12 +144,12 @@ const fetchTimetableWithoutCache = async (year: number, week_number: number): Pr
   try {
     const response = await fetch("/api/timetable/" + makeYearSTR(year) + "/" + week_number.toString());
     if (response.status === 404) throw new APIError(APIErrorType.NOT_FOUND);
-  
+
     const { data: timetable } = await response.json() as { data: ITimetable };
     await getTimetableStore(makeYearSTR(year)).setItem<ITimetable & { last_fetch: number }>(
       makeWeekSTR(week_number), { ...timetable, last_fetch: Date.now() }
     );
-  
+
     // TODO: update data in meta store.
     return timetable;
   }
@@ -178,7 +167,7 @@ const fetchTimetableWithoutCache = async (year: number, week_number: number): Pr
  * This value will then be reactive in the views that use it,
  * and can be refreshed in background without having to wait
  * until the end of the request - if any was done.
- * 
+ *
  * @param year - ex.: `1`
  * @param week_number - ex.: `12`
  */
@@ -195,9 +184,8 @@ export const refreshTimetableForWeekNumber = async (year: number, week_number: n
     const now = Date.now();
     const diff = now - stored_timetable.last_fetch;
 
-    // It's not "outdated" (renew every hours), we keep it like that.      
+    // It's not "outdated" (renew every hours), we keep it like that.
     if (diff < 1000 * 60 * 60) {
-      console.info(`[refreshTimetableForWeekNumber][${year}][${week_number}]: keeping cache as it's not outdated yet.`);
       return;
     }
   }

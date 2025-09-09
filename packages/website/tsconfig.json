@@ -2,14 +2,14 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    
+
     "moduleResolution": "Bundler",
     "target": "ESNext",
     "module": "ESNext",
 
     "jsxImportSource": "solid-js",
     "jsx": "preserve",
-    
+
     "strict": true,
     "noEmit": true,
     "allowJs": true,
@@ -20,7 +20,7 @@
     },
 
     "types": [
-      "solid-start/env",
+      "vinxi/types/client",
       "vite-plugin-pwa/solid",
       "unplugin-icons/types/solid"
     ]

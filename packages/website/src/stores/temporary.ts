@@ -18,11 +18,9 @@ let __cached_interval: ReturnType<typeof setInterval> | undefined;
 export const initializeNowRefresh = () => {
   // Clear if already initialized before.
   if (__cached_interval) {
-    console.info("[temporary]: clear already initialized `now()` interval.");
     clearInterval(__cached_interval);
   }
 
-  console.info("[temporary]: setup `now()` interval.");
   __cached_interval = setInterval(() => {
     setNow(DateTime.now());
   }, 1000 * 10);

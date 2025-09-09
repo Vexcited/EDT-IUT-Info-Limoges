@@ -1,2 +1,4 @@
-import { mount, StartClient } from "solid-start/entry-client";
-mount(() => <StartClient />, document);
+// @refresh reload
+import { mount, StartClient } from "@solidjs/start/client";
+
+mount(() => <StartClient />, document.getElementById("app")!);

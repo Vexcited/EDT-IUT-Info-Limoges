@@ -30,7 +30,7 @@ const Page: Component = () => {
   /**
    * Handles the current week number signal, and
    * also handles vacation weeks.
-   * 
+   *
    * @returns - Current week number or `-1` whenever an error has been thrown.
    * In that case, an error overlay should be displayed in the UI using the `error()` signal.
    */
@@ -41,11 +41,11 @@ const Page: Component = () => {
 
       // We get the current week number using timetables meta.
       const currentWeekNumber = await getDayWeekNumber(now(), preferences.year);
-      
+
       // We don't await the refresh.
       refreshTimetableForWeekNumber(preferences.year, currentWeekNumber);
       refreshTimetableForWeekNumber(preferences.year, currentWeekNumber + 1); // We also refresh the next week.
-      
+
       // We set the current week number signal.
       setCurrentWeekNumber(currentWeekNumber);
       return currentWeekNumber;
@@ -61,7 +61,7 @@ const Page: Component = () => {
           // We don't await the refresh.
           refreshTimetableForWeekNumber(preferences.year, currentWeekNumber);
           refreshTimetableForWeekNumber(preferences.year, currentWeekNumber + 1); // We also refresh the next week.
-          
+
           setCurrentlyInVacation(true);
           setCurrentWeekNumber(currentWeekNumber);
           return currentWeekNumber;
@@ -72,7 +72,7 @@ const Page: Component = () => {
         setError(error.message);
         return -1;
       }
-      
+
       setCurrentWeekNumber(-1);
       console.error("unhandled:", error);
       setError("Erreur inconnue(2): voir la console.");
@@ -110,15 +110,13 @@ const Page: Component = () => {
   createEffect(on(selectedWeekNumber, (selectedWeekNumber) => {
     if (selectedWeekNumber === last_selected_week_number) return;
     last_selected_week_number = selectedWeekNumber;
-
-    console.info("[createEffect(on(selected))]: selected week changed, refreshing selected timetable.");
     refreshSelectedTimetable();
   }));
 
   /**
    * Handle whenever the current week number changes
    * while we are in the app.
-   * 
+   *
    * Example: The app is opened Sunday at 23:59, and
    * the week changes to the next one. We'll update
    * the current week number.
@@ -128,7 +126,6 @@ const Page: Component = () => {
     if (now.weekNumber === last_now.weekNumber) return;
     last_now = now;
 
-    console.info("[createEffect(on(now))]: week changed, refreshing current timetable.");
     refreshCurrentWeekNumber();
   }));
 
@@ -137,8 +134,7 @@ const Page: Component = () => {
   createEffect(on(() => preferences.year, (year) => {
     if (year === last_year_state) return;
     last_year_state = year;
-    
-    console.info("[createEffect(on(year))]: year preference changed, refreshing timetables.");
+
     refreshCurrentWeekNumber();
     refreshSelectedTimetable();
   }));

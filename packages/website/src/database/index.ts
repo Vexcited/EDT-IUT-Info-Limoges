@@ -29,7 +29,7 @@ if (!MONGODB_URI) throw new Error(
 /**
  * By the way, entries are sorted by week number
  * in the library so we don't have to do it manually here.
- * 
+ *
  * So the first item of an entry is **always** the latest
  * timetable entry.
  */
@@ -81,8 +81,6 @@ export async function getCachedEntries(year: YEARS): Promise<TimetableEntry[]> {
 
     // is not older than 2 minutes (renew every 2 minutes)
     if (diff < 1000 * 60 * 2) {
-      // Debug.
-      console.info(`[CACHE][${year}] / recovered`, cache.entries.length, "entries");
       entries = cache.entries;
     }
   }
@@ -135,9 +133,6 @@ export async function getCachedTimetable(entry: TimetableEntry): Promise<ITimeta
 
     // is not older than four hour (renew every 4 hours)
     if (diff < 1000 * 60 * 60 * 4) {
-      // Debug.
-      console.info(`[DB][CACHE][${entry.from_year}]`, db_timetable.header.week_number);
-
       timetable = {
         header: db_timetable.header,
         lessons: db_timetable.lessons,
@@ -157,9 +152,6 @@ export async function getCachedTimetable(entry: TimetableEntry): Promise<ITimeta
 
     // Means we already have the timetable inside the DB.
     if (shouldUpdateDatabase) {
-      // Debug.
-      console.info(`[DB][UPDATE][${entry.from_year}]`, timetable.header.week_number);
-
       // Update the timetable in the database.
       await DBTimetable(entry.from_year).findOneAndUpdate({
         "header.week_number": timetable.header.week_number
@@ -172,9 +164,6 @@ export async function getCachedTimetable(entry: TimetableEntry): Promise<ITimeta
     }
     // Otherwise, we don't have the timetable inside the DB.
     else {
-      // Debug.
-      console.info(`[DB][INSERT][${entry.from_year}]`, timetable.header.week_number);
-
       // Save the timetable to the database.
       await DBTimetable(entry.from_year).create({
         last_fetch,

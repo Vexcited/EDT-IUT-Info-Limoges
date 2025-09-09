@@ -1,9 +1,9 @@
-import { defineConfig, presetUno, transformerVariantGroup } from "unocss";
+import { defineConfig, presetWind3, transformerVariantGroup } from "unocss";
 import { presetKobalte } from "unocss-preset-primitives";
 
 export default defineConfig({
   // @ts-expect-error : This is a custom property.
-  presets: [presetUno(), presetKobalte()],
+  presets: [presetWind3(), presetKobalte()],
   transformers: [transformerVariantGroup()],
 
   theme: {

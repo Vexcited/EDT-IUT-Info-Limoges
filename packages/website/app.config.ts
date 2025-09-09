@@ -1,26 +1,16 @@
+import { defineConfig } from "@solidjs/start/config";
+
 import unocss from "unocss/vite";
-import solid from "solid-start/vite";
 import icons from "unplugin-icons/vite";
 import { VitePWA as pwa } from "vite-plugin-pwa";
 
-import { defineConfig } from "vite";
-
-import node from "solid-start-node";
-import vercel from "solid-start-vercel";
-
 export default defineConfig({
-  plugins: [
-    unocss(),
-
-    solid({
-      ssr: false,
-      // If we're building using Vercel, use the Vercel adapter.
-      adapter: process.env.VERCEL ? vercel({ edge: false }) : node()
-    }),
-
-    icons({ compiler: "solid" }),
-
-    pwa({
+  ssr: false,
+  server: {
+    preset: process.env.VERCEL ? "vercel" : "node"
+  },
+  vite: {
+    plugins: [icons({ compiler: "solid" }), unocss(), pwa({
       base: "/",
       registerType: "prompt",
       injectRegister: "auto",
@@ -95,10 +85,10 @@ export default defineConfig({
         display: "standalone",
         orientation: "portrait"
       }
-    })
-  ],
-
-  define: {
+    })],
+    define: {
     __APP_COMMIT_SHA__: JSON.stringify(process.env.VERCEL_GIT_COMMIT_SHA || "dev")
-  }
+
+    }
+  },
 });
