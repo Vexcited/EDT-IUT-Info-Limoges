@@ -1,9 +1,11 @@
-import { type Component, onMount, onCleanup, createSignal, Show } from "solid-js";
+import { type Component, onMount, onCleanup, createSignal, Show, createMemo } from "solid-js";
 import type { ITimetableLesson } from "~/types/api";
 import { DateTime } from "luxon";
 
 import { getLessonContentType } from "~/utils/lessons";
 import { textColorOnBG } from "~/stores/preferences";
+import { now } from "~/stores/temporary";
+import { getRelativeRemainingTime } from "~/utils/dates";
 
 // When we're actually in a lesson, we also get the content of next lesson for preview.
 export interface IOngoingWidget {
@@ -13,22 +15,12 @@ export interface IOngoingWidget {
 }
 
 const OngoingWidget: Component<IOngoingWidget> = (props) => {
-  const getRemainingTime = () => DateTime.fromISO(props.lesson.end_date).setLocale("fr").toRelative();
-  const getNextLessonRemainingTime = () => props.next_lesson ? DateTime.fromISO(props.next_lesson.start_date).setLocale("fr").toRelative() : null;
-  const [remaining, setRemaining] = createSignal(getRemainingTime());
-  const [nextLessonRemaining, setNextLessonRemaining] = createSignal(getNextLessonRemainingTime());
+  const remaining = createMemo(() => getRelativeRemainingTime(now(), DateTime.fromISO(props.lesson.end_date)))
 
-  let interval: ReturnType<typeof setInterval> | undefined;
-  onMount(() => {
-    interval = setInterval(() => {
-      setRemaining(getRemainingTime());
-      setNextLessonRemaining(getNextLessonRemainingTime());
-    }, 1000 * 60); // update every minutes
-  });
-
-  onCleanup(() => {
-    if (typeof interval !== "undefined") clearInterval(interval);
-  });
+  const nextLessonRemaining = createMemo(() => {
+    if (!props.next_lesson) return null;
+    return getRelativeRemainingTime(now(), DateTime.fromISO(props.next_lesson.start_date))
+  })
 
   return (
     <div class="px-4 flex text-sm divide-x-2 divide-[rgb(50,50,50)]">
@@ -55,7 +47,7 @@ const OngoingWidget: Component<IOngoingWidget> = (props) => {
         </div>
 
         <p class="text-xs pt-2 text-[rgb(200,200,200)]">
-          Fin <span class="text-red">{remaining()}</span>
+          Fin <span class="text-red">dans {remaining()}</span>
         </p>
       </div>
 
@@ -80,7 +72,7 @@ const OngoingWidget: Component<IOngoingWidget> = (props) => {
             </div>
 
             <p class="text-xs pt-2 text-[rgb(200,200,200)]">
-              Débute <span class="text-red">{nextLessonRemaining() === remaining() ? "à la suite" : nextLessonRemaining()}</span>
+              Débute <span class="text-red">{nextLessonRemaining() === remaining() ? "à la suite" : "dans " + nextLessonRemaining()}</span>
             </p>
           </div>
         )}

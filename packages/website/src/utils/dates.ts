@@ -3,7 +3,7 @@ import { DateTime } from "luxon";
 import { now } from "~/stores/temporary";
 
 /**
- * @returns - In format "(H)H" + "h" + ("(m)m" if not 0) 
+ * @returns - In format "(H)H" + "h" + ("(m)m" if not 0)
  */
 export const hoursAndMinutesBetween = (timeEnd: Date, timeStart: Date): string => {
   const hourDiff = timeEnd.getTime() - timeStart.getTime();
@@ -79,7 +79,7 @@ export const getGreeting = () => {
 
 /**
  * @see <https://stackoverflow.com/a/6117889>
- * @param d - The date we want to take the week number from. 
+ * @param d - The date we want to take the week number from.
  * @returns - The week number of the given date.
  */
 export const getWeekNumber = (d: Date) => {
@@ -99,3 +99,13 @@ export const getWeekNumber = (d: Date) => {
 
   return weekNo;
 };
+
+export const getRelativeRemainingTime = (now: DateTime, end: DateTime): string => {
+  const diff = end.diff(now, ["hours", "minutes"]).toObject();
+
+  const hours = Math.floor(diff.hours ?? 0);
+  const minutes = Math.floor(diff.minutes ?? 0);
+
+  if (hours > 0) return `${hours}h ${minutes}min`;
+  return `${minutes}min`;
+}
