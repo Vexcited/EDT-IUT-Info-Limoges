@@ -26,6 +26,6 @@
     ]
   },
 
-  "include": ["src", "vite.config.ts", "uno.config.ts", ".eslintrc.cjs"],
-  "exclude": ["node_modules", "dist", ".solid"]
+  "include": ["src", "app.config.ts", "uno.config.ts"],
+  "exclude": ["node_modules", "dist", ".vinxi", ".solid"]
 }
