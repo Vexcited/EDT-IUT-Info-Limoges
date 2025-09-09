@@ -1,7 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "solidstart-1",
-  "installCommand": "bun install",
-  "devCommand": "bun website:dev",
-  "buildCommand": "bun full:build"
+  "installCommand": "bun install && bun run --filter edt-iut-info-limoges build",
+  "buildCommand": "bun run build"
 }

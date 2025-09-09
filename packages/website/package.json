@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vinxi dev",
-    "build": "vinxi build && bun scripts/pwa.ts",
-    "start": "vinxi start"
+    "build": "vinxi build && bun scripts/pwa.ts"
   },
   "devDependencies": {
     "@iconify-json/mdi": "^1.2.3",
