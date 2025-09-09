@@ -1,21 +1,14 @@
-# Production
 dist
 .solid
 .output
 .vercel
+.vinxi
 
-# Dependencies
 node_modules
 
-# Miscs
 .DS_Store
 Thumbs.db
 tests/*.json
-vite.config.ts.*
 
-# Prevent from committing the bundle
-/packages/library/src/converter/pdfjs_bundle.ts
-
-# dotenv
 .env*
 !.env.sample

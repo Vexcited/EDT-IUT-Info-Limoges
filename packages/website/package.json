@@ -1,17 +1,17 @@
 {
-  "name": "@edt-iut-info-limoges/website",
+  "name": "edt-iut-info-limoges-website",
   "private": true,
   "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vinxi dev",
-    "build": "vinxi build",
+    "build": "vinxi build && bun scripts/pwa.ts",
     "start": "vinxi start"
   },
   "devDependencies": {
     "@iconify-json/mdi": "^1.2.3",
+    "@types/bun": "^1.1.14",
     "@types/luxon": "^3.7.1",
-    "@types/node": "^24.3.1",
     "typescript": "^5.9.2",
     "unocss": "^66.5.1",
     "unocss-preset-primitives": "0.0.2-beta.2",

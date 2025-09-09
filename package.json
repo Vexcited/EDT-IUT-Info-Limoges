@@ -4,12 +4,12 @@
     "packages/*"
   ],
   "scripts": {
-    "library:release": "pnpm --filter edt-iut-info-limoges run release",
-    "library:test": "pnpm --filter edt-iut-info-limoges run test",
-    "library:build": "pnpm --filter edt-iut-info-limoges run build",
-    "website:dev": "pnpm --filter edt-iut-info-limoges-website run dev",
-    "website:build": "pnpm --filter edt-iut-info-limoges-website run build",
-    "full:build": "pnpm run library:build && pnpm run website:build"
+    "library:release": "bun run --filter edt-iut-info-limoges release",
+    "library:test": "bun run --filter edt-iut-info-limoges test",
+    "library:build": "bun run --filter edt-iut-info-limoges build",
+    "website:dev": "bun run --filter edt-iut-info-limoges-website dev",
+    "website:build": "bun run --filter edt-iut-info-limoges-website build",
+    "full:build": "bun run library:build && bun run website:build"
   },
   "private": true,
   "license": "MIT",
