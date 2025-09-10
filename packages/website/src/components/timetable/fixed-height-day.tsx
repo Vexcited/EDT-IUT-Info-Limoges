@@ -92,7 +92,7 @@ const FixedHeightDayTimetableLesson: Component<{
             }} />
           </Show>
 
-          <div class="focusable-lesson-for-swiper border-t border-t-red select-none transition-colors cursor-pointer overflow-hidden"
+          <button type="button" class="focusable-lesson-for-swiper w-full text-left flex border-t border-t-red select-none transition-colors cursor-pointer overflow-hidden"
             style={{
               height: (lessonHeight() * currentDurationLength()) + "px"
             }}
@@ -102,7 +102,7 @@ const FixedHeightDayTimetableLesson: Component<{
               "bg-[rgb(30,30,30)] hover:bg-[rgb(34,34,34)]": !isCurrentlyInLesson()
             }}
           >
-            <div class="flex justify-between px-4 pt-2 gap-4">
+            <div class="w-full flex justify-between px-4 pt-2 gap-4">
               <p class="text-[rgb(240,240,240)]"
                 classList={{
                   "text-sm": currentDurationLength() > 1,
@@ -111,7 +111,7 @@ const FixedHeightDayTimetableLesson: Component<{
               >
                 <span class="text-red font-medium">{lesson().type}</span> : {getLessonDescription(lesson())}
               </p>
-              <div class="flex gap-2.5 items-center">
+              <div class="flex gap-2.5 pt-2px">
                 <Show when={isCurrentlyInLesson()}>
                   <div class="size-4px rd-full bg-red mr-4px animate-ping" />
                 </Show>
@@ -126,7 +126,7 @@ const FixedHeightDayTimetableLesson: Component<{
                 </p>
               </div>
             </div>
-          </div>
+          </button>
         </>
       )}
     </Show>
