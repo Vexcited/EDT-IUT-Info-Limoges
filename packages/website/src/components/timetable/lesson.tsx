@@ -54,7 +54,7 @@ const MobileDayTimetableLesson: Component<{
 
       <Delimiter date={start_date()} />
 
-      <div class="focusable-lesson-for-swiper select-none py-1.5"
+      <button type="button" class="focusable-lesson-for-swiper w-full text-left select-none py-1 cursor-pointer"
         onClick={() => setLessonModalData(props.lesson)}
       >
         <div class="flex flex-col gap-2 py-1.5 px-4 hover:bg-[rgb(28,28,28)] transition-colors">
