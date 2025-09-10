@@ -1,4 +1,4 @@
-import { type Component, For, Show } from "solid-js";
+import { type Component, createMemo, For, Show } from "solid-js";
 import { useWindowSize } from "@solid-primitives/resize-observer";
 import type { ITimetableHeader, ITimetableLesson } from "~/types/api";
 
@@ -9,6 +9,7 @@ import { getLessonDescription } from "~/utils/lessons";
 import MdiCheck from '~icons/mdi/check';
 import { setLessonModalData } from "../modals/Lesson";
 import { textColorOnBG } from "~/stores/preferences";
+import { now } from "~/stores/temporary";
 
 const FixedHeightDayTimetableLesson: Component<{
   lessons: ITimetableLesson[]
@@ -26,7 +27,7 @@ const FixedHeightDayTimetableLesson: Component<{
     if (lessonIndex === -1) return;
     return props.lessons[lessonIndex - 1];
   }
-  
+
   const currentDurationLength = () => {
     if (!props.lesson) return 0;
     const start_date = new Date(props.lesson.start_date);
@@ -48,17 +49,17 @@ const FixedHeightDayTimetableLesson: Component<{
 
     const start_date = new Date(props.lesson.start_date);
     const end_date = new Date(l_before.end_date);
-  
+
     const isNotSameHour = start_date.getHours() !== end_date.getHours();
     const isNotSameMinutes = start_date.getMinutes() !== end_date.getMinutes();
-    
-    return isNotSameHour || isNotSameMinutes; 
+
+    return isNotSameHour || isNotSameMinutes;
   };
 
   const breakDurationLength = () => {
     if (!props.lesson) return 0;
     const start_date = new Date(props.lesson.start_date);
-    
+
     let end_index = 0; // When there's no lesson before, it's the start of day.
     const l_before = lesson_before();
     if (l_before) {
@@ -73,6 +74,14 @@ const FixedHeightDayTimetableLesson: Component<{
     return start_index - end_index;
   };
 
+  const isCurrentlyInLesson = createMemo(() => {
+    if (!props.lesson) return false;
+    const start = new Date(props.lesson.start_date);
+    const end = new Date(props.lesson.end_date);
+
+    return now().toMillis() < end.getTime() && now().toMillis() >= start.getTime()
+  })
+
   return (
     <Show when={props.lesson}>
       {lesson => (
@@ -82,12 +91,16 @@ const FixedHeightDayTimetableLesson: Component<{
               height: (lessonHeight() * breakDurationLength()) + "px"
             }} />
           </Show>
-          
-          <div class="focusable-lesson-for-swiper border-t border-t-red select-none bg-[rgb(30,30,30)] hover:bg-[rgb(38,38,38)] transition-colors cursor-pointer overflow-hidden"
+
+          <div class="focusable-lesson-for-swiper border-t border-t-red select-none transition-colors cursor-pointer overflow-hidden"
             style={{
               height: (lessonHeight() * currentDurationLength()) + "px"
             }}
             onClick={() => setLessonModalData(lesson())}
+            classList={{
+              "bg-[rgb(42,42,42)]": isCurrentlyInLesson(),
+              "bg-[rgb(30,30,30)] hover:bg-[rgb(34,34,34)]": !isCurrentlyInLesson()
+            }}
           >
             <div class="flex justify-between px-4 pt-2 gap-4">
               <p class="text-[rgb(240,240,240)]"
@@ -98,15 +111,20 @@ const FixedHeightDayTimetableLesson: Component<{
               >
                 <span class="text-red font-medium">{lesson().type}</span> : {getLessonDescription(lesson())}
               </p>
-              <p class="bg-red rounded-full font-medium px-3 h-fit"
-                classList={{
-                  "text-sm py-.5": currentDurationLength() > 1,
-                  "text-xs py-0": currentDurationLength() === 1
-                }}
-                style={{ color: textColorOnBG() }}
-              >
-                {lesson().content.room}
-              </p>
+              <div class="flex gap-2.5 items-center">
+                <Show when={isCurrentlyInLesson()}>
+                  <div class="size-4px rd-full bg-red mr-4px animate-ping" />
+                </Show>
+                <p class="bg-red rounded-full font-medium px-3 h-fit"
+                  classList={{
+                    "text-sm py-.5": currentDurationLength() > 1,
+                    "text-xs py-0": currentDurationLength() === 1
+                  }}
+                  style={{ color: textColorOnBG() }}
+                >
+                  {lesson().content.room}
+                </p>
+              </div>
             </div>
           </div>
         </>
