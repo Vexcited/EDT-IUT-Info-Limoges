@@ -117,7 +117,7 @@ export const BUT_INFO_REF = {
   // .Real.
   "R5A.04": "Qualité algorithmique",
   "R5A.05": "Programmation avancée",
-  "R5A.06": "Pogrammation multimédia",
+  "R5A.06": "Programmation multimédia",
   "R5A.07": "Automatisation de la chaîne de production",
   "R5A.08": "Qualité de développement",
   "R5A.09": "Virtualisation avancée",
