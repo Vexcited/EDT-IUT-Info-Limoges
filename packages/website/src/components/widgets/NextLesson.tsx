@@ -1,4 +1,4 @@
-import { type Component, onMount, onCleanup, createSignal } from "solid-js";
+import { type Component, onMount, onCleanup, createSignal, createMemo } from "solid-js";
 import type { ITimetableLesson } from "~/types/api";
 import { DateTime } from "luxon";
 
@@ -7,8 +7,9 @@ import {
   getLessonDescription
 } from "~/utils/lessons";
 
-import { getHourString } from "~/utils/dates";
+import { getHourString, getRelativeRemainingTime } from "~/utils/dates";
 import { textColorOnBG } from "~/stores/preferences";
+import { now } from "~/stores/temporary";
 
 // When it's first lesson of the day.
 export interface INextLessonWidget {
@@ -17,19 +18,7 @@ export interface INextLessonWidget {
 }
 
 const NextLessonWidget: Component<INextLessonWidget> = (props) => {
-  const getRemainingTime = () => DateTime.fromISO(props.lesson.start_date).setLocale("fr").toRelative();
-  const [remaining, setRemaining] = createSignal(getRemainingTime());
-
-  let interval: ReturnType<typeof setInterval> | undefined;
-  onMount(() => {
-    interval = setInterval(() => {
-      setRemaining(getRemainingTime());
-    }, 1000 * 60); // update every minutes
-  });
-
-  onCleanup(() => {
-    if (typeof interval !== "undefined") clearInterval(interval);
-  });
+  const remaining = createMemo(() => getRelativeRemainingTime(now(), DateTime.fromISO(props.lesson.start_date)))
 
   return (
     <div class="py-3 px-4">
@@ -56,7 +45,7 @@ const NextLessonWidget: Component<INextLessonWidget> = (props) => {
         </p>
 
         <p class="text-xs text-[rgb(200,200,200)] ">
-          Commence {remaining()} (à {getHourString(new Date(props.lesson.start_date))})
+          Commence dans {remaining()} (à {getHourString(new Date(props.lesson.start_date))})
         </p>
       </div>
     </div>
