@@ -115,7 +115,7 @@ const LessonModal: Component = () => {
                   <TextField.TextArea
                     class="inline-flex w-full rounded-lg px-5 py-3 bg-[rgb(38,38,38)] text-[rgb(210,210,210)] outline-none focus:outline-red"
                     value={getPersonalNotesForID(lessonID()!)}
-                    onInput={e => setPersonalNotesForID(lessonID()!, e.target.value)}
+                    onInput={e => setPersonalNotesForID(lessonID()!, e.currentTarget.value)}
                     autoResize
                   />
                   <TextField.Description class="text-[rgb(120,120,120)] text-xs">
