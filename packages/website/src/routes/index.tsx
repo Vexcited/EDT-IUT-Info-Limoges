@@ -166,6 +166,7 @@ const Page: Component = () => {
         currentWeekHeader={currentWeekTimetable()?.header}
         nextWeekLessons={nextWeekTimetableLessons()}
         nextWeekHeader={nextWeekTimetable()?.header}
+        selectedWeekLessons={selectedTimetableLessons()}
         selectedWeekNumber={selectedWeekNumber()}
         setWeekNumber={setSelectedWeekNumber}
         isCurrentlyInVacation={isCurrentlyInVacation()}

@@ -2,7 +2,7 @@ import { type Component, type Setter, createSignal, createEffect, createMemo, on
 import type { ITimetableHeader, ITimetableLesson } from "~/types/api";
 import { createMediaQuery } from "@solid-primitives/media";
 import { useWindowSize } from "@solid-primitives/resize-observer";
-import { DateTime } from "luxon";
+import { DateTime, Duration } from "luxon";
 
 import MdiFileDocumentAlertOutline from "~icons/mdi/file-document-alert-outline";
 import MdiChevronRight from "~icons/mdi/chevron-right";
@@ -66,6 +66,7 @@ const SwiperView: Component<{
   nextWeekLessons?: ITimetableLesson[];
   nextWeekHeader?: ITimetableHeader;
   // Week number selected, defaults to current week.
+  selectedWeekLessons?: ITimetableLesson[];
   selectedWeekNumber: number;
   setWeekNumber: Setter<number>;
   // Other properties defined in initialization.
@@ -218,6 +219,28 @@ const SwiperView: Component<{
     });
   }));
 
+  const timingsOfLessonsInWeek = createMemo(() => {
+    if (!props.selectedWeekLessons) return;
+    const durations = props.selectedWeekLessons.map(lesson => {
+      const startDate = DateTime.fromISO(lesson.start_date).setLocale("fr-FR");
+      const endDate = DateTime.fromISO(lesson.end_date).setLocale("fr-FR");
+      return endDate.diff(startDate, ["hours", "minutes"]);
+    });
+
+    const time = durations.reduce((acc, curr) => {
+    return acc.plus(curr)
+  }, Duration.fromMillis(0));
+
+    const normalized = time.normalize();
+    let output = normalized.hours + "h";
+
+    if (normalized.minutes > 0) {
+      output += normalized.minutes;
+    }
+
+    return output;
+  });
+
   return (
     <>
       <header class="relative z-20 p-4 pb-2 bg-red flex justify-between items-center"
@@ -327,6 +350,13 @@ const SwiperView: Component<{
                   <div class="flex flex-col flex-shrink-0">
                     <p class="text-lg text-[rgb(240,240,240)]">
                       {props.selectedWeekNumber === -1 ? "Récupération..." : `Semaine ${props.selectedWeekNumber}`}
+                      <Show when={timingsOfLessonsInWeek()}>
+                        {timings => (
+                          <span class="ml-8px text-sm text-[rgb(150,150,150)]">
+                            {timings()}
+                          </span>
+                        )}
+                      </Show>
                     </p>
                     <p class="text-sm text-[rgb(190,190,190)]">
                       {props.header ? (
@@ -360,6 +390,13 @@ const SwiperView: Component<{
             <div class="flex flex-col flex-shrink-0">
               <p class="text-lg text-[rgb(240,240,240)]">
                 {props.selectedWeekNumber === -1 ? "Récupération..." : `Semaine ${props.selectedWeekNumber}`}
+                <Show when={timingsOfLessonsInWeek()}>
+                  {timings => (
+                    <span class="ml-8px text-sm text-[rgb(150,150,150)]">
+                      {timings()}
+                    </span>
+                  )}
+                </Show>
               </p>
               <p class="text-xs text-[rgb(190,190,190)]">
                 {props.header ? (
