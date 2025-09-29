@@ -112,9 +112,10 @@ export const BUT_INFO_REF = {
   "R5.01": "Management d'une équipe de projet informatique",
   "R5.02": "Projet personnel et professionnel",
   "R5.02A": "Projet personnel et professionnel",
-  "R5A.02": "Projet personnel et professionnel",
   "R5.03": "Communication",
+  "R5.14B": "Anglais",
   // .Real.
+  "R5A.02": "Projet personnel et professionnel",
   "R5A.04": "Qualité algorithmique",
   "R5A.05": "Programmation avancée",
   "R5A.06": "Programmation multimédia",
@@ -126,8 +127,8 @@ export const BUT_INFO_REF = {
   "R5A.12": "Modélisations mathématiques",
   "R5A.13": "Économie durable et numérique",
   "R5A.14": "Anglais",
-
   "P5A.01": "Portfolio",
+  
   "P5.01A": "Portfolio",
   "P5.01": "Portfolio",
 
